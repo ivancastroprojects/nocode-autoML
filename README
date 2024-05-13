@@ -1,0 +1,39 @@
+Programa para que un usuario pueda de manera sencilla poder probar datasets, crear múltiples modelos de aprendizaje automático de scikit, visualizar métricas y poder realizar predicciones (estilo amazon sage maker) haciendo uso de docker y mqtt para recibir los datos.
+
+Proceso.
+Iniciaremos MQTT y nos quedaremos escuchando. Cuando el usuario haya configurado el modelo o las predicciones, obtendremos un mensaje con los siguientes campos:
+1) "train" o "predict".
+2) una url al dataset. 
+3) Que algoritmos utilizar de los posibles de scikit (naive bayes, random forest, clustering, redes neuronales, etc) ya sea para crear el modelo o predecir. Nos puede llegar 1 o N.
+4) Los valores de los parámetros a utilizar que requiere cada algoritmo para entrenar.
+5) La proporción de división del dataset en entrenamiento y test.
+
+Ejemplo de respuesta de MQTT:
+{"command": "train", "params": {"dataset": "http://tokii.datasets.iris", "target": "category27", "algorithms": [{"name": "knn", "params": {"k": 3}}, {"name": "svm", "params": {"k": 3}}], "crossvalidation": 80}}
+
+Fase 1. Configuración del dataset [FRONTEND, NO IMPLEMENTAR]
+Se le pedirá al cliente subir un dataset. Una vez subido, se almacenará en server con la url de donde se encuentre almacenado.
+
+Fase 2. Configuración del modelo [FRONTEND, NO IMPLEMENTAR]
+Luego . Para ello, se le darán dos opciones:
+1) Crear un modelo. le preguntaremos que porcentaje del dataset será para entrenamiento y para test.
+2) Se le preguntará con que algoritmos scikit le gustaría crearlo.
+
+Fase 3. Uso del programa creación de modelo
+Una vez tenemos configurado como construir el modelo, recibiremos por MQTT un mensaje con la configuración definida por el usuario (como el ejemplo de respuesta de MQTT mostrado al inicio).
+1) Descarga del dataset. Con la URL del dataset, haremos una solicitud GET a la API para obtener el dataset del usuario.
+2) Carga del dataset, lo analizaremos y limpiaremos aplicando la función eda() y almacenaremos información interesante de los datos del dataset.
+1) Desplegar el modelo. Configuraremos datos de entrenamiento y test pedidos. Buscaremos el/los tipos de algoritmos solicitados para entrenarlo dentro de los posibles algoritmos scikit que tenemos definidos en los scripts classification.py y regression.py. Acto seguido, lo crearemos.
+4) Una vez desplegado el/los modelos, obtendremos métricas de cada uno (accuracy, F1 score, matriz de confusión, curva ROC, etc). Ademas, a través de grid search, según el dataset y el tipo de variables que tiene, podremos recomendarle las mejores métricas con las que debería entrenarlo. (opcional)
+5) Recopilamos toda la información y la enviaremos con un POST al server.
+
+Fase 4. Configuración de predicciones [FRONTEND, NO IMPLEMENTAR]
+1) Una vez hemos entrenado el/los modelos y han sido recibidos en server, el usuario podrá subir sus datos de test para generar predicciones sobre el modelo. Subirá los datos de test y le molestraremos un listado de algoritmos scikit con los que podría predecir (además le podremos sugerir con que algoritmo le recomendamos entrenar).
+2) Le mostraremos los parámetros necesarios para crear la predicción con ese tipo de algoritmo y podrá editar el valor de cada parámetro. 
+3) Una vez rellenados, le dará a aceptar y enviaremos por MQTT un mensaje con la configuración definida por el usuario (como el ejemplo de respuesta de MQTT mostrado al inicio).
+
+Fase 5. Uso del programa creación de predicciones
+Recibiremos por MQTT un mensaje con la configuración definida por el usuario (como el ejemplo de respuesta de MQTT mostrado al inicio).
+1) Algoritmos de predicción. Buscaremos el/los tipos de algoritmos solicitados para la predicción dentro de los posibles algoritmos scikit que tenemos definidos en los scripts classification.py y regression.py. Acto seguido, predeciremos.
+4) Una vez tengamos la predicción, obtendremos métricas. Ademas, con el dataset para generar predicciones, generaremos predicciones que según los datos, puedan ser interesantes para el usuario. (opcional)
+6) Recopilamos toda la información y la enviaremos con un POST al server.
