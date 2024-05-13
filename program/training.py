@@ -3,18 +3,23 @@ from sklearn.model_selection import train_test_split
 import api_interface
 import train
 import serializer
+from dataset import Dataset
 
 class Training:
-    def __init__(self):
-        self.dataset = None
+    def __init__(self, dataset: Dataset = None):
+        self.dataset = dataset
         self.test_dataset = None
         self.training = None
         self.crossvalidation = None
         self.algorithms = None
+    
+    def set_dataset(self, dataset: Dataset):
+        self.dataset = dataset
 
 
-    def train_and_evaluate(dataset, crossvalidation, algorithms):
+    def train_and_evaluate(self, crossvalidation, algorithms):
         # Asumiendo que 'dataset' es un DataFrame de pandas y tiene una columna 'target'
+        dataset = self.dataset.as_dataframe()
         X = dataset.drop('target', axis=1)
         y = dataset['target']
         
@@ -28,7 +33,7 @@ class Training:
 
 
     # Función para hacer predicciones
-    def predict_and_evaluate(model_path, X):
+    def predict_and_evaluate(self, model_path, X):
         # Para hacer predicciones, primero entrena un modelo y guarda su ruta
         # Luego, usa la función predict_and_evaluate con la ruta del modelo y los datos de prueba
         
@@ -36,3 +41,4 @@ class Training:
         model = serializer.from_json(model_path)
         y_pred = model.predict(X)
         return y_pred
+    

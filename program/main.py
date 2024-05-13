@@ -1,6 +1,7 @@
 import dataset
 from training import Training
 import mqtt
+import global_data
 
 training:Training = Training()
 
@@ -11,14 +12,15 @@ def init():
 
 def process_data(type: str):
     """Process data based on the given type"""
+    training: Training = global_data.training
 
     if type == "dataset":
-        dataset.eda_generico(training.dataset)
-        training.train_and_evaluate(training.dataset, training.crossvalidation, training.algorithms)
+        training.dataset.eda_generico()
+        training.train_and_evaluate(training.crossvalidation, training.algorithms)
     elif type == "model":
-        training.train_and_evaluate(training.dataset, training.crossvalidation, training.algorithms)
+        training.train_and_evaluate(training.crossvalidation, training.algorithms)
     elif type == "predict":
-        training.predict_and_evaluate(training.dataset, training.algorithms)
+        training.predict_and_evaluate(training.algorithms)
     else:
         raise ValueError("Invalid type")
 
