@@ -1,18 +1,20 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import mpl_toolkits.mplot3d
 
 from sklearn.decomposition import PCA
 from sklearn.impute import SimpleImputer
+
+from sklearn import preprocessing
 from sklearn.preprocessing import StandardScaler
-from sklearn.datasets import load_iris
 from api_interface import GET_dataset
 
 class Dataset:
     def __init__(self, url: str):
         self.df: pd.DataFrame = None
         if url =="http://tokii.datasets.iris":
-            self.df = load_iris(as_frame=True).data
+            self.df = pd.read_csv("program/Iris.csv")
             print(self.df)
         else:
             self.df = GET_dataset(url)
@@ -26,10 +28,7 @@ class Dataset:
     def eda_generico(self):
         df = self.df
 
-        # Carga y visualización básica de los datos
-        print(df.head())
-        print(df.info())
-        
+        # Carga y visualización básica de los datos   
         # Análisis descriptivo
         print("\nAnálisis Descriptivo:")
         print(df.describe(include='all'))
@@ -39,34 +38,43 @@ class Dataset:
             if df[col].dtype == 'object':
                 sns.countplot(x=col, data=df)
                 plt.title(f'Distribución de {col}')
-                plt.show()
+                # plt.show()
             else:
                 sns.histplot(df[col], kde=True)
                 plt.title(f'Distribución de {col}')
-                plt.show()
+                # plt.show()
         
         # Identificación y manejo de valores faltantes
         print("\nValores Faltantes:")
+        # Si hay valores faltantes, se aplica SimpleImputer
         print(df.isnull().sum())
+              
+        if df.isnull().values.any():
+            imputer = SimpleImputer(strategy='mean')
+            df = pd.DataFrame(imputer.fit_transform(df), columns=df.columns)
         
-        # Selección de una muestra representativa del conjunto de datos
-        sample_size = min(1000, len(df))
-        sample_df = df.sample(sample_size, random_state=42)
-        
-        # Manejo de valores faltantes con SimpleImputer
-        imputer = SimpleImputer(strategy='mean')
-        sample_df_imputed = pd.DataFrame(imputer.fit_transform(df), columns=df.columns)
-        
+        # LabelEncoder to convert textual classifications to numeric. 
+        # We will use the same encoder later to convert them back.
+        encoder = preprocessing.LabelEncoder()
+        # Aplicar LabelEncoder a todas las columnas de tipo 'object'
+        for col in df.columns:
+            if df[col].dtype == 'object':
+                df[col] = encoder.fit_transform(df[col])
+                
         # Escalado de características en la muestra
         scaler = StandardScaler()
-        sample_df_scaled = pd.DataFrame(scaler.fit_transform(sample_df_imputed), columns=sample_df_imputed.columns)
+        df_scaled = pd.DataFrame(scaler.fit_transform(df), columns=df.columns)
         
         # Selección de características para PCA
-        selected_features = sample_df_scaled.columns.tolist()
+        # Esta variable ahora contiene una lista de los nombres de las columnas 
+        # que se utilizarán en el proceso de PCA. 
+        # Es importante seleccionar las características adecuadas para PCA porque este algoritmo se utiliza 
+        # para reducir la dimensionalidad de los datos, manteniendo la mayor cantidad posible de variabilidad.
+        selected_features = df_scaled.columns.tolist()
         
         # Aplicar PCA a la muestra
         pca = PCA(n_components=2)
-        principalComponents = pca.fit_transform(sample_df_scaled[selected_features])
+        principalComponents = pca.fit_transform(df_scaled[selected_features])
         principalDf = pd.DataFrame(data = principalComponents, columns = ['principal component 1', 'principal component 2'])
         
         # Visualización de PCA para verificar redundancia

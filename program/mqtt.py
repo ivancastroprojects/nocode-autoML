@@ -5,8 +5,8 @@ import main
 from training import Training
 from dataset import Dataset
 from api_interface import GET_dataset
-from sklearn.datasets import load_iris
 import global_data
+import traceback
 
 broker_address = "mqtt-container"
 broker_port = 1883
@@ -14,7 +14,6 @@ topic = "test/topic"
 
 def init():
     # Create MQTT client instance
-    global_data.training = Training()
     client = mqtt.Client()
 
     # Assign callback functions
@@ -35,21 +34,28 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     try:
         training: Training = global_data.training
-        print(msg.payload)
+        # print(msg.payload)
         message = json.loads(msg.payload)
         # Descargar y cargar el dataset
-        dataset_url = message["params"]["dataset"]
-        training.algorithms = message["params"]["algorithms"]
-        training.crossvalidation = message["params"]["crossvalidation"] 
+
 
         if message["command"] == "train":
+            dataset_url = message["params"]["dataset"]
+            training.algorithms = message["params"]["algorithms"]
+            training.crossvalidation = message["params"]["crossvalidation"]
+            training.target = message["params"]["target"]
+            
             dataset = Dataset(dataset_url)
             training.set_dataset(dataset)
                 
             main.process_data("dataset")
         elif message["command"] == "predict":
+            dataset_url = message["params"]["dataset"]
+            training.algorithms = message["params"]["algorithms"]
+            training.crossvalidation = message["params"]["crossvalidation"] 
             training.test_dataset = GET_dataset(dataset_url)
+            
             main.process_data("predict")
     except Exception as err:
-        print(err)
+        print(traceback.format_exc())
         

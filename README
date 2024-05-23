@@ -9,7 +9,7 @@ Iniciaremos MQTT y nos quedaremos escuchando. Cuando el usuario haya configurado
 5) La proporción de división del dataset en entrenamiento y test.
 
 Ejemplo de respuesta de MQTT:
-{"command": "train", "params": {"dataset": "http://tokii.datasets.iris", "target": "category27", "preprocessing": {}, "algorithms": [{"name": "knn", "params": {"k": 3}}, {"name": "svm", "params": {"k": 3}}], "crossvalidation": 80}}
+{"command": "train", "params": {"dataset": "http://tokii.datasets.iris", "target": "Class", "algorithms": [{"name": "knn", "params": {"k": 3}}, {"name": "svm", "params": {"k": 3}}], "crossvalidation": 80}}
 
 Fase 1. Configuración del dataset [FRONTEND, NO IMPLEMENTAR]
 Se le pedirá al cliente subir un dataset. Una vez subido, se almacenará en server con la url de donde se encuentre almacenado.

@@ -1,3 +1,5 @@
+from typing import Dict, Type
+from sklearn.base import ClassifierMixin
 from sklearn.svm import SVC, SVR
 from sklearn import svm, discriminant_analysis, dummy
 from sklearn.linear_model import LogisticRegression, Perceptron
@@ -9,12 +11,22 @@ from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.linear_model import SGDClassifier, SGDRegressor
 from sklearn.neural_network import MLPClassifier, MLPRegressor
+import pickle
 import json
 
 import classification as clf
 import regression as reg
 
-model_classes = {
+from typing import Protocol
+# from typing_extensions import Protocol  # for Python <3.8
+
+class ScikitModel(Protocol):
+    def fit(self, X, y, sample_weight=None): ...
+    def predict(self, X): ...
+    def score(self, X, y, sample_weight=None): ...
+    def set_params(self, **params): ...
+
+model_classes: Dict[str, Type[ScikitModel]] = {
     "BernoulliNB": BernoulliNB,
     "GaussianNB": GaussianNB,
     "MultinomialNB": MultinomialNB,
@@ -30,12 +42,12 @@ model_classes = {
     "LinearRegression": LinearRegression,
     "Lasso": Lasso,
     "Ridge": Ridge,
-    "SVR": SVR,
     "DecisionTreeRegressor": DecisionTreeRegressor,
     "GradientBoostingRegressor": GradientBoostingRegressor,
     "RandomForestRegressor": RandomForestRegressor,
     "MLPRegressor": MLPRegressor,
-    'SVM': SVC(),
+    'SVC': SVC,
+    "SVR": SVR,
     "KNeighborsClassifier": KNeighborsClassifier,
     "KNeighborsRegressor": KNeighborsRegressor,
     "SGDClassifier": SGDClassifier,
@@ -150,16 +162,18 @@ def from_dict(model_dict):
     return deserialize_model(model_dict)
 
 
-def to_json(model, model_name):
-    with open(model_name, 'w') as model_json:
-        json.dump(serialize_model(model), model_json)
+def to_pickle(model, model_name: str):
+    if not model_name.endswith(".pkl"):
+        model_name += ".pkl"
+    with open(model_name, 'wb') as model_file:
+        pickle.dump(model, model_file)
 
 
-def from_json(model_name):
-    with open(model_name, 'r') as model_json:
-        model_dict = json.load(model_json)
-        return deserialize_model(model_dict)
-
+def from_pickle(model_name):
+    with open(model_name, 'rb') as model_file:
+        loaded_model = pickle.load(model_file)
+        return loaded_model
+    
 class ModellNotSupported(Exception):
     pass
 

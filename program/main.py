@@ -1,26 +1,38 @@
-import dataset
 from training import Training
+import training
 import mqtt
 import global_data
+import json
 
-training:Training = Training()
+DEBUG = True
+
+class FakeMsg:
+    def __init__(self, message):
+        self.payload = message
 
 def init():
+    global_data.training = Training()
+
     """Initialize MQTT connection"""
-    mqtt.init()
-    process_data("dataset")
+    if not DEBUG:
+        mqtt.init()
+    else:
+        mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(
+            {"command": "train", "params": {"dataset": "http://tokii.datasets.iris", "target": "Species",  "preprocessing": {}, "algorithms": [{"name": "KNeighborsRegressor", "params": {"n_neighbors": 3, "weights": "distance"}}, {"name": "SVC", "params": {"C": 3, "degree": 87}}], "crossvalidation": 80}})))
+    #process_data("dataset")
+    
 
 def process_data(type: str):
     """Process data based on the given type"""
-    training: Training = global_data.training
+    trainingInstance: Training = global_data.training
 
     if type == "dataset":
-        training.dataset.eda_generico()
-        training.train_and_evaluate(training.crossvalidation, training.algorithms)
+        trainingInstance.dataset.eda_generico()
+        trainingInstance.train_and_evaluate()
     elif type == "model":
-        training.train_and_evaluate(training.crossvalidation, training.algorithms)
+        trainingInstance.train_and_evaluate()
     elif type == "predict":
-        training.predict_and_evaluate(training.algorithms)
+        trainingInstance.predict_and_evaluate()
     else:
         raise ValueError("Invalid type")
 
