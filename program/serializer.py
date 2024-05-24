@@ -1,5 +1,11 @@
+# serializer.py
 from typing import Dict, Type
-from sklearn.base import ClassifierMixin
+import pickle
+from typing import Protocol
+
+import classification as clf
+import regression as reg
+
 from sklearn.svm import SVC, SVR
 from sklearn import svm, discriminant_analysis, dummy
 from sklearn.linear_model import LogisticRegression, Perceptron
@@ -11,14 +17,6 @@ from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.linear_model import SGDClassifier, SGDRegressor
 from sklearn.neural_network import MLPClassifier, MLPRegressor
-import pickle
-import json
-
-import classification as clf
-import regression as reg
-
-from typing import Protocol
-# from typing_extensions import Protocol  # for Python <3.8
 
 class ScikitModel(Protocol):
     def fit(self, X, y, sample_weight=None): ...
@@ -56,6 +54,21 @@ model_classes: Dict[str, Type[ScikitModel]] = {
     "AdaBoostRegressor": AdaBoostRegressor,
     "BaggingClassifier": BaggingClassifier,
     "BaggingRegressor": BaggingRegressor,
+}
+
+classification_models = {
+    BernoulliNB, GaussianNB, MultinomialNB, ComplementNB,
+    discriminant_analysis.LinearDiscriminantAnalysis,
+    discriminant_analysis.QuadraticDiscriminantAnalysis,
+    Perceptron, DecisionTreeClassifier, GradientBoostingClassifier,
+    RandomForestClassifier, MLPClassifier, LogisticRegression, SVC,
+    KNeighborsClassifier, SGDClassifier, AdaBoostClassifier, BaggingClassifier
+}
+
+regression_models = {
+    LinearRegression, Lasso, Ridge, DecisionTreeRegressor,
+    GradientBoostingRegressor, RandomForestRegressor, MLPRegressor,
+    SVR, KNeighborsRegressor, SGDRegressor, AdaBoostRegressor, BaggingRegressor
 }
 
 def serialize_model(model):
@@ -105,7 +118,6 @@ def serialize_model(model):
     else:
         raise ModellNotSupported('This model type is not currently supported. Email support@mlrequest.com to request a feature or report a bug.')
 
-
 def deserialize_model(model_dict):
     if model_dict['meta'] == 'lr':
         return clf.deserialize_logistic_regression(model_dict)
@@ -153,14 +165,11 @@ def deserialize_model(model_dict):
     else:
         raise ModellNotSupported('Model type not supported or corrupt JSON file. Email support@mlrequest.com to request a feature or report a bug.')
 
-
 def to_dict(model):
     return serialize_model(model)
 
-
 def from_dict(model_dict):
     return deserialize_model(model_dict)
-
 
 def to_pickle(model, model_name: str):
     if not model_name.endswith(".pkl"):
@@ -168,13 +177,10 @@ def to_pickle(model, model_name: str):
     with open(model_name, 'wb') as model_file:
         pickle.dump(model, model_file)
 
-
 def from_pickle(model_name):
     with open(model_name, 'rb') as model_file:
         loaded_model = pickle.load(model_file)
         return loaded_model
-    
+
 class ModellNotSupported(Exception):
     pass
-
-

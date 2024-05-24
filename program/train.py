@@ -1,17 +1,15 @@
+# train.py
 import sys
 import os
 import json
 import joblib
 from typing import List, Dict, Union
-
-from sklearn.base import BaseEstimator, ClassifierMixin
-from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, classification_report
-from sklearn.model_selection import train_test_split
+import serializer
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-import serializer
+from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, mean_squared_error, r2_score
 
 # Función para entrenar los modelos
 def train_models(X_train, y_train, model_params: List[Dict]):
@@ -21,8 +19,8 @@ def train_models(X_train, y_train, model_params: List[Dict]):
         params = model_info['params']
         if model_name in serializer.model_classes:
             model_class = serializer.model_classes[model_name]
-            model = model_class(**params)  # Instantiate model with provided hyperparameters
-            model.fit(X_train, y_train)  # Train the model
+            model = model_class(**params)  # Instanciar modelo con hiperparámetros proporcionados
+            model.fit(X_train, y_train)  # Entrenar el modelo
             
             serializer.to_pickle(model, model_name)
             trained_models.append(model)
@@ -30,8 +28,9 @@ def train_models(X_train, y_train, model_params: List[Dict]):
             print(f"Model '{model_name}' not found. Skipping...")
     return trained_models
 
-# Función para evaluar los modelos
-def evaluate_models(trained_models: List[serializer.ScikitModel], X_test, y_test):
+
+# Función para evaluar modelos de clasificación
+def evaluate_classification_models(trained_models: List[serializer.ScikitModel], X_test, y_test):
     evaluation_results = {}
     for model in trained_models:
         plt.clf()
@@ -50,9 +49,25 @@ def evaluate_models(trained_models: List[serializer.ScikitModel], X_test, y_test
         evaluation_results[str(model)] = {"accuracy": accuracy, "f1_score": f1, "confusion_matrix": cm}
     return evaluation_results
 
-# Funcion para comparar los modelos entrenados
+# Función para evaluar modelos de regresión
+def evaluate_regression_models(trained_models: List[serializer.ScikitModel], X_test, y_test):
+    evaluation_results = {}
+    for model in trained_models:
+        y_pred = model.predict(X_test)
+        mse = mean_squared_error(y_test, y_pred)
+        r2 = r2_score(y_test, y_pred)
+        
+        plt.scatter(y_test, y_pred)
+        plt.xlabel("Actual Values")
+        plt.ylabel("Predicted Values")
+        plt.title("Actual vs Predicted")
+        plt.show()
+        
+        evaluation_results[str(model)] = {"mean_squared_error": mse, "r2_score": r2}
+    return evaluation_results
+
+# Función para comparar los modelos entrenados
 def compare_models(dirpath: Union[os.PathLike, str], save_report: bool = False) -> Dict:
-    """Load and evaluate models"""
     model_filenames = os.listdir(dirpath)
     models = []
     for filename in model_filenames:
@@ -76,7 +91,11 @@ def compare_models(dirpath: Union[os.PathLike, str], save_report: bool = False) 
     # generate report
     report = {}
     for model in models:
-        report[str(model)] = evaluate_models([model], X_train, X_test)
+        if isinstance(model, (serializer.classification_models)):
+            report[str(model)] = evaluate_classification_models([model], X_test, y_test)
+        else:
+            report[str(model)] = evaluate_regression_models([model], X_test, y_test)
+    
     if save_report:
         json.dump(report, open("report.json", "a"))
     return report
