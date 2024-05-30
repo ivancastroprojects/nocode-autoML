@@ -1,4 +1,4 @@
-from skopt import BayesSearchCV
+#from skopt import BayesSearchCV
 from sklearn.model_selection import StratifiedKFold
 from sklearn.utils.estimator_checks import parametrize_with_checks
 

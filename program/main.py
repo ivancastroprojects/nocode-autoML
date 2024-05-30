@@ -22,8 +22,8 @@ def init():
                 "command": "train",
                 "params": {
                     "dataset": "http://tokii.datasets.iris", 
-                    "target": "Species",  
-                    "preprocessing": {}, 
+                    "target": "Species",
+                    "preprocessing": {},
                     "algorithms": [
                         {"name": "KNeighborsRegressor", "params": {"n_neighbors": 3, "weights": "distance"}}, 
                         {"name": "SVC", "params": {"C": 3, "degree": 87}}

@@ -44,7 +44,7 @@ class Training:
         #recommended_params = trainingparams.train_recommendedparams(X_train, y_train, self.algorithms) 
         
         # Enviar resultados de evaluación y parámetros recomendados a la API
-        api_interface.POST_modeleval(evaluation_results) #,recommended_params)
+        #api_interface.POST_modeleval(evaluation_results) #,recommended_params)
 
     def predict_and_evaluate(self, model_path, X):
         # Cargar el modelo desde el archivo

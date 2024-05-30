@@ -9,7 +9,7 @@ import serializer
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-from sklearn.metrics import confusion_matrix, accuracy_score, f1_score, mean_squared_error, r2_score
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score, mean_squared_error, r2_score
 
 # Función para entrenar los modelos
 def train_models(X_train, y_train, model_params: List[Dict]):
@@ -33,10 +33,10 @@ def train_models(X_train, y_train, model_params: List[Dict]):
 def evaluate_classification_models(trained_models: List[serializer.ScikitModel], X_test, y_test):
     evaluation_results = {}
     for model in trained_models:
-        plt.clf()
-        y_pred = model.predict(X_test)        
+        y_pred = model.predict(X_test)
         accuracy = accuracy_score(y_test, y_pred)
         f1 = f1_score(y_test, y_pred, average='weighted')
+        report = classification_report(y_test, y_pred, zero_division=0)
         
         cm = confusion_matrix(y_test, y_pred)
         plt.figure(figsize=(8, 6))
@@ -46,7 +46,7 @@ def evaluate_classification_models(trained_models: List[serializer.ScikitModel],
         plt.ylabel("True Label")
         plt.show()
         
-        evaluation_results[str(model)] = {"accuracy": accuracy, "f1_score": f1, "confusion_matrix": cm}
+        evaluation_results[str(model)] = {"accuracy": accuracy, "f1_score": f1, "confusion_matrix": cm, "classification_report": report}
     return evaluation_results
 
 # Función para evaluar modelos de regresión
