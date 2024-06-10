@@ -19,7 +19,6 @@ def init():
     else:
         mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(
         {
-            # {
             #     "command": "train",
             #     "params": {
             #         "dataset": "http://tokii.datasets.iris", 
@@ -32,7 +31,6 @@ def init():
             #         ],
             #         "crossvalidation": 80
             #     }
-            # }   
             "command": "train",
             "params": {
                 "dataset": "http://tokii.datasets.tips", 

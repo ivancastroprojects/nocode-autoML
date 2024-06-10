@@ -50,9 +50,9 @@ class Training:
             evaluation_results.update(eval_results)
 
         ######### ENTRENAMIENTO AUTOMÁTICO #########
-        if (self.recommendations == true)
+        if (self.recommendations == True):
             # Entrenamiento automático detectando columnas más relevantes
-            self.train_with_important_features() jh
+            self.train_with_important_features()
             
             # Entrenar modelos con parámetros recomendados
             recommended_params = trainingparams.train_recommendedparams(X_train, y_train, self.algorithms)   

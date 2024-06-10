@@ -40,7 +40,7 @@ class Dataset:
                 plt.title(f'Distribución de {col}')
                 # plt.show()
         
-        sns.pairplot(df, hue=self.df.target)
+        #sns.pairplot(df, hue=self.df.target)
 
         # Identificación y manejo de valores faltantes
         print("\nValores Faltantes:")
