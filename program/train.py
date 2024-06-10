@@ -1,4 +1,3 @@
-# train.py
 import sys
 import os
 import json
@@ -9,6 +8,7 @@ import serializer
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from sklearn.feature_selection import SelectKBest, f_classif, f_regression
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, f1_score, mean_squared_error, r2_score
 
 # Función para entrenar los modelos
@@ -28,11 +28,11 @@ def train_models(X_train, y_train, model_params: List[Dict]):
             print(f"Model '{model_name}' not found. Skipping...")
     return trained_models
 
-
 # Función para evaluar modelos de clasificación
 def evaluate_classification_models(trained_models: List[serializer.ScikitModel], X_test, y_test):
     evaluation_results = {}
     for model in trained_models:
+        plt.clf()
         y_pred = model.predict(X_test)
         accuracy = accuracy_score(y_test, y_pred)
         f1 = f1_score(y_test, y_pred, average='weighted')
@@ -65,6 +65,17 @@ def evaluate_regression_models(trained_models: List[serializer.ScikitModel], X_t
         
         evaluation_results[str(model)] = {"mean_squared_error": mse, "r2_score": r2}
     return evaluation_results
+
+# Función para seleccionar automáticamente las características más relevantes
+def select_features(X, y, modelType, k=10):
+    if modelType == 'classification':
+        selector = SelectKBest(score_func=f_classif, k=k)
+    else:
+        selector = SelectKBest(score_func=f_regression, k=k)
+    
+    X_new = selector.fit_transform(X, y)
+    selected_features = selector.get_support(indices=True)
+    return X_new, selected_features
 
 # Función para comparar los modelos entrenados
 def compare_models(dirpath: Union[os.PathLike, str], save_report: bool = False) -> Dict:

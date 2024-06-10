@@ -37,25 +37,22 @@ def on_message(client, userdata, msg):
         # print(msg.payload)
         message = json.loads(msg.payload)
         # Descargar y cargar el dataset
-
-
+        
         if message["command"] == "train":
             dataset_url = message["params"]["dataset"]
             training.algorithms = message["params"]["algorithms"]
             training.crossvalidation = message["params"]["crossvalidation"]
-            training.target = message["params"]["target"]
-            
+            training.target = message["params"]["target"]          
             dataset = Dataset(dataset_url)
             training.set_dataset(dataset)
-                
             main.process_data("dataset")
+            
         elif message["command"] == "predict":
             dataset_url = message["params"]["dataset"]
             training.algorithms = message["params"]["algorithms"]
             training.crossvalidation = message["params"]["crossvalidation"] 
             training.test_dataset = GET_dataset(dataset_url)
-            
             main.process_data("predict")
+            
     except Exception as err:
         print(traceback.format_exc())
-        

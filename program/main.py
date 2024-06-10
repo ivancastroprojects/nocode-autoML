@@ -18,19 +18,35 @@ def init():
         mqtt.init()
     else:
         mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(
-            {
-                "command": "train",
-                "params": {
-                    "dataset": "http://tokii.datasets.iris", 
-                    "target": "Species",
-                    "preprocessing": {},
-                    "algorithms": [
-                        {"name": "KNeighborsRegressor", "params": {"n_neighbors": 3, "weights": "distance"}}, 
-                        {"name": "SVC", "params": {"C": 3, "degree": 87}}
-                    ],
-                    "crossvalidation": 80
-                }
+        {
+            # {
+            #     "command": "train",
+            #     "params": {
+            #         "dataset": "http://tokii.datasets.iris", 
+            #         "target": "Species",
+            #         "features": "SepalLengthCm, SepalWidthCm, PetalLengthCm, PetalWidthCm",
+            #         "preprocessing": {"nullvalues: default"},
+            #         "algorithms": [
+            #             {"name": "KNeighborsRegressor", "params": {"n_neighbors": 3, "weights": "distance"}}, 
+            #             {"name": "SVC", "params": {"C": 3, "degree": 87}}
+            #         ],
+            #         "crossvalidation": 80
+            #     }
+            # }   
+            "command": "train",
+            "params": {
+                "dataset": "http://tokii.datasets.tips", 
+                "target": "total_bill",
+                "features": "null",  # Este campo puede ser "null" o una lista de nombres de columnas
+                "preprocessing": {"nullvalues": "default"},
+                "recommendations": "true",
+                "algorithms": [
+                    {"name": "KNeighborsRegressor", "params": {"n_neighbors": 3, "weights": "distance"}}, 
+                    {"name": "SVC", "params": {"C": 3, "degree": 87}}
+                ],
+                "crossvalidation": 80
             }
+        }
         )))
     
 def process_data(type: str):

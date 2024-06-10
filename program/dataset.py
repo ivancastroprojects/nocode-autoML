@@ -14,6 +14,8 @@ class Dataset:
         self.df: pd.DataFrame = None
         if url == "http://tokii.datasets.iris":
             self.df = pd.read_csv("program/Iris.csv")
+        elif url == "http://tokii.datasets.tips":
+            self.df = pd.read_csv("program/tips.csv")
         else:
             self.df = GET_dataset(url)
     
@@ -38,7 +40,7 @@ class Dataset:
                 plt.title(f'Distribución de {col}')
                 # plt.show()
         
-        sns.pairplot(df, hue="Species")
+        sns.pairplot(df, hue=self.df.target)
 
         # Identificación y manejo de valores faltantes
         print("\nValores Faltantes:")
