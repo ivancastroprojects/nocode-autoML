@@ -14,6 +14,7 @@ class Training:
         self.algorithms = None
         self.target = None
         self.features = None
+        self.recommendations = False
     
     def set_dataset(self, dataset: Dataset):
         self.dataset = dataset
@@ -50,7 +51,7 @@ class Training:
             evaluation_results.update(eval_results)
 
         ######### ENTRENAMIENTO AUTOMÁTICO #########
-        if (self.recommendations == True):
+        if (self.recommendations):
             # Entrenamiento automático detectando columnas más relevantes
             self.train_with_important_features()
             
@@ -59,7 +60,7 @@ class Training:
         
         ######### ENVÍO DE DATOS #########
         # Enviar resultados de evaluación y parámetros recomendados a la API
-        api_interface.POST_modeleval(evaluation_results) #,recommended_params)
+        api_interface.POST_modeleval(evaluation_results) #recommended_params)
 
     def train_with_important_features(self, k=10, ):
         dataset = self.dataset.as_dataframe()

@@ -37,10 +37,10 @@ def init():
                 "target": "total_bill",
                 "features": "null",  # Este campo puede ser "null" o una lista de nombres de columnas
                 "preprocessing": {"nullvalues": "default"},
-                "recommendations": "true",
+                "recommendations": True,
                 "algorithms": [
                     {"name": "KNeighborsRegressor", "params": {"n_neighbors": 3, "weights": "distance"}}, 
-                    {"name": "SVC", "params": {"C": 3, "degree": 87}}
+                    {"name": "SVR", "params": {"C": 3, "degree": 87}}
                 ],
                 "crossvalidation": 80
             }
