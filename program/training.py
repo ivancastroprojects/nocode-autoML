@@ -1,9 +1,11 @@
+#training.py
 from sklearn.model_selection import train_test_split
 import api_interface
 import train
 import trainingparams
 import serializer
 from dataset import Dataset
+import numpy as np
 
 class Training:
     def __init__(self, dataset: Dataset = None):
@@ -19,7 +21,7 @@ class Training:
     def set_dataset(self, dataset: Dataset):
         self.dataset = dataset
     
-    def train_and_evaluate(self):
+    def train_and_evaluate(self, _recommendations):
         dataset = self.dataset.as_dataframe()
 
         # Separar las características (X) de la variable objetivo (y)
@@ -51,18 +53,19 @@ class Training:
             evaluation_results.update(eval_results)
 
         ######### ENTRENAMIENTO AUTOMÁTICO #########
-        if (self.recommendations):
+        if (_recommendations):
             # Entrenamiento automático detectando columnas más relevantes
             self.train_with_important_features()
             
             # Entrenar modelos con parámetros recomendados
             recommended_params = trainingparams.train_recommendedparams(X_train, y_train, self.algorithms)   
-        
+            evaluation_results.update(recommended_params)
+         
         ######### ENVÍO DE DATOS #########
         # Enviar resultados de evaluación y parámetros recomendados a la API
         api_interface.POST_modeleval(evaluation_results) #recommended_params)
 
-    def train_with_important_features(self, k=10, ):
+    def train_with_important_features(self, k=10):
         dataset = self.dataset.as_dataframe()
         
         # Separar las características (X) de la variable objetivo (y)
@@ -70,7 +73,7 @@ class Training:
         y = dataset[self.target].values
 
         # Seleccionar las características más relevantes
-        X_new, selected_features = train.select_features(X, y, task_type=task_type, k=k)
+        X_new, selected_features = train.select_features(X, y, model, k=k)
         print(f"Selected features: {dataset.columns[selected_features]}")
         
         # Dividir los datos en entrenamiento y prueba
@@ -82,7 +85,7 @@ class Training:
         # Evaluar los modelos
         evaluation_results = {}
         for model in trained_models:
-            if task_type == 'classification':
+            if isinstance(model, tuple(serializer.classification_models)):
                 eval_results = train.evaluate_classification_models([model], X_test, y_test)
             else:
                 eval_results = train.evaluate_regression_models([model], X_test, y_test)
@@ -95,4 +98,14 @@ class Training:
         # Cargar el modelo desde el archivo
         model = serializer.from_pickle(model_path)
         y_pred = model.predict(X)
+        
+        # Evaluar el modelo si hay datos de prueba disponibles
+        if hasattr(self, 'X_test') and hasattr(self, 'y_test'):
+            evaluation_results = {}
+            if isinstance(model, tuple(serializer.classification_models)):
+                eval_results = train.evaluate_classification_models([model], self.X_test, self.y_test)
+            else:
+                eval_results = train.evaluate_regression_models([model], self.X_test, self.y_test)
+            evaluation_results.update(eval_results)
+            
         return y_pred

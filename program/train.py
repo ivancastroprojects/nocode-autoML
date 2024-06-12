@@ -1,6 +1,6 @@
+#train.py
 import sys
 import os
-import json
 import joblib
 from typing import List, Dict, Union
 import serializer
@@ -67,8 +67,8 @@ def evaluate_regression_models(trained_models: List[serializer.ScikitModel], X_t
     return evaluation_results
 
 # Función para seleccionar automáticamente las características más relevantes
-def select_features(X, y, modelType, k=10):
-    if modelType == 'classification':
+def select_features(X, y, model, k=10):
+    if isinstance(model, tuple(serializer.classification_models)):
         selector = SelectKBest(score_func=f_classif, k=k)
     else:
         selector = SelectKBest(score_func=f_regression, k=k)
@@ -84,10 +84,11 @@ def compare_models(dirpath: Union[os.PathLike, str], save_report: bool = False) 
     for filename in model_filenames:
         if filename.endswith(".pkl"):
             model = joblib.load(open(os.path.join(dirpath, filename), "rb"))
-            models.append(model)
         elif filename.endswith(".h5"):
-            model = load_model(os.path.join(dirpath, filename))
-            models.append(model)
+            model = joblib.load(os.path.join(dirpath, filename))
+        
+        models.append(model)
+        Training.train_and_evaluate()
 
     if not models:
         print("No trained models found.")
@@ -96,17 +97,3 @@ def compare_models(dirpath: Union[os.PathLike, str], save_report: bool = False) 
     for model in models:
         print(f"Loaded model {model}")
 
-    # load evaluation data
-    X_train, X_test, y_train, y_test = load_split_dataset(os.path.join("data", "covtype.data"))
-
-    # generate report
-    report = {}
-    for model in models:
-        if isinstance(model, (serializer.classification_models)):
-            report[str(model)] = evaluate_classification_models([model], X_test, y_test)
-        else:
-            report[str(model)] = evaluate_regression_models([model], X_test, y_test)
-    
-    if save_report:
-        json.dump(report, open("report.json", "a"))
-    return report
