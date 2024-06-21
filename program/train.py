@@ -56,6 +56,8 @@ def evaluate_regression_models(trained_models: List[serializer.ScikitModel], X_t
         y_pred = model.predict(X_test)
         mse = mean_squared_error(y_test, y_pred)
         r2 = r2_score(y_test, y_pred)
+        print("Mean Squared Error:", mse)
+        print("R-squared:", r2)
         
         plt.scatter(y_test, y_pred)
         plt.xlabel("Actual Values")
@@ -88,7 +90,6 @@ def compare_models(dirpath: Union[os.PathLike, str], save_report: bool = False) 
             model = joblib.load(os.path.join(dirpath, filename))
         
         models.append(model)
-        Training.train_and_evaluate()
 
     if not models:
         print("No trained models found.")
@@ -96,4 +97,3 @@ def compare_models(dirpath: Union[os.PathLike, str], save_report: bool = False) 
 
     for model in models:
         print(f"Loaded model {model}")
-

@@ -12,14 +12,13 @@ def GET_dataset(dataset_url):
     return response.content
 
 # Función para enviar las predicciones por API
-
 def POST_modeleval(evaluation_results):
     # URL de la API donde enviar las métricas de evaluación del modelo
-    api_url = "http://tu-api.com/model_evaluation"
+    api_url = "http://immersia.eu/model_evaluation"
 
     # Payload de la solicitud POST
     payload = {
-        "evaluation_results": evaluation_results  # Aquí puedes ajustar el formato del payload según lo requiera tu API
+        "evaluation_results": evaluation_results  #Formato del payload según lo requiere la API
     }
 
     # Encabezados de la solicitud POST

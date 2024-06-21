@@ -1,13 +1,12 @@
 #mqtt.py
 import paho.mqtt.client as mqtt
 import json
+import traceback
 
-import main
+from utils import pipeline_preprocessing
 from training import Training
 from dataset import Dataset
-from api_interface import GET_dataset
 import global_data
-import traceback
 
 broker_address = "mqtt-container"
 broker_port = 1883
@@ -20,6 +19,7 @@ def init():
     # Assign callback functions
     client.on_connect = on_connect
     client.on_message = on_message
+
     # Connect to MQTT broker
     client.connect(broker_address, broker_port)
 
@@ -35,25 +35,30 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     try:
         training: Training = global_data.training
-        # print(msg.payload)
         message = json.loads(msg.payload)
-        # Descargar y cargar el dataset
         
+        # Realizar analisis del dataset y entrenamiento según input
         if message["command"] == "train":
             dataset_url = message["params"]["dataset"]
             training.algorithms = message["params"]["algorithms"]
             training.crossvalidation = message["params"]["crossvalidation"]
-            training.target = message["params"]["target"]          
-            dataset = Dataset(dataset_url)
-            training.set_dataset(dataset)
-            main.process_data("dataset")
+            training.target = message["params"]["target"]
+            training.preprocessing = message["params"].get("preprocessing", [])
+            training.dataset = Dataset(dataset_url)
             
+            # Realizar EDA
+            # Preprocesar el dataset si se especifica
+            if training.preprocessing:
+                training.df = pipeline_preprocessing(training.dataset.as_dataframe(), training.target, training.preprocessing)
+            
+            training.dataset.eda_generico()
+            
+            # Entrenar y evaluar el modelo
+            training.train_and_evaluate()
+        
+        # Realizar predicciones con el modelo seleccionado y con la/las columnas seleccionadas
         elif message["command"] == "predict":
-            dataset_url = message["params"]["dataset"]
-            training.algorithms = message["params"]["algorithms"]
-            training.crossvalidation = message["params"]["crossvalidation"] 
-            training.test_dataset = GET_dataset(dataset_url)
-            main.process_data("predict")
+            training.predict(message["params"]["model"], message["params"]["features"])
             
     except Exception as err:
         print(traceback.format_exc())

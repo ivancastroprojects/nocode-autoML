@@ -1,11 +1,12 @@
-#training.py
+# training.py
 from sklearn.model_selection import train_test_split
 import api_interface
+from utils import pipeline_preprocessing
 import train
 import trainingparams
 import serializer
 from dataset import Dataset
-import numpy as np
+import pandas as pd
 
 class Training:
     def __init__(self, dataset: Dataset = None):
@@ -16,21 +17,23 @@ class Training:
         self.algorithms = None
         self.target = None
         self.features = None
+        self.preprocessing = None
         self.recommendations = False
     
-    def set_dataset(self, dataset: Dataset):
-        self.dataset = dataset
-    
-    def train_and_evaluate(self, _recommendations):
+    def train_and_evaluate(self):
         dataset = self.dataset.as_dataframe()
 
-        # Separar las características (X) de la variable objetivo (y)
+        ######### PREPROCESSING ##########
+        # Realizar preprocesamiento si se especifica
+        if self.preprocessing:
+            dataset = pipeline_preprocessing(dataset, self.target, self.preprocessing)
+
         X = dataset.drop(columns=self.target)
         y = dataset[self.target]
-
+        
         ######### ENTRENAMIENTO CUSTOM #########
         # Si el usuario especifica las columnas, usarlas
-        if self.features and self.features != "null":
+        if self.features:
             X = X[self.features]
 
         # Convertir a valores numpy
@@ -39,7 +42,7 @@ class Training:
 
         # Dividir los datos en entrenamiento y prueba
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=(100 - self.crossvalidation) / 100, random_state=42)
-        
+
         # Entrenar los modelos
         trained_models = train.train_models(X_train, y_train, self.algorithms)
         
@@ -53,7 +56,7 @@ class Training:
             evaluation_results.update(eval_results)
 
         ######### ENTRENAMIENTO AUTOMÁTICO #########
-        if (_recommendations):
+        if self.recommendations:
             # Entrenamiento automático detectando columnas más relevantes
             self.train_with_important_features()
             
@@ -63,7 +66,7 @@ class Training:
          
         ######### ENVÍO DE DATOS #########
         # Enviar resultados de evaluación y parámetros recomendados a la API
-        api_interface.POST_modeleval(evaluation_results) #recommended_params)
+        api_interface.POST_modeleval(evaluation_results)
 
     def train_with_important_features(self, k=10):
         dataset = self.dataset.as_dataframe()
@@ -94,18 +97,19 @@ class Training:
         # Enviar resultados de evaluación a la API
         api_interface.POST_modeleval(evaluation_results)
 
-    def predict_and_evaluate(self, model_path, X):
+    def predict(self, model_path, featuresPredict):
         # Cargar el modelo desde el archivo
-        model = serializer.from_pickle(model_path)
-        y_pred = model.predict(X)
+        model: serializer.ScikitModel = serializer.from_pickle(model_path)
         
-        # Evaluar el modelo si hay datos de prueba disponibles
-        if hasattr(self, 'X_test') and hasattr(self, 'y_test'):
-            evaluation_results = {}
-            if isinstance(model, tuple(serializer.classification_models)):
-                eval_results = train.evaluate_classification_models([model], self.X_test, self.y_test)
-            else:
-                eval_results = train.evaluate_regression_models([model], self.X_test, self.y_test)
-            evaluation_results.update(eval_results)
-            
-        return y_pred
+        # Convertir las características proporcionadas a un DataFrame
+        features_df = pd.DataFrame([featuresPredict])
+        
+        # Realizar preprocesamiento si se especificó durante el entrenamiento
+        if self.preprocessing:
+            features_df = pipeline_preprocessing(features_df, self.target, self.preprocessing)
+        
+        # Realizar la predicción
+        prediction = model.predict(features_df)
+        
+        print(f"The predicted {self.target} for {featuresPredict} is {prediction[0]:.2f}")
+        return prediction

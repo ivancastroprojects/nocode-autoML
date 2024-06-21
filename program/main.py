@@ -17,26 +17,13 @@ def init():
     if not DEBUG:
         mqtt.init()
     else:
-        mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(
-        {
-            #     "command": "train",
-            #     "params": {
-            #         "dataset": "http://tokii.datasets.iris", 
-            #         "target": "Species",
-            #         "features": "SepalLengthCm, SepalWidthCm, PetalLengthCm, PetalWidthCm",
-            #         "preprocessing": {"nullvalues: default"},
-            #         "algorithms": [
-            #             {"name": "KNeighborsRegressor", "params": {"n_neighbors": 3, "weights": "distance"}}, 
-            #             {"name": "SVC", "params": {"C": 3, "degree": 87}}
-            #         ],
-            #         "crossvalidation": 80
-            #     }
+        train = {
             "command": "train",
             "params": {
                 "dataset": "http://tokii.datasets.tips", 
-                "target": "total_bill",
-                "features": "null",  # Este campo puede ser "null" o una lista de nombres de columnas
-                "preprocessing": {"nullvalues": "default"},
+                "target": "tip",
+                "features": None,  # Este campo puede ser "null" o una lista de nombres de columnas
+                "preprocessing": ["impute_numeric", "scale_numeric", "impute_categorical", "encode_categorical"],
                 "recommendations": True,
                 "algorithms": [
                     {"name": "KNeighborsRegressor", "params": {"n_neighbors": 3, "weights": "distance"}}, 
@@ -45,21 +32,16 @@ def init():
                 "crossvalidation": 80
             }
         }
-        )))
-    
-def process_data(type: str):
-    """Process data based on the given type"""
-    trainingInstance: Training = global_data.training
-
-    if type == "dataset":
-        trainingInstance.dataset.eda_generico()
-        trainingInstance.train_and_evaluate()
-    elif type == "model":
-        trainingInstance.train_and_evaluate()
-    elif type == "predict":
-        trainingInstance.predict_and_evaluate()
-    else:
-        raise ValueError("Invalid type")
+        
+        predict = {
+            "command": "predict",
+            "params": {
+                "model": "SVR.pkl",
+                "features": {'total_bill': 18.53, 'sex': "Male", 'smoker':"No", 'day':"Sun", 'time':"Dinner", 'size':3},
+                "preprocessing": ["impute_numeric", "scale_numeric", "impute_categorical", "encode_categorical"]
+                }
+        }
+        mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(train)))
 
 if __name__ == "__main__":
     init()
