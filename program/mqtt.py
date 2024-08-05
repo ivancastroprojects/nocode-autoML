@@ -3,7 +3,7 @@ import paho.mqtt.client as mqtt
 import json
 import traceback
 
-from utils import pipeline_preprocessing
+from utils import auto_preprocess
 from training import Training
 from dataset import Dataset
 import global_data
@@ -49,7 +49,7 @@ def on_message(client, userdata, msg):
             # Realizar EDA
             # Preprocesar el dataset si se especifica
             if training.preprocessing:
-                training.df = pipeline_preprocessing(training.dataset.as_dataframe(), training.target, training.preprocessing)
+                training.dataset.df = auto_preprocess(training.dataset.df, training.target)
             
             training.dataset.eda_generico()
             

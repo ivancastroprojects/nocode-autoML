@@ -13,52 +13,54 @@ class Dataset:
             self.df = pd.read_csv("program/tips.csv")
         else:
             self.df = GET_dataset(url)
-    
+
     def eda_generico(self):
+        """
+        Realiza un análisis exploratorio de datos (EDA) genérico para un DataFrame.
+        
+        Args:
+        df (pd.DataFrame): El DataFrame a analizar
+        
+        Returns:
+        None (guarda gráficos como archivos)
+        """
         df = self.df
 
-        # Análisis descriptivo
-        print("\nAnálisis Descriptivo:")
-        print(df.head())
+        # Información general del DataFrame
         print(df.info())
+        print("\nEstadísticas descriptivas:")
         print(df.describe())
         
-        # Visualización de distribuciones de datos
-        # for col in df.columns:
-        #     if df[col].dtype == 'object':
-        #         sns.countplot(x=col, data=df)
-        #         plt.title(f'Distribución de {col}')
-        #         plt.show()
-        #     else:
-        #         sns.histplot(df[col], kde=True)
-        #         plt.title(f'Distribución de {col}')
-        #         plt.show()
+        # Análisis de valores faltantes
+        missing_data = df.isnull().sum()
+        print("\nValores faltantes por columna:")
+        print(missing_data[missing_data > 0])
         
-        # Identificación y manejo de valores faltantes
-        print("\nValores Faltantes:")
-        print(df.isnull().sum())
+        # Histogramas para variables numéricas
+        numeric_cols = df.select_dtypes(include=['int64', 'float64']).columns
+        for col in numeric_cols:
+            plt.figure(figsize=(10, 6))
+            sns.histplot(df[col], kde=True)
+            plt.title(f'Distribución de {col}')
+            plt.savefig(f'histograma_{col}.png')
+            plt.close()
         
-        # Correlación entre variables
-        print("\nCorrelación entre Variables:")
-        corr = df.corr()
-        sns.heatmap(corr, annot=True, cmap='coolwarm')
-        plt.title('Matriz de Correlación')
-        plt.show()
+        # Gráficos de barras para variables categóricas
+        categorical_cols = df.select_dtypes(include=['object', 'category']).columns
+        for col in categorical_cols:
+            plt.figure(figsize=(10, 6))
+            df[col].value_counts().plot(kind='bar')
+            plt.title(f'Distribución de {col}')
+            plt.savefig(f'barplot_{col}.png')
+            plt.close()
         
-        # Detección de outliers
-        print("\nDetección de Outliers:")
-        for col in df.columns:
-            if df[col].dtype != 'object':
-                sns.boxplot(x=df[col])
-                plt.title(f'Outliers en {col}')
-                plt.show()
-        
-        # Balance de clases (para problemas de clasificación)
-        if 'target' in df.columns and df['target'].dtype == 'object':
-            sns.countplot(x='target', data=df)
-            plt.title('Balance de Clases')
-            plt.show()
-            
-            
+        # Matriz de correlación
+        if len(numeric_cols) > 1:
+            plt.figure(figsize=(12, 10))
+            sns.heatmap(df[numeric_cols].corr(), annot=True, cmap='coolwarm')
+            plt.title('Matriz de Correlación')
+            plt.savefig('correlation_matrix.png')
+            plt.close()
+
     def as_dataframe(self) -> pd.DataFrame:
         return self.df

@@ -1,7 +1,7 @@
 # training.py
 from sklearn.model_selection import train_test_split
 import api_interface
-from utils import pipeline_preprocessing
+from utils import auto_preprocess
 import train
 import trainingparams
 import serializer
@@ -22,12 +22,7 @@ class Training:
     
     def train_and_evaluate(self):
         dataset = self.dataset.as_dataframe()
-
-        ######### PREPROCESSING ##########
-        # Realizar preprocesamiento si se especifica
-        if self.preprocessing:
-            dataset = pipeline_preprocessing(dataset, self.target, self.preprocessing)
-
+        
         X = dataset.drop(columns=self.target)
         y = dataset[self.target]
         
@@ -106,7 +101,7 @@ class Training:
         
         # Realizar preprocesamiento si se especificó durante el entrenamiento
         if self.preprocessing:
-            features_df = pipeline_preprocessing(features_df, self.target, self.preprocessing)
+            features_df = auto_preprocess(features_df, self.target, self.preprocessing)
         
         # Realizar la predicción
         prediction = model.predict(features_df)
