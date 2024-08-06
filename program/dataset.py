@@ -1,14 +1,26 @@
 # dataset.py
 import pandas as pd
+import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 from api_interface import GET_dataset
+from sklearn import datasets
 
 class Dataset:
     def __init__(self, url: str):
         self.df: pd.DataFrame = None
         if url == "http://tokii.datasets.iris":
-            self.df = pd.read_csv("program/Iris.csv")
+            iris = datasets.load_iris()
+            self.df = pd.DataFrame(data=np.c_[iris['data'], iris['target']], columns=iris['feature_names'] + ['target']) #pd.read_csv("program/Iris.csv")
+        elif url == "http://tokii.datasets.diabetes":
+            diabetes = datasets.load_diabetes()
+            self.df = pd.DataFrame(data=np.c_[diabetes['data'], diabetes['target']], columns=diabetes['feature_names'] + ['target'])
+        elif url == "http://tokii.datasets.cancer":
+            cancer = datasets.load_breast_cancer()
+            self.df = pd.DataFrame(data=np.c_[cancer['data'], cancer['target']], columns=cancer['feature_names'] + ['target'])
+        elif url == "http://tokii.datasets.wine":
+            wine = datasets.load_wine()
+            self.df = pd.DataFrame(data=np.c_[wine['data'], wine['target']], columns=wine['feature_names'] + ['target'])
         elif url == "http://tokii.datasets.tips":
             self.df = pd.read_csv("program/tips.csv")
         else:

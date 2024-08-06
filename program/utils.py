@@ -7,6 +7,23 @@ from sklearn.pipeline import Pipeline
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.decomposition import PCA
 
+def determine_problem_type(y):
+    """
+    Determine if the target variable is suitable for classification or regression.
+    
+    Args:
+    y (array-like): The target variable.
+    
+    Returns:
+    str: 'classification' or 'regression'
+    """
+    unique_values = np.unique(y)
+    
+    if len(unique_values) < 10 or (len(unique_values) / len(y)) < 0.05:
+        return 'classification'
+    else:
+        return 'regression'
+
 def auto_preprocess(df, target_column=None):
     """
     Automatically preprocess a dataset based on its characteristics.
@@ -20,9 +37,12 @@ def auto_preprocess(df, target_column=None):
     """
     print(df.info())
     
-    if target_column:
+    if target_column != "":
         y = df[target_column]
         X = df.drop(columns=[target_column])
+    elif df['target']:
+        y = df['target']
+        X = df.drop(columns=df['target'])
     else:
         X = df
         y = None

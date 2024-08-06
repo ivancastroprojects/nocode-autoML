@@ -7,6 +7,7 @@ import trainingparams
 import serializer
 from dataset import Dataset
 import pandas as pd
+import utils
 
 class Training:
     def __init__(self, dataset: Dataset = None):
@@ -38,30 +39,40 @@ class Training:
         # Dividir los datos en entrenamiento y prueba
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=(100 - self.crossvalidation) / 100, random_state=42)
 
+        # Comprobar que los algoritmos pedidos concuerden con el tipo de problema
+        problem_type = utils.determine_problem_type(y)
+        
         # Entrenar los modelos
-        trained_models = train.train_models(X_train, y_train, self.algorithms)
+        trained_models = train.train_models(X_train, y_train, self.algorithms, problem_type)
         
         # Evaluar los modelos
         evaluation_results = {}
         for model in trained_models:
-            if isinstance(model, tuple(serializer.classification_models)):
+            if (problem_type == 'classification'):
                 eval_results = train.evaluate_classification_models([model], X_test, y_test)
             else:
                 eval_results = train.evaluate_regression_models([model], X_test, y_test)
+            
+            # Imprimir las métricas con espaciado
+            print(f"Evaluación del modelo {model.__class__.__name__}:")
+            for key, value in evaluation_results.items():
+                print(f"\n{key}: {value}")
+            print("\n" + "-"*50 + "\n")
+            
             evaluation_results.update(eval_results)
 
-        ######### ENTRENAMIENTO AUTOMÁTICO #########
-        if self.recommendations:
-            # Entrenamiento automático detectando columnas más relevantes
-            self.train_with_important_features()
-            
-            # Entrenar modelos con parámetros recomendados
-            recommended_params = trainingparams.train_recommendedparams(X_train, y_train, self.algorithms)   
-            evaluation_results.update(recommended_params)
+            ######### ENTRENAMIENTO AUTOMÁTICO #########
+            if self.recommendations:
+                # Entrenamiento automático detectando columnas más relevantes
+                self.train_with_important_features()
+                
+                # Entrenar modelos con parámetros recomendados
+                recommended_params = trainingparams.train_recommendedparams(X_train, y_train, self.algorithms)   
+                evaluation_results.update(recommended_params)
          
         ######### ENVÍO DE DATOS #########
         # Enviar resultados de evaluación y parámetros recomendados a la API
-        api_interface.POST_modeleval(evaluation_results)
+        #api_interface.POST_modeleval(evaluation_results)
 
     def train_with_important_features(self, k=10):
         dataset = self.dataset.as_dataframe()
