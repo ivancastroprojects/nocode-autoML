@@ -52,14 +52,33 @@ def init():
         
     predict = {
         "command": "predict",
+        # "params": {
+        #     "model": "SVC.pkl",
+        #     "features": {'total_bill': 18.53, 'sex': "Male", 'smoker':"No", 'day':"Sun", 'time':"Dinner", 'size':3},
+        #     "preprocessing": ["impute_numeric", "scale_numeric", "impute_categorical", "encode_categorical"]
+        #     }
         "params": {
-            "model": "SVR.pkl",
-            "features": {'total_bill': 18.53, 'sex': "Male", 'smoker':"No", 'day':"Sun", 'time':"Dinner", 'size':3},
-            "preprocessing": ["impute_numeric", "scale_numeric", "impute_categorical", "encode_categorical"]
+            "model": "RandomForestClassifier.pkl",  # Usaremos el RandomForestClassifier para la predicci\u00f3n
+            "features": {
+                "alcohol": 13.2,
+                "malic_acid": 1.78,
+                "ash": 2.14,
+                "alcalinity_of_ash": 11.2,
+                "magnesium": 100,
+                "total_phenols": 2.65,
+                "flavanoids": 2.76,
+                "nonflavanoid_phenols": 0.26,
+                "proanthocyanins": 1.28,
+                "color_intensity": 4.38,
+                "hue": 1.05,
+                "od280/od315_of_diluted_wines": 3.4,
+                "proline": 1050
             }
+        }
     }
     
     mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(train)))
+    mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(predict)))
 
 if __name__ == "__main__":
     init()

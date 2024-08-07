@@ -14,7 +14,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from sklearn.model_selection import cross_val_score
 
 # Función para entrenar los modelos
-def train_models(X_train, y_train, model_params: List[Dict], problem_type):
+def train_models(X_train, y_train, model_params: List[Dict], problem_type, dataset_name: str):
     trained_models = []
     for model_info in model_params:
         model_name = model_info['name']
@@ -25,7 +25,7 @@ def train_models(X_train, y_train, model_params: List[Dict], problem_type):
             # Comprobar que este algoritmo encaja con el tipo de problema según el tipo de dataset
             if (problem_type == 'classification' and isinstance(model,tuple(serializer.classification_models)) or (problem_type == 'regression' and isinstance(model,tuple(serializer.regression_models)))):
                 model.fit(X_train, y_train)  # Entrenar el modelo
-                serializer.to_pickle(model, model_name)
+                serializer.to_pickle(model, model_name, dataset_name)
                 trained_models.append(model)
         else:
             print(f"Model '{model_name}' not found. Skipping...")

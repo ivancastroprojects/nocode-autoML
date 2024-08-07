@@ -8,10 +8,12 @@ import serializer
 from dataset import Dataset
 import pandas as pd
 import utils
+import os
 
 class Training:
     def __init__(self, dataset: Dataset = None):
         self.dataset = dataset
+        self.dataset_name = dataset.df.Name if dataset else None
         self.test_dataset = None
         self.training = None
         self.crossvalidation = None
@@ -23,7 +25,7 @@ class Training:
     
     def train_and_evaluate(self):
         dataset = self.dataset.as_dataframe()
-        
+
         X = dataset.drop(columns=self.target)
         y = dataset[self.target]
         
@@ -43,8 +45,8 @@ class Training:
         problem_type = utils.determine_problem_type(y)
         
         # Entrenar los modelos
-        trained_models = train.train_models(X_train, y_train, self.algorithms, problem_type)
-        
+        trained_models = train.train_models(X_train, y_train, self.algorithms, problem_type, self.dataset_name)       
+         
         # Evaluar los modelos
         evaluation_results = {}
         for model in trained_models:
@@ -89,7 +91,7 @@ class Training:
         X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=(100 - self.crossvalidation) / 100, random_state=42)
         
         # Entrenar los modelos
-        trained_models = train.train_models(X_train, y_train, self.algorithms)
+        trained_models = train.train_models(X_train, y_train, self.algorithms, self.dataset_name)
         
         # Evaluar los modelos
         evaluation_results = {}
@@ -103,16 +105,29 @@ class Training:
         # Enviar resultados de evaluación a la API
         api_interface.POST_modeleval(evaluation_results)
 
-    def predict(self, model_path, featuresPredict):
+    def predict(self, model_name, featuresPredict):
+        # Buscar el modelo en la carpeta models
+        model_path = None
+        for root, dirs, files in os.walk('models'):
+            if model_name in files:
+                model_path = os.path.join(root, model_name)
+                break
+        
+        if not model_path:
+            raise FileNotFoundError(f"No se encontró el modelo {model_name}")
+        
         # Cargar el modelo desde el archivo
-        model: serializer.ScikitModel = serializer.from_pickle(model_path)
+        model = serializer.from_pickle(model_path)
         
         # Convertir las características proporcionadas a un DataFrame
         features_df = pd.DataFrame([featuresPredict])
-        
+
+        # Limpiar nombres de columnas
+        features_df.columns = [Dataset.clean_filename(col) for col in features_df.columns]
+
         # Realizar preprocesamiento si se especificó durante el entrenamiento
         if self.preprocessing:
-            features_df = auto_preprocess(features_df, self.target, self.preprocessing)
+            features_df = auto_preprocess(features_df, target_column=None)
         
         # Realizar la predicción
         prediction = model.predict(features_df)

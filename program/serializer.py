@@ -2,7 +2,7 @@
 from typing import Dict, Type
 import pickle
 from typing import Protocol
-
+import os
 import classification as clf
 import regression as reg
 
@@ -171,16 +171,27 @@ def to_dict(model):
 def from_dict(model_dict):
     return deserialize_model(model_dict)
 
-def to_pickle(model, model_name: str):
+def to_pickle(model, model_name: str, dataset_name: str):
     if not model_name.endswith(".pkl"):
         model_name += ".pkl"
-    with open(model_name, 'wb') as model_file:
+    # Crear la estructura de carpetas
+    model_dir = os.path.join('models', f"{model_name}_{dataset_name}")
+    os.makedirs(model_dir, exist_ok=True)
+    
+    # Asegurar que el nombre del archivo termine en .pkl
+    if not model_name.endswith(".pkl"):
+        model_name += ".pkl"
+    
+    # Guardar el modelo
+    model_path = os.path.join(model_dir, model_name)
+    with open(model_path, 'wb') as model_file:
         pickle.dump(model, model_file)
 
-def from_pickle(model_name):
-    with open(model_name, 'rb') as model_file:
+def from_pickle(model_path):
+    with open(model_path, 'rb') as model_file:
         loaded_model = pickle.load(model_file)
         return loaded_model
 
 class ModellNotSupported(Exception):
     pass
+

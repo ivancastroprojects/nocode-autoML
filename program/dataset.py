@@ -5,6 +5,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from api_interface import GET_dataset
 from sklearn import datasets
+import re
+import os
 
 class Dataset:
     def __init__(self, url: str):
@@ -25,6 +27,10 @@ class Dataset:
             self.df = pd.read_csv("program/tips.csv")
         else:
             self.df = GET_dataset(url)
+
+    def clean_filename(filename):
+        # Reemplaza caracteres no permitidos en nombres de archivo con guiones bajos
+        return re.sub(r'[\\/*?:"<>|]', "_", filename)
 
     def eda_generico(self):
         """
@@ -52,27 +58,38 @@ class Dataset:
         numeric_cols = df.select_dtypes(include=['int64', 'float64']).columns
         for col in numeric_cols:
             plt.figure(figsize=(10, 6))
-            sns.histplot(df[col], kde=True)
-            plt.title(f'Distribución de {col}')
-            plt.savefig(f'histograma_{col}.png')
+            self.df[col].hist()
+            plt.title(f'Histograma de {col}')
+            plt.xlabel(col)
+            plt.ylabel('Frecuencia')
+            
+            # Limpia el nombre de la columna para usarlo como nombre de archivo
+            #clean_col = clean_filename(col)
+            clean_col = re.sub(r'[\\/*?:"<>|]', "_", col)
+            
+            # Asegúrate de que el directorio existe
+            os.makedirs('histogramas', exist_ok=True)
+            
+            # Guarda el archivo en el directorio 'histogramas'
+            plt.savefig(f'histogramas/histograma_{clean_col}.png')
             plt.close()
-        
-        # Gráficos de barras para variables categóricas
-        categorical_cols = df.select_dtypes(include=['object', 'category']).columns
-        for col in categorical_cols:
-            plt.figure(figsize=(10, 6))
-            df[col].value_counts().plot(kind='bar')
-            plt.title(f'Distribución de {col}')
-            plt.savefig(f'barplot_{col}.png')
-            plt.close()
-        
-        # Matriz de correlación
-        if len(numeric_cols) > 1:
-            plt.figure(figsize=(12, 10))
-            sns.heatmap(df[numeric_cols].corr(), annot=True, cmap='coolwarm')
-            plt.title('Matriz de Correlación')
-            plt.savefig('correlation_matrix.png')
-            plt.close()
+            
+            # Gráficos de barras para variables categóricas
+            categorical_cols = df.select_dtypes(include=['object', 'category']).columns
+            for col in categorical_cols:
+                plt.figure(figsize=(10, 6))
+                df[col].value_counts().plot(kind='bar')
+                plt.title(f'Distribución de {col}')
+                plt.savefig(f'barplot_{col}.png')
+                plt.close()
+            
+            # Matriz de correlación
+            if len(numeric_cols) > 1:
+                plt.figure(figsize=(12, 10))
+                sns.heatmap(df[numeric_cols].corr(), annot=True, cmap='coolwarm')
+                plt.title('Matriz de Correlación')
+                plt.savefig('correlation_matrix.png')
+                plt.close()
 
     def as_dataframe(self) -> pd.DataFrame:
         return self.df
