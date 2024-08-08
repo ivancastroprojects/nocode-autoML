@@ -46,6 +46,7 @@ def on_message(client, userdata, msg):
             training.preprocessing = message["params"].get("preprocessing", [])
             training.dataset = Dataset(dataset_url)
             training.dataset_name = dataset_url.split('datasets.')[-1]  # Extraer el nombre del dataset 
+            training.class_labels = training.dataset.class_labels
 
             # Realizar EDA
             # Preprocesar el dataset si se especifica

@@ -22,6 +22,8 @@ class Training:
         self.features = None
         self.preprocessing = None
         self.recommendations = False
+        self.problem_type = None
+        self.class_labels = None
     
     def train_and_evaluate(self):
         dataset = self.dataset.as_dataframe()
@@ -42,26 +44,26 @@ class Training:
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=(100 - self.crossvalidation) / 100, random_state=42)
 
         # Comprobar que los algoritmos pedidos concuerden con el tipo de problema
-        problem_type = utils.determine_problem_type(y)
+        self.problem_type = utils.determine_problem_type(y)
         
         # Entrenar los modelos
-        trained_models = train.train_models(X_train, y_train, self.algorithms, problem_type, self.dataset_name)       
+        trained_models = train.train_models(X_train, y_train, self.algorithms, self.problem_type, self.dataset_name)       
          
         # Evaluar los modelos
-        evaluation_results = {}
+        eval_results = {}
         for model in trained_models:
-            if (problem_type == 'classification'):
+            if (self.problem_type == 'classification'):
                 eval_results = train.evaluate_classification_models([model], X_test, y_test)
             else:
                 eval_results = train.evaluate_regression_models([model], X_test, y_test)
             
             # Imprimir las métricas con espaciado
             print(f"Evaluación del modelo {model.__class__.__name__}:")
-            for key, value in evaluation_results.items():
+            for key, value in eval_results.items():
                 print(f"\n{key}: {value}")
             print("\n" + "-"*50 + "\n")
             
-            evaluation_results.update(eval_results)
+            eval_results.update(eval_results)
 
             ######### ENTRENAMIENTO AUTOMÁTICO #########
             if self.recommendations:
@@ -70,7 +72,7 @@ class Training:
                 
                 # Entrenar modelos con parámetros recomendados
                 recommended_params = trainingparams.train_recommendedparams(X_train, y_train, self.algorithms)   
-                evaluation_results.update(recommended_params)
+                eval_results.update(recommended_params)
          
         ######### ENVÍO DE DATOS #########
         # Enviar resultados de evaluación y parámetros recomendados a la API
@@ -129,8 +131,18 @@ class Training:
         if self.preprocessing:
             features_df = auto_preprocess(features_df, target_column=None)
         
-        # Realizar la predicción
-        prediction = model.predict(features_df)
+        # Convertir el DataFrame a un array numpy
+        features_array = features_df.values
         
-        print(f"The predicted {self.target} for {featuresPredict} is {prediction[0]:.2f}")
+        # Realizar la predicción
+        prediction = model.predict(features_array)
+        
+        # Determinar el tipo de problema
+        if self.problem_type == 'classification' and hasattr(self, 'class_labels'):
+            # Obtener la etiqueta de clase correspondiente
+            class_label = self.class_labels.get(int(prediction[0]), prediction[0])
+        else:
+            class_label = prediction[0]
+        
+        print(f"The predicted {self.target} for {featuresPredict} is {prediction[0]:.2f} ({class_label})")
         return prediction

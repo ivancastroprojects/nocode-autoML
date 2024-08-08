@@ -36,8 +36,6 @@ def auto_preprocess(df, target_column=None, apply_pca=False):
     Returns:
     pd.DataFrame: Preprocessed dataframe
     """
-    print("Original dataframe info:")
-    print(df.info())
     
     # Separar la variable objetivo si existe
     if target_column and target_column in df.columns:
@@ -78,7 +76,7 @@ def auto_preprocess(df, target_column=None, apply_pca=False):
     # Obtener nombres de características después del preprocesamiento
     numeric_feature_names = numeric_features.tolist()
     if len(categorical_features) > 0:
-        categorical_feature_names = preprocessor.named_transformers_['cat'].named_steps['onehot'].get_feature_names(categorical_features).tolist()
+        categorical_feature_names = preprocessor.named_transformers_['cat'].named_steps['onehot'].get_feature_names_out(categorical_features).tolist()
     else:
         categorical_feature_names = []
 
@@ -98,8 +96,5 @@ def auto_preprocess(df, target_column=None, apply_pca=False):
     # Añadir la columna objetivo de vuelta si existe
     if y is not None:
         df_processed[target_column] = y
-
-    print("\nProcessed dataframe info:")
-    print(df_processed.info())
     
     return df_processed

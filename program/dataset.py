@@ -11,9 +11,12 @@ import os
 class Dataset:
     def __init__(self, url: str):
         self.df: pd.DataFrame = None
+        self.class_labels = None
+        
         if url == "http://tokii.datasets.iris":
             iris = datasets.load_iris()
             self.df = pd.DataFrame(data=np.c_[iris['data'], iris['target']], columns=iris['feature_names'] + ['target']) #pd.read_csv("program/Iris.csv")
+            self.class_labels = {0: 'setosa', 1: 'versicolor', 2: 'virginica'}
         elif url == "http://tokii.datasets.diabetes":
             diabetes = datasets.load_diabetes()
             self.df = pd.DataFrame(data=np.c_[diabetes['data'], diabetes['target']], columns=diabetes['feature_names'] + ['target'])
@@ -27,6 +30,11 @@ class Dataset:
             self.df = pd.read_csv("program/tips.csv")
         else:
             self.df = GET_dataset(url)
+
+        print("Original dataframe info:")
+        print(self.df.info())
+        print(self.df.head())
+        print(self.df.describe())
 
     def clean_filename(filename):
         # Reemplaza caracteres no permitidos en nombres de archivo con guiones bajos
@@ -45,9 +53,9 @@ class Dataset:
         df = self.df
 
         # Información general del DataFrame
-        print(df.info())
-        print("\nEstadísticas descriptivas:")
-        print(df.describe())
+        print("\nDespués de procesado:")
+        print(self.df.head())
+        #print(df.describe())
         
         # Análisis de valores faltantes
         missing_data = df.isnull().sum()

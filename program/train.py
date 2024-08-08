@@ -56,8 +56,8 @@ def evaluate_classification_models(models: List[serializer.ScikitModel], X_test,
         plt.close()
         
         evaluation_results[str(model)] = {
-            "cross_validation_score": cv_score,
             "accuracy": accuracy,
+            "cross_validation_score": cv_score,
             "precision": precision,
             "recall": recall,
             "f1_score": f1,
