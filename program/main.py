@@ -54,7 +54,7 @@ def init():
         "command": "predict",
         # "params": { #tips
         #     "model": "SVC.pkl",
-        #     "features": {'total_bill': 18.53, 'sex': "Male", 'smoker':"No", 'day':"Sun", 'time':"Dinner", 'size':3},
+        #     "features": {'total_bill': 18.53, 'sex': "Male", op'smoker':"No", 'day':"Sun", 'time':"Dinner", 'size':3},
         #     "preprocessing": ["impute_numeric", "scale_numeric", "impute_categorical", "encode_categorical"]
         #     }
         # "params": { #wine
