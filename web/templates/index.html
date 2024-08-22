@@ -1,0 +1,241 @@
+{% comment %} <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma de IA - Inicio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>TOKII AI</h1>
+    
+    {% comment %} <section id="dataset-section">
+        <h2>Cargar Dataset</h2>
+        <form id="upload-form">
+            <input type="file" name="dataset" accept=".csv,.xlsx">
+            <button type="submit">Cargar</button>
+        </form>
+        <div id="dataset-info"></div>
+    </section> {% endcomment %}
+
+    <section id="model-section" style="display: none;">
+        <div class="container">
+            <h1>Crear Modelo</h1>
+            <div class="header">
+              <img src="https://www.flaticon.com/free-icons/immersia" alt="Immersia Logo">
+              <div class="user">
+                <span>Lucia</span>
+              </div>
+            </div>
+            <div class="nav">
+              <a href="#" class="active">Modelo</a>
+              <a href="#">Dataset</a>
+              <a href="#">Análisis</a>
+              <a href="#">Predicción</a>
+            </div>
+            <div class="form-group">
+              <label for="model-name" class="form-label">Nombre del modelo</label>
+              <input type="text" id="model-name" class="form-input" value="Predicción del OEE">
+            </div>
+            <div class="form-group">
+              <label for="problem-type" class="form-label">Tipo de problema</label>
+              <p>Selecciona el tipo de problema a resolver por el modelo.</p>
+              <div class="problem-options">
+                <div class="problem-option">
+                  <input type="radio" id="predictive-analysis" name="problem-type" checked>
+                  <label for="predictive-analysis">Análisis predictivo</label>
+                  <p>Entrena un modelo utilizando un dataset tabular para predecir una o varias categorias, así como regresiñon y predicción en series temporales.</p>
+                </div>
+                <div class="problem-option">
+                  <input type="radio" id="image-analysis" name="problem-type">
+                  <label for="image-analysis">Análisis de imagen</label>
+                  <p>Entrena modelos utilizando datasets de imágenes para predecir una o varias categorias para problemas de clasificiación de imágenes.</p>
+                </div>
+                <div class="problem-option">
+                  <input type="radio" id="text-analysis" name="problem-type">
+                  <label for="text-analysis">Análisis de textos</label>
+                  <p>Entrena modelos utilizando datasets de imágenes para predecir una o varias categorias para problemas de clasificiación de textos.</p>
+                </div>
+              </div>
+            </div>
+            <button class="button">Siguiente</button>
+          </div>
+    </section>
+
+    <section id="training-section" style="display: none;">
+        <h2>Configuración de Entrenamiento</h2>
+        <form id="training-form">
+            <label for="target">Variable Objetivo:</label>
+            <select id="target" name="target"></select>
+            
+            <fieldset>
+                <legend>Características:</legend>
+                <div id="features-checkboxes"></div>
+            </fieldset>
+
+            <button type="submit">Iniciar Entrenamiento</button>
+        </form>
+    </section>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html> {% endcomment %}
+
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear Modelo</title>
+  <style>
+    body {
+      background-color: #f2f2f2;
+      font-family: sans-serif;
+      margin: 0;
+    }
+    .container {
+      width: 80%;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      border-radius: 5px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .header img {
+      width: 30px;
+      height: 30px;
+    }
+    .header .user {
+      display: flex;
+      align-items: center;
+    }
+    .header .user span {
+      margin-left: 10px;
+      font-weight: bold;
+    }
+    .nav {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+    }
+    .nav a {
+      color: #333;
+      text-decoration: none;
+      padding: 10px;
+      border-bottom: 2px solid transparent;
+    }
+    .nav a.active {
+      border-bottom: 2px solid #ffc107;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    .form-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .form-select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .button {
+      background-color: #ffc107;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .button:hover {
+      background-color: #e0a800;
+    }
+    .problem-options {
+      display: flex;
+      justify-content: space-around;
+    }
+    .problem-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      border: 1px solid #ddd;
+      padding: 20px;
+      border-radius: 5px;
+      width: 30%;
+    }
+    .problem-option input[type="radio"] {
+      margin-right: 10px;
+    }
+    .problem-option label {
+      font-weight: bold;
+    }
+    .problem-option p {
+      margin-top: 10px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Crear Modelo</h1>
+    <div class="header">
+      <img src="https://www.flaticon.com/free-icons/immersia" alt="Immersia Logo">
+      <div class="user">
+        <span>Lucia</span>
+      </div>
+    </div>
+    <div class="nav">
+      <a href="#" class="active">Modelo</a>
+      <a href="#">Dataset</a>
+      <a href="#">Análisis</a>
+      <a href="#">Predicción</a>
+    </div>
+    <div class="form-group">
+      <label for="model-name" class="form-label">Nombre del modelo</label>
+      <input type="text" id="model-name" class="form-input" value="Predicción del OEE">
+    </div>
+    <div class="form-group">
+      <label for="problem-type" class="form-label">Tipo de problema</label>
+      <p>Selecciona el tipo de problema a resolver por el modelo.</p>
+      <div class="problem-options">
+        <div class="problem-option">
+          <input type="radio" id="predictive-analysis" name="problem-type" checked>
+          <label for="predictive-analysis">Análisis predictivo</label>
+          <p>Entrena un modelo utilizando un dataset tabular para predecir una o varias categorias, así como regresiñon y predicción en series temporales.</p>
+        </div>
+        <div class="problem-option">
+          <input type="radio" id="image-analysis" name="problem-type">
+          <label for="image-analysis">Análisis de imagen</label>
+          <p>Entrena modelos utilizando datasets de imágenes para predecir una o varias categorias para problemas de clasificiación de imágenes.</p>
+        </div>
+        <div class="problem-option">
+          <input type="radio" id="text-analysis" name="problem-type">
+          <label for="text-analysis">Análisis de textos</label>
+          <p>Entrena modelos utilizando datasets de imágenes para predecir una o varias categorias para problemas de clasificiación de textos.</p>
+        </div>
+      </div>
+    </div>
+    <button class="button">Siguiente</button>
+  </div>
+</body>
+</html>

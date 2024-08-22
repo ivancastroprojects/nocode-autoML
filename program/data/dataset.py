@@ -1,40 +1,48 @@
-# dataset.py
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-from api_interface import GET_dataset
-from sklearn import datasets
-import re
 import os
+import re
+
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pandas as pd
+from sklearn import datasets
+from api import api_interface
+import numpy as np
 
 class Dataset:
     def __init__(self, url: str):
         self.df: pd.DataFrame = None
         self.class_labels = None
         
-        if url == "http://tokii.datasets.iris":
-            iris = datasets.load_iris()
-            self.df = pd.DataFrame(data=np.c_[iris['data'], iris['target']], columns=iris['feature_names'] + ['target']) #pd.read_csv("program/Iris.csv")
-            self.class_labels = {0: 'setosa', 1: 'versicolor', 2: 'virginica'}
-        elif url == "http://tokii.datasets.diabetes":
-            diabetes = datasets.load_diabetes()
-            self.df = pd.DataFrame(data=np.c_[diabetes['data'], diabetes['target']], columns=diabetes['feature_names'] + ['target'])
-        elif url == "http://tokii.datasets.cancer":
-            cancer = datasets.load_breast_cancer()
-            self.df = pd.DataFrame(data=np.c_[cancer['data'], cancer['target']], columns=cancer['feature_names'] + ['target'])
-        elif url == "http://tokii.datasets.wine":
-            wine = datasets.load_wine()
-            self.df = pd.DataFrame(data=np.c_[wine['data'], wine['target']], columns=wine['feature_names'] + ['target'])
-        elif url == "http://tokii.datasets.tips":
-            self.df = pd.read_csv("program/tips.csv")
+        if url.startswith("http://tokii.datasets."):
+            dataset_name = url.split(".")[-1]
+            self.load_sklearn_dataset(dataset_name)
         else:
-            self.df = GET_dataset(url)
+            self.df = api_interface.GET_dataset(url)
 
-        print("Original dataframe info:")
-        print(self.df.info())
+        print("Dataset antes de procesar:")
         print(self.df.head())
-        print(self.df.describe())
+
+    def load_sklearn_dataset(self, dataset_name):
+        # Intentar cargar el dataset de scikit-learn
+        try:
+            dataset = getattr(datasets, f"load_{dataset_name}")()
+            data = np.array(dataset.data)
+            target = np.array(dataset.target).reshape(-1, 1)
+            combined_data = np.hstack((data, target))
+            feature_names = list(dataset.feature_names)
+            column_names = feature_names + ['target']
+            self.df = pd.DataFrame(data=combined_data, columns=column_names)
+            if hasattr(dataset, 'target_names'):
+                self.class_labels = {i: name for i, name in enumerate(dataset.target_names)}
+        except AttributeError:
+            # Si no se encuentra el dataset, intentar cargar un archivo CSV
+            csv_path = f"program/utils/datasets/{dataset_name}.csv"
+            if os.path.exists(csv_path):
+                self.df = pd.read_csv(csv_path)
+                print(f"Dataset '{dataset_name}' cargado desde CSV.")
+            else:
+                raise ValueError(f"Dataset '{dataset_name}' no encontrado en scikit-learn ni como archivo CSV.")
+
 
     def clean_filename(filename):
         # Reemplaza caracteres no permitidos en nombres de archivo con guiones bajos
@@ -91,13 +99,13 @@ class Dataset:
                 plt.savefig(f'barplot_{col}.png')
                 plt.close()
             
-            # Matriz de correlación
-            if len(numeric_cols) > 1:
-                plt.figure(figsize=(12, 10))
-                sns.heatmap(df[numeric_cols].corr(), annot=True, cmap='coolwarm')
-                plt.title('Matriz de Correlación')
-                plt.savefig('correlation_matrix.png')
-                plt.close()
+        # Matriz de correlación
+        if len(numeric_cols) > 1:
+            plt.figure(figsize=(12, 10))
+            sns.heatmap(df[numeric_cols].corr(), annot=True, cmap='coolwarm')
+            plt.title('Matriz de Correlación')
+            plt.savefig('correlation_matrix.png')
+            plt.close()
 
     def as_dataframe(self) -> pd.DataFrame:
         return self.df

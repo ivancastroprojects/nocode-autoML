@@ -1,7 +1,7 @@
 # main.py
-from training import Training
-import mqtt
-import global_data
+from training.training import Training
+from api import mqtt
+from data import global_data
 import json
 
 DEBUG = True
@@ -20,9 +20,9 @@ def init():
         train = {
         "command": "train",
         "params": {
-            "dataset": "http://tokii.datasets.iris",
+            "dataset": "http://tokii.datasets.breast_cancer",
             "target": "target",
-            "features": None,
+            "features": None, #["mean smoothness", "worst fractal dimension", "fractal dimension error", "symmetry error"],
             "preprocessing": ["impute_numeric", "scale_numeric", "impute_categorical", "encode_categorical"],
             "recommendations": True,
             "algorithms": [
@@ -49,7 +49,7 @@ def init():
             "crossvalidation": 80
         }
     }
-        
+              
     predict = {
         "command": "predict",
         # "params": { #tips
@@ -75,31 +75,46 @@ def init():
         #         "proline": 1050
         #     }
         # }
-        "params": { #iris
+        # "params": { #iris
+        #     "model": "SVC.pkl",
+        #     "features": { #setosa
+        #         "SepalLengthCm": 5.1,
+        #         "SepalWidthCm": 3.5,
+        #         "PetalLengthCm": 1.4,
+        #         "PetalWidthCm": 0.2,
+        #     }
+        #     "features": { #versicolor
+        #         "SepalLengthCm": 6.7,
+        #         "SepalWidthCm": 3.1,
+        #         "PetalLengthCm": 4.7,
+        #         "PetalWidthCm": 1.5,
+        #     }
+        #     "features": { #virginica
+        #         "SepalLengthCm": 7.2,
+        #         "SepalWidthCm": 3.6,
+        #         "PetalLengthCm": 6.1,
+        #         "PetalWidthCm": 2.5,
+        #     }
+        # }
+        "params": { #cancer
             "model": "SVC.pkl",
-            "features": { #setosa
-                "SepalLengthCm": 5.1,
-                "SepalWidthCm": 3.5,
-                "PetalLengthCm": 1.4,
-                "PetalWidthCm": 0.2,
+            "features": { #1.0
+                "mean radius": -0.6780247444904469,
+                "mean texture": -0.7302624354517607,
+                "mean perimeter": -0.647286764643,
+                "mean area": -0.8330137427213203,
+                "mean smoothness": -0.549131852352993,
+                "mean compactness": -0.6127965119160192,
+                "mean concavity": -0.6720046347024191,
+                "mean concave points": -0.6097902605053337,
+                "mean symmetry": -0.9827174429469521,
+                "mean fractal dimension": -0.48277789525302706,
             }
-            # "features": { #versicolor
-            #     "SepalLengthCm": 6.7,
-            #     "SepalWidthCm": 3.1,
-            #     "PetalLengthCm": 4.7,
-            #     "PetalWidthCm": 1.5,
-            # }
-            # "features": { #virginica
-            #     "SepalLengthCm": 7.2,
-            #     "SepalWidthCm": 3.6,
-            #     "PetalLengthCm": 6.1,
-            #     "PetalWidthCm": 2.5,
-            # }
         }
     }
-    
+
     mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(train)))
-    mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(predict)))
+    #mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(predict)))
 
 if __name__ == "__main__":
     init()

@@ -3,10 +3,9 @@ import paho.mqtt.client as mqtt
 import json
 import traceback
 
-from utils import auto_preprocess
-from training import Training
-from dataset import Dataset
-import global_data
+from utils.utils import auto_preprocess
+from data.dataset import Dataset
+import data.global_data as global_data
 
 broker_address = "mqtt-container"
 broker_port = 1883
@@ -34,6 +33,7 @@ def on_connect(client, userdata, flags, rc):
 # Callback when a message is received from the MQTT broker
 def on_message(client, userdata, msg):
     try:
+        from training.training import Training
         training: Training = global_data.training
         message = json.loads(msg.payload)
         
@@ -43,10 +43,15 @@ def on_message(client, userdata, msg):
             training.algorithms = message["params"]["algorithms"]
             training.crossvalidation = message["params"]["crossvalidation"]
             training.target = message["params"]["target"]
-            training.preprocessing = message["params"].get("preprocessing", [])
+            training.features = message["params"]["features"]
+            training.preprocessing = message["params"].get("preprocessing", []) # TODO: Check what necessary
+            training.recommendations = message["params"]["recommendations"]
             training.dataset = Dataset(dataset_url)
-            training.dataset_name = dataset_url.split('datasets.')[-1]  # Extraer el nombre del dataset 
+            training.dataset_name = dataset_url.split('datasets.')[-1]  # Extraer el nombre del dataset
             training.class_labels = training.dataset.class_labels
+            global_data.dataset_url = dataset_url
+            global_data.dataset = training.dataset
+            global_data.dataset.df = training.dataset.df
 
             # Realizar EDA
             # Preprocesar el dataset si se especifica

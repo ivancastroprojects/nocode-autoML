@@ -1,18 +1,19 @@
 # training.py
 from sklearn.model_selection import train_test_split
-import api_interface
-from utils import auto_preprocess
-import train
-import trainingparams
-import serializer
-from dataset import Dataset
+from utils.utils import auto_preprocess
+import training.train as train
+import training.trainingparams as trainingparams
+import training.serializer as serializer
+from data.dataset import Dataset
 import pandas as pd
-import utils
+import utils.utils as utils
 import os
+
+dataset = None
 
 class Training:
     def __init__(self, dataset: Dataset = None):
-        self.dataset = dataset
+        dataset = dataset
         self.dataset_name = dataset.df.Name if dataset else None
         self.test_dataset = None
         self.training = None
@@ -25,20 +26,32 @@ class Training:
         self.problem_type = None
         self.class_labels = None
     
-    def train_and_evaluate(self):
+    def train_and_evaluate(self, X_new = None, features = None):
         dataset = self.dataset.as_dataframe()
 
-        X = dataset.drop(columns=self.target)
-        y = dataset[self.target]
+        # VARIABLE OBJETIVO DEL DATASET
+        if self.target is not None and self.target in dataset.columns:
+            dataset.target_names = self.target
+        else: self.target = dataset.target_names
         
-        ######### ENTRENAMIENTO CUSTOM #########
-        # Si el usuario especifica las columnas, usarlas
-        if self.features:
-            X = X[self.features]
-
-        # Convertir a valores numpy
-        X = X.values
+        y = dataset[self.target]
         y = y.values
+        
+        # CATEGORÍAS DEL DATASET
+        if X_new is not None:
+            X = X_new
+            
+        X = dataset.drop(columns=self.target)
+        
+        if features is not None and len(features) > 0:
+            X = X[features]
+        else:
+            if self.features:
+                X = X[self.features]
+            else:
+                self.features = X
+
+        X = X.values
 
         # Dividir los datos en entrenamiento y prueba
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=(100 - self.crossvalidation) / 100, random_state=42)
@@ -48,14 +61,14 @@ class Training:
         
         # Entrenar los modelos
         trained_models = train.train_models(X_train, y_train, self.algorithms, self.problem_type, self.dataset_name)       
-         
+        
         # Evaluar los modelos
         eval_results = {}
         for model in trained_models:
             if (self.problem_type == 'classification'):
-                eval_results = train.evaluate_classification_models([model], X_test, y_test)
+                eval_results = train.evaluate_classification_models([model], X_test, y_test, self.target, self.features)
             else:
-                eval_results = train.evaluate_regression_models([model], X_test, y_test)
+                eval_results = train.evaluate_regression_models([model], X_test, y_test, self.target, self.features)
             
             # Imprimir las métricas con espaciado
             print(f"Evaluación del modelo {model.__class__.__name__}:")
@@ -66,19 +79,19 @@ class Training:
             eval_results.update(eval_results)
 
             ######### ENTRENAMIENTO AUTOMÁTICO #########
-            if self.recommendations:
+            if self.recommendations and features is None:
                 # Entrenamiento automático detectando columnas más relevantes
-                self.train_with_important_features()
+                self.train_with_important_features(model)
                 
                 # Entrenar modelos con parámetros recomendados
-                recommended_params = trainingparams.train_recommendedparams(X_train, y_train, self.algorithms)   
+                recommended_params = trainingparams.train_recommendedparams(X_train, y_train, self.algorithms)
                 eval_results.update(recommended_params)
          
         ######### ENVÍO DE DATOS #########
         # Enviar resultados de evaluación y parámetros recomendados a la API
         #api_interface.POST_modeleval(evaluation_results)
 
-    def train_with_important_features(self, k=10):
+    def train_with_important_features(self, model, k=10):
         dataset = self.dataset.as_dataframe()
         
         # Separar las características (X) de la variable objetivo (y)
@@ -89,23 +102,7 @@ class Training:
         X_new, selected_features = train.select_features(X, y, model, k=k)
         print(f"Selected features: {dataset.columns[selected_features]}")
         
-        # Dividir los datos en entrenamiento y prueba
-        X_train, X_test, y_train, y_test = train_test_split(X_new, y, test_size=(100 - self.crossvalidation) / 100, random_state=42)
-        
-        # Entrenar los modelos
-        trained_models = train.train_models(X_train, y_train, self.algorithms, self.dataset_name)
-        
-        # Evaluar los modelos
-        evaluation_results = {}
-        for model in trained_models:
-            if isinstance(model, tuple(serializer.classification_models)):
-                eval_results = train.evaluate_classification_models([model], X_test, y_test)
-            else:
-                eval_results = train.evaluate_regression_models([model], X_test, y_test)
-            evaluation_results.update(eval_results)
-
-        # Enviar resultados de evaluación a la API
-        api_interface.POST_modeleval(evaluation_results)
+        self.train_and_evaluate(X_new, dataset.columns[selected_features])
 
     def predict(self, model_name, featuresPredict):
         # Buscar el modelo en la carpeta models

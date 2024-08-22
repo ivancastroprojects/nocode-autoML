@@ -3,8 +3,8 @@ from typing import Dict, Type
 import pickle
 from typing import Protocol
 import os
-import classification as clf
-import regression as reg
+import training.classification as clf
+import training.regression as reg
 
 from sklearn.svm import SVC, SVR
 from sklearn import svm, discriminant_analysis, dummy

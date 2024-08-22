@@ -1,5 +1,6 @@
 #api_interface.py
 import requests
+from data.global_data import token
 
 # Función para descargar y cargar el dataset
 def GET_dataset(dataset_url):
