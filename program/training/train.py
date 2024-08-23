@@ -57,7 +57,7 @@ def evaluate_classification_models(models: List, X_test, y_test, target, feature
                     print(f"  {feature}: {X_test_array[i][j]}")
                 else:
                     print(f"  {feature}: Feature index out of bounds")
-            print("\n")
+            print("\n---------------------------------------\n")
         
         # Calcular m\u00e9tricas de evaluaci\u00f3n
         cv_score = np.mean(cross_val_score(model, X_test, y_test, cv=5))

@@ -13,7 +13,7 @@ dataset = None
 
 class Training:
     def __init__(self, dataset: Dataset = None):
-        dataset = dataset
+        self.dataset = dataset
         self.dataset_name = dataset.df.Name if dataset else None
         self.test_dataset = None
         self.training = None
@@ -63,13 +63,15 @@ class Training:
         trained_models = train.train_models(X_train, y_train, self.algorithms, self.problem_type, self.dataset_name)       
         
         # Evaluar los modelos
+        print("\n------------------- EVALUACIONES --------------------")
+        print(f"\nEjemplos de validación:\n")
         eval_results = {}
         for model in trained_models:
             if (self.problem_type == 'classification'):
                 eval_results = train.evaluate_classification_models([model], X_test, y_test, self.target, self.features)
             else:
                 eval_results = train.evaluate_regression_models([model], X_test, y_test, self.target, self.features)
-            
+
             # Imprimir las métricas con espaciado
             print(f"Evaluación del modelo {model.__class__.__name__}:")
             for key, value in eval_results.items():
@@ -77,33 +79,20 @@ class Training:
             print("\n" + "-"*50 + "\n")
             
             eval_results.update(eval_results)
+            
+            ######### OPTIMIZACIÓN AUTOMÁTICA DEL ENTRENAMIENTO #########
 
-            ######### ENTRENAMIENTO AUTOMÁTICO #########
             if self.recommendations and features is None:
+                print(f"\n------- OPTIMIZACIÓN AUTOMÁTICA DEL MODELO {model.__class__.__name__} --------")
+                # Detección automática de variables fuertemente dependientes con la target para quitarlas y que no afecte a la inferencia
                 # Entrenamiento automático detectando columnas más relevantes
-                self.train_with_important_features(model)
+                trainingparams.train_with_important_features(dataset, self.target, model)
+                #eval_results.update(recommended_params)
                 
-                # Entrenar modelos con parámetros recomendados
-                recommended_params = trainingparams.train_recommendedparams(X_train, y_train, self.algorithms)
-                eval_results.update(recommended_params)
-         
         ######### ENVÍO DE DATOS #########
         # Enviar resultados de evaluación y parámetros recomendados a la API
         #api_interface.POST_modeleval(evaluation_results)
-
-    def train_with_important_features(self, model, k=10):
-        dataset = self.dataset.as_dataframe()
-        
-        # Separar las características (X) de la variable objetivo (y)
-        X = dataset.drop(columns=self.target).values
-        y = dataset[self.target].values
-
-        # Seleccionar las características más relevantes
-        X_new, selected_features = train.select_features(X, y, model, k=k)
-        print(f"Selected features: {dataset.columns[selected_features]}")
-        
-        self.train_and_evaluate(X_new, dataset.columns[selected_features])
-
+         
     def predict(self, model_name, featuresPredict):
         # Buscar el modelo en la carpeta models
         model_path = None

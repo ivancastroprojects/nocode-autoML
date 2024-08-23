@@ -20,8 +20,8 @@ def init():
         train = {
         "command": "train",
         "params": {
-            #"dataset": "http://tokii.datasets.breast_cancer",
-            "dataset": "http://tokii.datasets.iris",
+            "dataset": "http://tokii.datasets.breast_cancer",
+            #"dataset": "http://tokii.datasets.iris",
             "target": "target",
             "features": None, #["mean smoothness", "worst fractal dimension", "fractal dimension error", "symmetry error"],
             "preprocessing": ["impute_numeric", "scale_numeric", "impute_categorical", "encode_categorical"],
