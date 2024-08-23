@@ -12,20 +12,20 @@ class Dataset:
     def __init__(self, url: str):
         self.df: pd.DataFrame = None
         self.class_labels = None
-        
+        self.dataset_name = url.split(".")[-1]
+
         if url.startswith("http://tokii.datasets."):
-            dataset_name = url.split(".")[-1]
-            self.load_sklearn_dataset(dataset_name)
+            self.load_sklearn_dataset()
         else:
             self.df = api_interface.GET_dataset(url)
 
         print("Dataset antes de procesar:")
         print(self.df.head())
 
-    def load_sklearn_dataset(self, dataset_name):
+    def load_sklearn_dataset(self):
         # Intentar cargar el dataset de scikit-learn
         try:
-            dataset = getattr(datasets, f"load_{dataset_name}")()
+            dataset = getattr(datasets, f"load_{self.dataset_name}")()
             data = np.array(dataset.data)
             target = np.array(dataset.target).reshape(-1, 1)
             combined_data = np.hstack((data, target))
@@ -36,12 +36,12 @@ class Dataset:
                 self.class_labels = {i: name for i, name in enumerate(dataset.target_names)}
         except AttributeError:
             # Si no se encuentra el dataset, intentar cargar un archivo CSV
-            csv_path = f"program/utils/datasets/{dataset_name}.csv"
+            csv_path = f"program/utils/datasets/{self.dataset_name}.csv"
             if os.path.exists(csv_path):
                 self.df = pd.read_csv(csv_path)
-                print(f"Dataset '{dataset_name}' cargado desde CSV.")
+                print(f"Dataset '{self.dataset_name}' cargado desde CSV.")
             else:
-                raise ValueError(f"Dataset '{dataset_name}' no encontrado en scikit-learn ni como archivo CSV.")
+                raise ValueError(f"Dataset '{self.dataset_name}' no encontrado en scikit-learn ni como archivo CSV.")
 
 
     def clean_filename(filename):
@@ -84,10 +84,10 @@ class Dataset:
             clean_col = re.sub(r'[\\/*?:"<>|]', "_", col)
             
             # Asegúrate de que el directorio existe
-            os.makedirs('histogramas', exist_ok=True)
+            os.makedirs('program/utils/histogramas', exist_ok=True)
             
             # Guarda el archivo en el directorio 'histogramas'
-            plt.savefig(f'histogramas/histograma_{clean_col}.png')
+            plt.savefig(f'program/utils/histogramas/histograma_{clean_col}.png')
             plt.close()
             
             # Gráficos de barras para variables categóricas
@@ -103,8 +103,10 @@ class Dataset:
         if len(numeric_cols) > 1:
             plt.figure(figsize=(12, 10))
             sns.heatmap(df[numeric_cols].corr(), annot=True, cmap='coolwarm')
-            plt.title('Matriz de Correlación')
-            plt.savefig('correlation_matrix.png')
+            plt.title(f'Matriz de Correlación de {self.dataset_name}')
+
+            os.makedirs('program/utils/matrices', exist_ok=True)
+            plt.savefig(f'program/utils/matrices/correlation_matrix_{self.dataset_name}.png')
             plt.close()
 
     def as_dataframe(self) -> pd.DataFrame:

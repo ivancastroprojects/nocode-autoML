@@ -20,7 +20,8 @@ def init():
         train = {
         "command": "train",
         "params": {
-            "dataset": "http://tokii.datasets.breast_cancer",
+            #"dataset": "http://tokii.datasets.breast_cancer",
+            "dataset": "http://tokii.datasets.iris",
             "target": "target",
             "features": None, #["mean smoothness", "worst fractal dimension", "fractal dimension error", "symmetry error"],
             "preprocessing": ["impute_numeric", "scale_numeric", "impute_categorical", "encode_categorical"],
@@ -39,8 +40,8 @@ def init():
                 
                 # Algoritmos de clasificacion
                 # {"name": "LogisticRegression", "params": {"C": 1.0}},
-                {"name": "SVC", "params": {"C": 1.0, "kernel": "linear"}},
-                # {"name": "KNeighborsClassifier", "params": {"n_neighbors": 5, "weights": "uniform"}},
+                # {"name": "SVC", "params": {"C": 1.0, "kernel": "linear"}},
+                 {"name": "KNeighborsClassifier", "params": {"n_neighbors": 5, "weights": "uniform"}},
                 # {"name": "DecisionTreeClassifier", "params": {"max_depth": 5}},
                 # {"name": "RandomForestClassifier", "params": {"n_estimators": 100, "max_depth": 5}},
                 # {"name": "GradientBoostingClassifier", "params": {"n_estimators": 100, "learning_rate": 0.1}},
@@ -96,21 +97,21 @@ def init():
         #         "PetalWidthCm": 2.5,
         #     }
         # }
-        "params": { #cancer
-            "model": "SVC.pkl",
-            "features": { #1.0
-                "mean radius": -0.6780247444904469,
-                "mean texture": -0.7302624354517607,
-                "mean perimeter": -0.647286764643,
-                "mean area": -0.8330137427213203,
-                "mean smoothness": -0.549131852352993,
-                "mean compactness": -0.6127965119160192,
-                "mean concavity": -0.6720046347024191,
-                "mean concave points": -0.6097902605053337,
-                "mean symmetry": -0.9827174429469521,
-                "mean fractal dimension": -0.48277789525302706,
-            }
-        }
+        # "params": { #cancer
+        #     "model": "SVC.pkl",
+        #     "features": { #1.0
+        #         "mean radius": -0.6780247444904469,
+        #         "mean texture": -0.7302624354517607,
+        #         "mean perimeter": -0.647286764643,
+        #         "mean area": -0.8330137427213203,
+        #         "mean smoothness": -0.549131852352993,
+        #         "mean compactness": -0.6127965119160192,
+        #         "mean concavity": -0.6720046347024191,
+        #         "mean concave points": -0.6097902605053337,
+        #         "mean symmetry": -0.9827174429469521,
+        #         "mean fractal dimension": -0.48277789525302706,
+        #     }
+        # }
     }
 
     mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(train)))

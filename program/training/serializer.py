@@ -175,7 +175,7 @@ def to_pickle(model, model_name: str, dataset_name: str):
     if not model_name.endswith(".pkl"):
         model_name += ".pkl"
     # Crear la estructura de carpetas
-    model_dir = os.path.join('models', f"{model_name}_{dataset_name}")
+    model_dir = os.path.join('program/utils/models', f"{model_name}_{dataset_name}")
     os.makedirs(model_dir, exist_ok=True)
     
     # Asegurar que el nombre del archivo termine en .pkl

@@ -76,8 +76,10 @@ def evaluate_classification_models(models: List, X_test, y_test, target, feature
         plt.title(f'Matriz de Confusi\u00f3n - {model.__class__.__name__}')
         plt.xlabel('Predicho')
         plt.ylabel('Real')
+        
         cm_path = f'confusion_matrix_{model.__class__.__name__}.png'
-        plt.savefig(cm_path)
+        os.makedirs('program/utils/matrices', exist_ok=True)
+        plt.savefig(f'program/utils/matrices/confusion_matrix_{cm_path}.png')
         plt.close()
         
         evaluation_results[model.__class__.__name__] = {

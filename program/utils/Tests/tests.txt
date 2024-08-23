@@ -1,3 +1,5 @@
+#TEST CANCER
+
 Dataset antes de procesar:
    mean radius  mean texture  mean perimeter  mean area  mean smoothness  mean compactness  mean concavity  ...  worst smoothness  worst compactness  worst concavity  worst concave points  worst symmetry  worst fractal dimension  target
 0        17.99         10.38          122.80     1001.0          0.11840           0.27760          0.3001  ...            0.1622             0.6656           0.7119                0.2654          0.4601                  0.11890     0.0
