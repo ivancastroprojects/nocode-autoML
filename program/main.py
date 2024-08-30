@@ -3,6 +3,8 @@ from training.training import Training
 from api import mqtt
 from data import global_data
 import json
+import pandas as pd
+pd.set_option('future.no_silent_downcasting', True)
 
 DEBUG = True
 
@@ -78,7 +80,7 @@ def init():
             "command": "predict",
             "data":
             {
-                "model": "RandomForestClassifier.pkl",
+                "model": "KNeighborsClassifier_base_95_60_breast_cancer_basic.pkl",
                 "features": { #cancer #1.0
                     "mean radius": -0.6780247444904469,
                     "mean texture": -0.7302624354517607,

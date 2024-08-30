@@ -34,7 +34,7 @@ def train_simple_model(X, y, model_name, params=None):
     return model
 
 # Función para entrenar los modelos
-def train_custom_models(X_train, y_train, algorithm, problem_type, dataset_name, feature_names, recommendations):
+def train_custom_models(X_train, y_train, algorithm, problem_type, dataset_name, feature_names, recommendations=False):
     model_name = algorithm['name']
     if model_name not in serializer.model_classes:
         print(f"Modelo '{model_name}' no encontrado. Omitiendo...")
@@ -47,12 +47,9 @@ def train_custom_models(X_train, y_train, algorithm, problem_type, dataset_name,
     print(f"Parámetros seleccionados por el usuario para {algorithm['name']}: {algorithm.get('params', {})}")
 
     # Entrenamiento del modelo optimizado con características seleccionadas
-    optimized_model, X_new, selected_feature_names = train_optimization(X_train, y_train, model_class, problem_type, feature_names)
-    
-    # Guardar modelos
-    serializer.to_pickle(base_model, f"{model_name}_base.pkl", dataset_name)
-    serializer.to_pickle(optimized_model, f"{model_name}_optimized.pkl", dataset_name)
-    
+    if recommendations:
+        optimized_model, X_new, selected_feature_names = train_optimization(X_train, y_train, model_class, problem_type, feature_names)
+
     return base_model, optimized_model, selected_feature_names
 
 def recommend_best_model(X_train, y_train, X_test, y_test, problem_type, feature_names):

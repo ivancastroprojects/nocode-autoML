@@ -3,6 +3,7 @@ from typing import Dict, Type
 import pickle
 from typing import Protocol
 import os
+import pandas as pd
 
 import training.scikitdb.classification as clf
 import training.scikitdb.regression as reg
@@ -197,26 +198,197 @@ def to_dict(model):
 def from_dict(model_dict):
     return deserialize_model(model_dict)
 
-def to_pickle(model, model_name: str, dataset_name: str):
-    if not model_name.endswith(".pkl"):
-        model_name += ".pkl"
-    # Crear la estructura de carpetas
-    model_dir = os.path.join('program/almacen/models', f"{model_name}_{dataset_name}")
-    os.makedirs(model_dir, exist_ok=True)
-    
-    # Asegurar que el nombre del archivo termine en .pkl
-    if not model_name.endswith(".pkl"):
-        model_name += ".pkl"
-    
-    # Guardar el modelo
-    model_path = os.path.join(model_dir, model_name)
-    with open(model_path, 'wb') as model_file:
-        pickle.dump(model, model_file)
+import os
+import pickle
+from pathlib import Path
+
+def to_pickle(model, model_name, dataset_path, accuracy=None, X_train=None):
+    """
+    Guarda el modelo en formato pickle.
+
+    Args:
+    model: El modelo a guardar.
+    model_name (str): Nombre base del modelo (ej. 'KNeighborsClassifier_base').
+    dataset_path (str): Ruta completa al archivo del dataset.
+    accuracy (float, optional): Precisión del modelo para clasificación o mejor métrica para regresión.
+    X_train (pd.DataFrame, optional): Datos de entrenamiento para calcular las medias de las características.
+
+    Returns:
+    str: Ruta donde se guardó el modelo.
+    """
+    try:
+        # Extraer el nombre del dataset del path
+        dataset_name = Path(dataset_path).stem
+        model_name = Path(model_name).stem
+        
+        # Construir el nombre del modelo
+        if accuracy is not None:
+            accuracy_str = f"{accuracy:.2f}".replace(".", "_")
+            full_model_name = f"{model_name}_{accuracy_str}_{dataset_name}.pkl"
+        else:
+            full_model_name = f"{model_name}_{dataset_name}.pkl"
+        
+        # Crear la estructura de carpetas
+        model_dir = os.path.join('program', 'almacen', 'models', dataset_name)
+        os.makedirs(model_dir, exist_ok=True)
+        
+        # Ruta completa del archivo
+        model_path = os.path.join(model_dir, full_model_name)
+        
+        # Preparar la información del modelo
+        model_info = {
+            'model': model,
+            'feature_names': getattr(model, 'feature_names_', None),
+            'feature_means': X_train.mean().to_dict() if isinstance(X_train, pd.DataFrame) else None
+        }
+        
+        # Guardar el modelo
+        with open(model_path, 'wb') as model_file:
+            pickle.dump(model_info, model_file)
+        
+        print(f"Modelo guardado en: {model_path}")
+        return model_path
+    except Exception as e:
+        print(f"Error al guardar el modelo: {str(e)}")
+        return None
+
+def from_pickle(path):
+    """
+    Carga un modelo desde un archivo pickle.
+
+    Args:
+    path (str): Ruta al archivo pickle del modelo.
+
+    Returns:
+    object: El modelo cargado.
+    """
+    try:
+        with open(path, 'rb') as f:
+            model_info = pickle.load(f)
+        model = model_info['model']
+        if model_info['feature_names'] is not None:
+            model.feature_names_ = model_info['feature_names']
+        if model_info['feature_means'] is not None:
+            model.feature_means_ = model_info['feature_means']
+        else:
+            # Si no tenemos las medias, inicializamos a 0
+            model.feature_means_ = {feature: 0 for feature in getattr(model, 'feature_names_', [])}
+        return model
+    except Exception as e:
+        print(f"Error al cargar el modelo: {str(e)}")
+        return None
+
+def from_pickle(path):
+    """
+    Carga un modelo desde un archivo pickle.
+
+    Args:
+    path (str): Ruta al archivo pickle del modelo.
+
+    Returns:
+    object: El modelo cargado.
+    """
+    try:
+        with open(path, 'rb') as f:
+            model_info = pickle.load(f)
+        model = model_info['model']
+        if model_info['feature_names'] is not None:
+            model.feature_names_ = model_info['feature_names']
+        if model_info['feature_means'] is not None:
+            model.feature_means_ = model_info['feature_means']
+        else:
+            # Si no tenemos las medias, inicializamos a 0
+            model.feature_means_ = {feature: 0 for feature in model.feature_names_}
+        return model
+    except Exception as e:
+        print(f"Error al cargar el modelo: {str(e)}")
+        return None
+
+def from_pickle(path):
+    """
+    Carga un modelo desde un archivo pickle.
+
+    Args:
+    path (str): Ruta al archivo pickle del modelo.
+
+    Returns:
+    object: El modelo cargado.
+    """
+    try:
+        with open(path, 'rb') as model_file:
+            model_info = pickle.load(model_file)
+        
+        model = model_info['model']
+        if model_info['feature_names'] is not None:
+            model.feature_names_ = model_info['feature_names']
+        if model_info['feature_means'] is not None:
+            model.feature_means_ = model_info['feature_means']
+        
+        return model
+    except Exception as e:
+        print(f"Error al cargar el modelo: {str(e)}")
+        return None
+
+def from_pickle(path):
+    """
+    Carga un modelo desde un archivo pickle.
+
+    Args:
+    path (str): Ruta al archivo pickle del modelo.
+
+    Returns:
+    object: El modelo cargado.
+    """
+    try:
+        with open(path, 'rb') as f:
+            model_info = pickle.load(f)
+        model = model_info['model']
+        if model_info['feature_names'] is not None:
+            model.feature_names_ = model_info['feature_names']
+        return model
+    except Exception as e:
+        print(f"Error al cargar el modelo: {str(e)}")
+        return None
 
 def from_pickle(model_path):
     with open(model_path, 'rb') as model_file:
-        loaded_model = pickle.load(model_file)
-        return loaded_model
+        model_info = pickle.load(model_file)
+    model = model_info['model']
+    if model_info['feature_names'] is not None:
+        model.feature_names_ = model_info['feature_names']
+    if model_info['feature_means'] is not None:
+        model.feature_means_ = model_info['feature_means']
+    else:
+        # Si no tenemos las medias, inicializamos a 0
+        model.feature_means_ = {feature: 0 for feature in getattr(model, 'feature_names_', [])}
+    return model
+
+def load_model(model_name):
+    """
+    Carga un modelo entrenado desde el disco.
+    """
+    model_path = find_model_path(model_name)
+    if not model_path:
+        raise FileNotFoundError(f"No se encontró el modelo {model_name}")
+    return from_pickle(model_path)
+
+def find_model_path(model_name):
+    """
+    Busca la ruta de un modelo guardado.
+    """
+    # Extraer el nombre del dataset del nombre del modelo
+    dataset_name = Path(model_name).stem
+    dataset_name = '_'.join(dataset_name.split('_')[dataset_name.split('_').index(next(s for s in dataset_name.split('_') if s.isdigit())) + 2:])
+    
+    # Construir la ruta del directorio específico del dataset
+    dataset_dir = os.path.join('program', 'almacen', 'models', dataset_name)
+    
+    # Buscar el archivo del modelo en el directorio específico del dataset
+    for file in os.listdir(dataset_dir):
+        if model_name in file:
+            return os.path.join(dataset_dir, file)
+    
+    return None
 
 class ModellNotSupported(Exception):
     pass

@@ -1,5 +1,6 @@
 #mqtt.py
 import json
+from pathlib import Path
 import traceback
 import os
 import pandas as pd
@@ -8,7 +9,7 @@ import paho.mqtt.client as mqtt
 from data.dataset import Dataset
 import data.global_data as global_data
 from training.training import Training
-from data.datasetprocessing import basic_dfpreprocess, optimized_dfpreprocess, detect_outliers, handle_outliers, determine_problem_type
+from data.datasetprocessing import basic_dfpreprocess, optimized_dfpreprocess, detect_outliers, handle_outliers, determine_problem_type, EDA_initial_info, EDA_processed_info
 from api.api_interface import POST_modeleval
 
 broker_address = "mqtt-container"
@@ -44,6 +45,7 @@ def on_message(client, userdata, msg):
         
         #------------  DATASET ---------
         if message["command"] == "dataset":
+            print("\n\n\n\n------------------- DATASET --------------------")
             dataset_url = message["data"]["dataset"]["path"]
 
             global_data.dataset = Dataset(dataset_url)
@@ -57,11 +59,11 @@ def on_message(client, userdata, msg):
             training.preprocessing = message["data"].get("preprocessing", [])
             training.problem_type = determine_problem_type(training.target)
 
-            print("\n------------------- EDA --------------------")
-            Dataset.print_initial_info(dataset)
-            
             # Preprocesamiento básico para todo dataset
+            EDA_initial_info(dataset)
             df_basic, preprocessor_basic = basic_dfpreprocess(dataset.df, target_column=training.target)
+            EDA_processed_info(dataset)
+            
             # Guardamos el dataset procesado
             basic_path = f"program/almacen/datasets/{dataset.dataset_name}/{dataset.dataset_name}_basic.csv"
             os.makedirs(os.path.dirname(basic_path), exist_ok=True)
@@ -78,7 +80,8 @@ def on_message(client, userdata, msg):
             print(f"Datasets guardados en {basic_path} y {optimized_path}")
 
         #------------  TRAIN ---------
-        elif message["command"] == "train":      
+        elif message["command"] == "train":
+            print("\n\n\n\n------------------- TRAIN --------------------")
             training.algorithms = message["data"]["algorithms"]
             training.crossvalidation = message["data"]["crossvalidation"]
             training.recommendations = message["data"]["recommendations"]
@@ -93,12 +96,15 @@ def on_message(client, userdata, msg):
                 df_basic = pd.read_csv(basic_path) #TODO: no debería hacer falta, con la inicialización debería ser sufi
 
                 global_data.dataset = Dataset(basic_path)
-                global_data.dataset.dataset_name = basic_path
+                global_data.dataset.dataset_name = Path(basic_path).stem
                 
+                # Asegúrate de que tienes la ruta completa del dataset
+                dataset_path = f"program/almacen/datasets/{dataset.dataset_name}/{dataset.dataset_name}_basic.csv"
+
                 X_test, y_test, trained_models = training.split_and_train(
-                    dataset=df_basic, 
-                    dataset_name=global_data.dataset.dataset_name,
-                    feature_names=df_basic.columns.tolist()  # Asumiendo que df_basic es un DataFrame
+                    dataset=df_basic,  # Asumiendo que df_basic es tu DataFrame
+                    dataset_path=dataset_path,
+                    feature_names=df_basic.columns.tolist()  # Asegúrate de que feature_names esté definido
                 )
                 evaluation_results = training.evaluate(X_test, y_test, trained_models)
                 
@@ -114,6 +120,7 @@ def on_message(client, userdata, msg):
 
         #------------  PREDICT ---------
         elif message["command"] == "predict":
+            print("\n\n\n\n------------------- PREDICT --------------------")
             training.predict(message["data"]["model"], message["data"]["features"])
             
     except Exception as err:

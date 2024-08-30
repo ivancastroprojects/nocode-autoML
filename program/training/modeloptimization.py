@@ -15,33 +15,18 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from training.train import train_optimization
 
-def recommend_best_model(X_train, y_train, X_test, y_test, problem_type, trained_models=None, feature_names=None):
-    """
-    Recomienda el mejor modelo basado en una selección inteligente, optimización y transfer learning.
-    
-    Args:
-    X_train, y_train, X_test, y_test: Datos de entrenamiento y prueba.
-    problem_type (str): Tipo de problema ('classification' o 'regression').
-    trained_models (list): Lista de modelos ya entrenados.
-    feature_names (list): Nombres de las características.
-    
-    Returns:
-    object: El mejor modelo recomendado.
-    """
+def recommend_best_model(X_train, y_train, X_test, y_test, problem_type, trained_models=None, feature_names=None, apply_transfer_learning=False):
     best_algorithms = select_best_algorithm(X_train, y_train, problem_type, trained_models, feature_names)
     
     best_model = None
     best_score = -np.inf
+    best_selected_features = None
     
     for name, score, model in best_algorithms:
         optimized_model, X_new, selected_feature_names = train_optimization(X_train, y_train, model.__class__, problem_type, feature_names)
         
         # Seleccionar las características correctas para X_test
-        if isinstance(X_test, pd.DataFrame):
-            X_test_selected = X_test[selected_feature_names]
-        else:
-            feature_indices = [feature_names.index(feature) for feature in selected_feature_names]
-            X_test_selected = X_test[:, feature_indices]
+        X_test_selected = X_test[selected_feature_names] if isinstance(X_test, pd.DataFrame) else X_test[:, [feature_names.index(f) for f in selected_feature_names]]
         
         # Evaluar el modelo optimizado
         if problem_type == 'classification':
@@ -52,37 +37,24 @@ def recommend_best_model(X_train, y_train, X_test, y_test, problem_type, trained
         if score > best_score:
             best_score = score
             best_model = optimized_model
+            best_selected_features = selected_feature_names
     
     if best_model is not None:
+        # Asegurarse de que best_model tenga el atributo feature_names_
+        best_model.feature_names_ = best_selected_features
+        
         print(f"\nMejor modelo recomendado: {best_model.__class__.__name__}")
         print(f"Mejor puntuación: {best_score:.4f}")
+        print(f"Características seleccionadas: {best_selected_features}")
         
-        # Filtrar 'target' de feature_names si está presente
-        feature_names_without_target = [f for f in feature_names if f != 'target']
+        if apply_transfer_learning:
+            # Aquí iría el código de transfer learning cuando lo implementemos
+            print("Transfer learning no implementado aún.")
         
-        # Aplicar transfer learning
-        best_model_enhanced, X_train_enhanced, X_test_enhanced = apply_transfer_learning(
-            best_model, trained_models, X_train, y_train, X_test, feature_names_without_target
-        )
-        
-        # Evaluar el modelo mejorado
-        if problem_type == 'classification':
-            enhanced_score = accuracy_score(y_test, best_model_enhanced.predict(X_test_enhanced))
-        else:
-            enhanced_score = r2_score(y_test, best_model_enhanced.predict(X_test_enhanced))
-        
-        print(f"Puntuación después de transfer learning: {enhanced_score:.4f}")
-        
-        if enhanced_score > best_score:
-            best_model = best_model_enhanced
-            best_score = enhanced_score
-            print("Se ha adoptado el modelo mejorado con transfer learning.")
-        else:
-            print("El modelo original superó al modelo con transfer learning.")
     else:
         print("No se pudo recomendar ningún modelo.")
     
-    return best_model
+    return best_model, best_selected_features
 
 def select_best_algorithm(X, y, problem_type, trained_models=None, feature_names=None, n_algorithms=3):
     """
@@ -167,41 +139,29 @@ def select_best_algorithm(X, y, problem_type, trained_models=None, feature_names
     
     return best_algorithms
 
-def apply_transfer_learning(best_model, trained_models, X_train, y_train, X_test, original_feature_names):
-    """
-    Aplica transfer learning al mejor modelo seleccionado utilizando los modelos previamente entrenados.
-    
-    Args:
-    best_model: El mejor modelo seleccionado.
-    trained_models: Lista de modelos previamente entrenados.
-    X_train (array-like): Características del dataset de entrenamiento.
-    X_test (array-like): Características del dataset de prueba.
-    original_feature_names (list): Nombres de las características originales.
-    
-    Returns:
-    tuple: (Modelo mejorado con transfer learning, X_train_enhanced, X_test_enhanced)
-    """
+def apply_transfer_learning(best_model, trained_models, X_train, y_train, X_test, feature_names, selected_feature_names):
     if not trained_models:
-        return best_model, X_train, X_test
+        return best_model, X_train, X_test, selected_feature_names
 
-    def preprocess_features(X, feature_names):
+    def preprocess_features(X, features):
         if isinstance(X, pd.DataFrame):
-            return X[feature_names]
+            return X[features]
         elif isinstance(X, np.ndarray):
-            return X
+            return X[:, [feature_names.index(f) for f in features]]
         else:
             raise ValueError("X debe ser un DataFrame de pandas o un array de numpy")
 
-    X_train = preprocess_features(X_train, original_feature_names)
-    X_test = preprocess_features(X_test, original_feature_names)
+    X_train_selected = preprocess_features(X_train, selected_feature_names)
+    X_test_selected = preprocess_features(X_test, selected_feature_names)
 
     # Crear un ensamble de modelos
     train_predictions = []
     test_predictions = []
     for model in trained_models:
         try:
-            train_pred = model.predict(X_train)
-            test_pred = model.predict(X_test)
+            model_features = [f for f in model.feature_names_ if f in selected_feature_names]
+            train_pred = model.predict(preprocess_features(X_train, model_features))
+            test_pred = model.predict(preprocess_features(X_test, model_features))
             train_predictions.append(train_pred)
             test_predictions.append(test_pred)
         except Exception as e:
@@ -209,17 +169,24 @@ def apply_transfer_learning(best_model, trained_models, X_train, y_train, X_test
     
     if not train_predictions or not test_predictions:
         print("No se pudieron hacer predicciones con los modelos entrenados. Retornando el mejor modelo sin cambios.")
-        return best_model, X_train, X_test
+        return best_model, X_train_selected, X_test_selected, selected_feature_names
 
     train_ensemble_predictions = np.mean(train_predictions, axis=0)
     test_ensemble_predictions = np.mean(test_predictions, axis=0)
 
-    # Combinar las predicciones del ensamble con las características originales
-    X_train_enhanced = np.column_stack((X_train, train_ensemble_predictions.reshape(-1, 1)))
-    X_test_enhanced = np.column_stack((X_test, test_ensemble_predictions.reshape(-1, 1)))
+    # Combinar las predicciones del ensamble con las características seleccionadas
+    X_train_enhanced = np.column_stack((X_train_selected, train_ensemble_predictions.reshape(-1, 1)))
+    X_test_enhanced = np.column_stack((X_test_selected, test_ensemble_predictions.reshape(-1, 1)))
+
+    # Crear nuevos nombres de características
+    enhanced_feature_names = selected_feature_names + ['ensemble_prediction']
+
+    print(f"Características mejoradas: {enhanced_feature_names}")
+    print(f"Forma de X_train_enhanced: {X_train_enhanced.shape}")
+    print(f"Forma de X_test_enhanced: {X_test_enhanced.shape}")
 
     # Entrenar el mejor modelo con los datos mejorados
     best_model_enhanced = clone(best_model)
     best_model_enhanced.fit(X_train_enhanced, y_train)
 
-    return best_model_enhanced, X_train_enhanced, X_test_enhanced
+    return best_model_enhanced, X_train_enhanced, X_test_enhanced, enhanced_feature_names

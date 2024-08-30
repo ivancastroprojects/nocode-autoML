@@ -13,6 +13,55 @@ from sklearn.decomposition import PCA
 from sklearn_genetic import GAFeatureSelectionCV
 import time
 
+from data.visualizer import Visualizer
+
+def EDA_initial_info(self):
+    """
+    Imprime información inicial sobre el dataset.
+    """
+    print("Dataset antes de procesar:")
+    print(self.df.head())
+    print(self.df.describe())
+    missing_data = self.df.isnull().sum()
+    print(f"Valores faltantes por columna antes de procesar:")
+    print(missing_data[missing_data > 0])
+
+def EDA_processed_info(self):
+    """
+    Imprime información una vez procesado el dataset.
+    Generamos visualizaciones personalizadas y agrupadas automáticamente según categorías similares
+    """
+    
+    print("Dataset despues de procesar:")
+    print(self.df.head())
+    
+    # Analisis de valores faltantes después de procesar:
+    missing_data = self.df.isnull().sum()
+    print(f"Valores faltantes por columna después de procesar:")
+    print(missing_data[missing_data > 0])
+    
+    # Separar columnas numéricas y categóricas
+    numeric_cols = self.df.select_dtypes(include=['int64', 'float64']).columns
+    categorical_cols = self.df.select_dtypes(include=['object', 'category']).columns
+    
+    # Crear instancia de Visualizer
+    visualizer = Visualizer()
+    visualizer.set_model_name("EDA_processed")  # Establecemos un nombre para la carpeta de salida
+    visualizer.set_dataset_name(self.dataset_name)  # Asumiendo que tienes un atributo dataset_name en tu clase
+    
+    # Crear grupos de variables numéricas relacionadas
+    groups = Visualizer.group_related_variables(self.df, numeric_cols)
+    
+    # Crear histogramas agrupados
+    visualizer.create_grouped_histograms(self.df, groups)
+    
+    # Gráficos de barras para variables categóricas
+    visualizer.create_bar_plots(self.df, categorical_cols)
+    
+    # Matriz de correlación
+    visualizer.create_correlation_matrix(self.df, numeric_cols, "Dataset procesado")
+
+
 def determine_problem_type(y):
     """
     Determine if the target variable is suitable for classification or regression.
