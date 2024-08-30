@@ -3,20 +3,27 @@ from typing import Dict, Type
 import pickle
 from typing import Protocol
 import os
+
 import training.scikitdb.classification as clf
 import training.scikitdb.regression as reg
 
 from sklearn.svm import SVC, SVR
 from sklearn import svm, discriminant_analysis, dummy
+
 from sklearn.linear_model import LogisticRegression, Perceptron
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.linear_model import SGDClassifier, SGDRegressor
+from sklearn.linear_model import LinearRegression, Lasso, Ridge
+from sklearn.linear_model import ElasticNet, PassiveAggressiveClassifier, PassiveAggressiveRegressor, LassoLars, OrthogonalMatchingPursuit, BayesianRidge, ARDRegression, HuberRegressor, TheilSenRegressor
+
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, RandomForestRegressor, GradientBoostingRegressor
 from sklearn.ensemble import AdaBoostClassifier, AdaBoostRegressor, BaggingClassifier, BaggingRegressor
+from sklearn.ensemble import ExtraTreesClassifier, ExtraTreesRegressor
+
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.naive_bayes import BernoulliNB, GaussianNB, MultinomialNB, ComplementNB
-from sklearn.linear_model import LinearRegression, Lasso, Ridge
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
-from sklearn.linear_model import SGDClassifier, SGDRegressor
 from sklearn.neural_network import MLPClassifier, MLPRegressor
+from sklearn.gaussian_process import GaussianProcessClassifier, GaussianProcessRegressor
 
 class ScikitModel(Protocol):
     def fit(self, X, y, sample_weight=None): ...
@@ -54,7 +61,26 @@ model_classes: Dict[str, Type[ScikitModel]] = {
     "AdaBoostRegressor": AdaBoostRegressor,
     "BaggingClassifier": BaggingClassifier,
     "BaggingRegressor": BaggingRegressor,
+    
+    "ExtraTreesClassifier": ExtraTreesClassifier,
+    "ExtraTreesRegressor": ExtraTreesRegressor,
+    "GaussianProcessClassifier": GaussianProcessClassifier,
+    "GaussianProcessRegressor": GaussianProcessRegressor,
+    "ElasticNet": ElasticNet,
+    "PassiveAggressiveClassifier": PassiveAggressiveClassifier,
+    "PassiveAggressiveRegressor": PassiveAggressiveRegressor,
+    "LassoLars": LassoLars,
+    "OrthogonalMatchingPursuit": OrthogonalMatchingPursuit,
+    "BayesianRidge": BayesianRidge,
+    "ARDRegression": ARDRegression,
+    "HuberRegressor": HuberRegressor,
+    "TheilSenRegressor": TheilSenRegressor,
+    "DummyClassifier": dummy.DummyClassifier,
+    "DummyRegressor": dummy.DummyRegressor,
 }
+
+# Las funciones de serialización se moverán a los archivos correspondientes:
+# classification.py y regression.py
 
 classification_models = {
     BernoulliNB, GaussianNB, MultinomialNB, ComplementNB,

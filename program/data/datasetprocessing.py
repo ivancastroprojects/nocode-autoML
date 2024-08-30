@@ -6,13 +6,17 @@ from sklearn.experimental import enable_iterative_imputer
 from sklearn.preprocessing import StandardScaler, RobustScaler, MinMaxScaler, OneHotEncoder, OrdinalEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.pipeline import Pipeline
-from sklearn.feature_selection import SelectKBest, f_classif, f_regression, mutual_info_regression, mutual_info_classif
+from sklearn.feature_selection import SelectFromModel, SelectKBest, f_classif, f_regression, mutual_info_classif, mutual_info_regression
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.metrics import make_scorer, accuracy_score, r2_score
 from sklearn.decomposition import PCA
+from sklearn_genetic import GAFeatureSelectionCV
+import time
 
 def determine_problem_type(y):
     """
     Determine if the target variable is suitable for classification or regression.
-    
+    aerg
     Args:
     y (array-like): The target variable.
     
@@ -212,8 +216,6 @@ def optimized_dfpreprocess(df, target_column, n_features_to_select=15, apply_pca
     
     return df_optimized
 
-
-
 def detect_outliers(df, columns=None, method='zscore', threshold=3):
     """
     Detecta outliers en las columnas especificadas.
@@ -295,3 +297,142 @@ def handle_outliers(df, outliers, strategy='clip'):
             raise ValueError("Estrategia no soportada. Use 'remove', 'clip', 'mean' o 'median'.")
     
     return df_cleaned
+
+def select_best_features(X, y, problem_type, feature_names, *, search_level='basic', k=10, time_limit=5):
+    """
+    Selecciona las mejores características del dataset según el nivel de búsqueda y el tamaño del dataset.
+    
+    Args:
+    X (array-like): Características del dataset.
+    y (array-like): Variable objetivo.
+    problem_type (str): Tipo de problema ('classification' o 'regression').
+    feature_names (list): Nombres de las características.
+    search_level (str): Nivel de búsqueda ('basic', 'intermediate', 'advanced'). Por defecto 'basic'.
+    k (int): Número máximo de características a seleccionar. Por defecto 10.
+    time_limit (int): Tiempo límite en segundos para la ejecución. Por defecto 5.
+    
+    Returns:
+    tuple: (X_new, selected_feature_names)
+    """
+    n_samples, n_features = X.shape
+    start_time = time.time()
+
+    # Validar el nivel de búsqueda
+    valid_levels = ['basic', 'intermediate', 'advanced']
+    if search_level not in valid_levels:
+        print(f"Nivel de búsqueda '{search_level}' no válido. Usando 'basic'.")
+        search_level = 'basic'
+
+    # Elegir el método de selección basado en el nivel de búsqueda y el tamaño del dataset
+    if search_level == 'basic' or n_samples * n_features > 1e6:
+        selected_features = select_features_basic(X, y, problem_type, feature_names, k)
+    elif search_level == 'intermediate' or n_samples * n_features > 1e5:
+        selected_features = select_features_intermediate(X, y, problem_type, feature_names, k)
+    else:
+        selected_features = select_features_advanced(X, y, problem_type, feature_names, k, time_limit)
+
+    # Si el tiempo excede el límite, usar el método básico
+    if time.time() - start_time > time_limit:
+        print("Tiempo límite excedido. Usando método básico.")
+        selected_features = select_features_basic(X, y, problem_type, feature_names, k)
+
+    # Crear el nuevo conjunto de datos con las características seleccionadas
+    if isinstance(X, pd.DataFrame):
+        X_new = X[selected_features]
+    else:
+        feature_indices = [feature_names.index(feature) for feature in selected_features]
+        X_new = X[:, feature_indices]
+
+    print(f"Características seleccionadas: {selected_features}")
+    return X_new, selected_features
+
+
+def select_features_basic(X, y, problem_type, feature_names, k):
+    """
+    Método básico y rápido de selección de características.
+    """
+    if problem_type == 'classification':
+        selector = SelectFromModel(RandomForestClassifier(n_estimators=100, random_state=42), max_features=k)
+    else:
+        selector = SelectFromModel(RandomForestRegressor(n_estimators=100, random_state=42), max_features=k)
+    
+    selector.fit(X, y)
+    selected_mask = selector.get_support()
+    return [feature for feature, selected in zip(feature_names, selected_mask) if selected]
+
+def select_features_intermediate(X, y, problem_type, feature_names, k):
+    """
+    Método intermedio de selección de características usando una combinación de técnicas.
+    """
+    if problem_type == 'classification':
+        f_selector = SelectKBest(f_classif, k=k)
+        mi_selector = SelectKBest(mutual_info_classif, k=k)
+    else:
+        f_selector = SelectKBest(f_regression, k=k)
+        mi_selector = SelectKBest(mutual_info_regression, k=k)
+    
+    f_selector.fit(X, y)
+    mi_selector.fit(X, y)
+    
+    f_support = f_selector.get_support()
+    mi_support = mi_selector.get_support()
+    
+    f_selected = [feature for feature, selected in zip(feature_names, f_support) if selected]
+    mi_selected = [feature for feature, selected in zip(feature_names, mi_support) if selected]
+    
+    combined_selected = list(set(f_selected).union(set(mi_selected)))
+    
+    return combined_selected[:k]
+
+def select_features_advanced(X, y, problem_type, feature_names, k, time_limit):
+    """
+    Método avanzado de selección de características usando algoritmo genético optimizado.
+    """
+    if problem_type == 'classification':
+        estimator = RandomForestClassifier(n_estimators=50, random_state=42)
+        scoring = make_scorer(accuracy_score)
+    else:
+        estimator = RandomForestRegressor(n_estimators=50, random_state=42)
+        scoring = make_scorer(r2_score)
+
+    ga_selector = GAFeatureSelectionCV(
+        estimator=estimator,
+        cv=3,
+        scoring=scoring,
+        population_size=20,
+        generations=5,
+        n_jobs=-1,
+        verbose=True,
+        max_features=k,
+        elitism=2,
+        crossover_probability=0.8,
+        mutation_probability=0.1
+    )
+
+    start_time = time.time()
+    ga_selector.fit(X, y)
+
+    while time.time() - start_time < time_limit and not ga_selector.converged_:
+        ga_selector.fit(X, y)
+
+    selected_mask = ga_selector.support_
+    return [feature for feature, selected in zip(feature_names, selected_mask) if selected]
+
+def get_feature_importance(X, y, problem_type, feature_names):
+    """
+    Obtiene la importancia de las características usando diferentes métodos.
+    """
+    if problem_type == 'classification':
+        f_test = f_classif(X, y)
+        mi = mutual_info_classif(X, y)
+    else:
+        f_test = f_regression(X, y)
+        mi = mutual_info_regression(X, y)
+
+    importance = pd.DataFrame({
+        'feature': feature_names,
+        'f_score': f_test[0],
+        'mutual_info': mi
+    })
+    importance['combined_score'] = importance['f_score'] * importance['mutual_info']
+    return importance.sort_values('combined_score', ascending=False)
