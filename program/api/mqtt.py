@@ -1,11 +1,15 @@
 #mqtt.py
-import paho.mqtt.client as mqtt
 import json
 import traceback
+import os
+import pandas as pd
 
-from utils.utils import auto_preprocess
+import paho.mqtt.client as mqtt
 from data.dataset import Dataset
 import data.global_data as global_data
+from training.training import Training
+from data.datasetprocessing import basic_dfpreprocess, optimized_dfpreprocess, detect_outliers, handle_outliers, determine_problem_type
+from api.api_interface import POST_modeleval
 
 broker_address = "mqtt-container"
 broker_port = 1883
@@ -32,40 +36,85 @@ def on_connect(client, userdata, flags, rc):
 
 # Callback when a message is received from the MQTT broker
 def on_message(client, userdata, msg):
-    try:
-        from training.training import Training
+    try:              
         training: Training = global_data.training
+        dataset: Dataset = global_data.dataset
+
         message = json.loads(msg.payload)
         
-        # Realizar analisis del dataset y entrenamiento según input
-        if message["command"] == "train":
-            dataset_url = message["params"]["dataset"]
-            training.algorithms = message["params"]["algorithms"]
-            training.crossvalidation = message["params"]["crossvalidation"]
-            training.target = message["params"]["target"]
-            training.features = message["params"]["features"]
-            training.preprocessing = message["params"].get("preprocessing", []) # TODO: Check what necessary
-            training.recommendations = message["params"]["recommendations"]
-            training.dataset = Dataset(dataset_url)
-            training.dataset_name = dataset_url.split('datasets.')[-1]  # Extraer el nombre del dataset
-            training.class_labels = training.dataset.class_labels
-            global_data.dataset_url = dataset_url
-            global_data.dataset = training.dataset
-            global_data.dataset.df = training.dataset.df
+        #------------  DATASET ---------
+        if message["command"] == "dataset":
+            dataset_url = message["data"]["dataset"]["path"]
 
-            # Realizar EDA
-            # Preprocesar el dataset si se especifica
-            if training.preprocessing:
-                training.dataset.df = auto_preprocess(training.dataset.df, training.target)
-            
-            training.dataset.eda_generico()
-            
-            # Entrenar y evaluar el modelo
-            training.train_and_evaluate()
+            global_data.dataset = Dataset(dataset_url)
+            global_data.dataset.dataset_name = dataset_url.split('datasets.')[-1]
+            dataset: Dataset = global_data.dataset
+            dataset.class_labels = message["data"]["dataset"]["class_labels"]
         
-        # Realizar predicciones con el modelo seleccionado y con la/las columnas seleccionadas
+            training.target = message["data"]["dataset"]["target"]
+            training.features = message["data"]["dataset"]["features"]
+
+            training.preprocessing = message["data"].get("preprocessing", [])
+            training.problem_type = determine_problem_type(training.target)
+
+            print("\n------------------- EDA --------------------")
+            Dataset.print_initial_info(dataset)
+            
+            # Preprocesamiento básico para todo dataset
+            df_basic, preprocessor_basic = basic_dfpreprocess(dataset.df, target_column=training.target)
+            # Guardamos el dataset procesado
+            basic_path = f"program/almacen/datasets/{dataset.dataset_name}/{dataset.dataset_name}_basic.csv"
+            os.makedirs(os.path.dirname(basic_path), exist_ok=True)
+            df_basic.to_csv(basic_path, index=False)
+
+            # Recomendación de dataset optimizado para entrenar con él
+            # Deteccion y manejo de outliers
+            outliers = detect_outliers(df_basic, columns=training.features if training.features else None)
+            df_optimized = handle_outliers(df_basic, outliers, strategy='clip')
+            df_optimized = optimized_dfpreprocess(df_basic, target_column=training.target)            # Guardamos el dataset optimizado
+            optimized_path = f"program/almacen/datasets/{dataset.dataset_name}/{dataset.dataset_name}_optimized.csv"
+            df_optimized.to_csv(optimized_path, index=False)
+
+            print(f"Datasets guardados en {basic_path} y {optimized_path}")
+
+        #------------  TRAIN ---------
+        elif message["command"] == "train":      
+            training.algorithms = message["data"]["algorithms"]
+            training.crossvalidation = message["data"]["crossvalidation"]
+            training.recommendations = message["data"]["recommendations"]
+
+            basic_path = f"program/almacen/datasets/{dataset.dataset_name}/{dataset.dataset_name}_basic.csv"
+            optimized_path = f"program/almacen/datasets/{dataset.dataset_name}/{dataset.dataset_name}_optimized.csv"
+
+            # Entrenamiento con el dataset b\u00e1sico
+            trained_models, evaluation_results = (None, None)
+
+            if os.path.exists(basic_path):
+                df_basic = pd.read_csv(basic_path) #TODO: no debería hacer falta, con la inicialización debería ser sufi
+
+                global_data.dataset = Dataset(basic_path)
+                global_data.dataset.dataset_name = basic_path
+                
+                X_test, y_test, trained_models = training.split_and_train(
+                    dataset=df_basic, 
+                    dataset_name=global_data.dataset.dataset_name,
+                    feature_names=df_basic.columns.tolist()  # Asumiendo que df_basic es un DataFrame
+                )
+                evaluation_results = training.evaluate(X_test, y_test, trained_models)
+                
+                # Devolver ambos modelos
+                #training.models = {'user_model': training.model, 'optimized_model': model_optimized}
+                
+                ######### ENVÍO DE DATOS #########
+                # Enviar resultados de evaluación y parámetros recomendados a la API
+                POST_modeleval(trained_models, evaluation_results)
+            else:
+                print(f"No se ha encontrado el dataset {dataset.dataset_name} en la url: '{basic_path}")
+        
+
+        #------------  PREDICT ---------
         elif message["command"] == "predict":
-            training.predict(message["params"]["model"], message["params"]["features"])
+            training.predict(message["data"]["model"], message["data"]["features"])
             
     except Exception as err:
         print(traceback.format_exc())

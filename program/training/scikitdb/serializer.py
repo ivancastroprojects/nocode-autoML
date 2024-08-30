@@ -3,8 +3,8 @@ from typing import Dict, Type
 import pickle
 from typing import Protocol
 import os
-import training.classification as clf
-import training.regression as reg
+import training.scikitdb.classification as clf
+import training.scikitdb.regression as reg
 
 from sklearn.svm import SVC, SVR
 from sklearn import svm, discriminant_analysis, dummy
@@ -175,7 +175,7 @@ def to_pickle(model, model_name: str, dataset_name: str):
     if not model_name.endswith(".pkl"):
         model_name += ".pkl"
     # Crear la estructura de carpetas
-    model_dir = os.path.join('program/utils/models', f"{model_name}_{dataset_name}")
+    model_dir = os.path.join('program/almacen/models', f"{model_name}_{dataset_name}")
     os.makedirs(model_dir, exist_ok=True)
     
     # Asegurar que el nombre del archivo termine en .pkl

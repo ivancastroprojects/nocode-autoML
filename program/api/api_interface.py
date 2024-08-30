@@ -1,9 +1,10 @@
 #api_interface.py
 import requests
-from data.global_data import token
 
 # Función para descargar y cargar el dataset
 def GET_dataset(dataset_url):
+    from data.global_data import token
+
     header = {
         "accept": "application/json",
         "Authorization": "Token " + token
@@ -13,7 +14,7 @@ def GET_dataset(dataset_url):
     return response.content
 
 # Función para enviar las predicciones por API
-def POST_modeleval(evaluation_results):
+def POST_modeleval(trained_models, evaluation_results):
     # URL de la API donde enviar las métricas de evaluación del modelo
     api_url = "http://immersia.eu/model_evaluation"
 
