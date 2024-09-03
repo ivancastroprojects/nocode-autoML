@@ -2,8 +2,8 @@
 
 from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
 from sklearn_genetic import GASearchCV
-from scipy.stats import uniform, randint
 import training.scikitdb.serializer as serializer
+import random
 
 
 def get_optimized_params(model, X, y, optimization_method='random'):
@@ -92,20 +92,33 @@ def train_recommendedparams(X_train, y_train, algorithms, optimization_method='r
 
     return recommended_params
 
-def get_param_grid(model):
-    """
-    Devuelve el grid de parámetros para un modelo dado.
-    """
+def get_param_grid(estimator):
     param_grid = {}
-    for param_name, param_value in model.get_params().items():
-        if param_name.endswith('__'):  # Ignorar parámetros privados
-            continue
+    for param_name, param_value in estimator.get_params().items():
         if isinstance(param_value, bool):
             param_grid[param_name] = [True, False]
         elif isinstance(param_value, int):
-            param_grid[param_name] = randint(max(1, param_value // 2), min(100, param_value * 2))
+            param_grid[param_name] = (max(1, param_value // 2), max(param_value * 2, param_value + 1))
         elif isinstance(param_value, float):
-            param_grid[param_name] = uniform(max(0.0001, param_value / 10), min(1, param_value * 10))
+            param_grid[param_name] = (max(0.0, param_value / 2), max(param_value * 2, param_value + 0.1))
         elif isinstance(param_value, str):
             param_grid[param_name] = [param_value]
     return param_grid
+
+def generate_random_param(param_name, param_range, estimator):
+    if isinstance(param_range, list):
+        return random.choice(param_range)
+    elif isinstance(param_range, tuple):
+        if param_name in estimator.get_params():
+            param_type = type(estimator.get_params()[param_name])
+            if param_type == int:
+                min_val, max_val = int(param_range[0]), int(param_range[1])
+                if min_val == max_val:
+                    return min_val
+                return random.randint(min_val, max_val)
+            elif param_type == float:
+                min_val, max_val = float(param_range[0]), float(param_range[1])
+                if min_val == max_val:
+                    return min_val
+                return random.uniform(min_val, max_val)
+    return None

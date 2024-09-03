@@ -1,72 +1,69 @@
 #dataset.py
-import os
 import re
-
-
-import numpy as np
+from io import StringIO
 import pandas as pd
 from sklearn import datasets
-from scipy.stats import spearmanr
-
-from api import api_interface
+from training.scikitdb.serializer import clean_filename
+import requests
+from utils.logger import logger
 
 class Dataset:
-    def __init__(self, path: str):
-        self.df: pd.DataFrame = None
-        self.processed_df: pd.DataFrame = None
-        self.optimized_df: pd.DataFrame = None
-        self.class_labels = None
-        self.preprocessor = None
-        self.feature_selector = None
-        self.pca = None
-
-        print("\n------------------- LECTURA DEL DATASET --------------------")
-
-        # Cargar el dataset
-        
-        # Opción 1: llega el dataset por MQTT
-        if path.startswith("http://tokii.datasets."):
-            self.dataset_name = path.split(".")[-1]
-            self.load_sklearn_dataset()
-        # Opción 2: queremos descargar un dataset custom de una url
-        elif path.startswith("http://") or path.startswith("https://"):
-            self.df = api_interface.GET_dataset(path)
-        # Opción 3: ya lo teníamos almacenado, cargamos el excel
+    def __init__(self, dataset_info):
+        if isinstance(dataset_info, str):
+            self.dataset_url = dataset_info
+            self.dataset_name = clean_filename(self.dataset_url.split('/')[-1].split(':')[-1])
+            self.target_column = None  # Necesitarás establecer esto manualmente más tarde
         else:
-            if path.endswith('.csv'):
-                self.df = pd.read_csv(path)
-            elif path.endswith('.xlsx') or path.endswith('.xls'):
-                self.df = pd.read_excel(path)
-            else:
-                raise ValueError(f"Formato de archivo no soportado: {path}")
+            self.dataset_url = dataset_info['path']
+            self.dataset_name = clean_filename(self.dataset_url.split('/')[-1].split(':')[-1])
+            self.target_column = dataset_info.get('target')
+        
+        self.df = None
+        self.target = None
+        self.features = None
+        self.load_dataset()
 
-        self.df.columns = [Dataset.clean_filename(col) for col in self.df.columns]
+    def load_dataset(self):
+        try:
+            if self.dataset_url.startswith('sklearn:'):
+                self.load_sklearn_dataset()
+            elif self.dataset_url.startswith(('http://', 'https://')):
+                self.load_web_dataset()
+            else:
+                self.load_local_dataset()
+            
+            if self.target_column:
+                self.target = self.target_column
+                self.features = self.df.columns.drop(self.target).tolist()
+            logger.info(f"Dataset cargado exitosamente desde {self.dataset_url}")
+
+        except Exception as e:
+            logger.error(f"Error al cargar el dataset: {str(e)}")
+            self.df = None
 
     def load_sklearn_dataset(self):
-        """
-        Carga un dataset de scikit-learn o un archivo CSV local si el dataset no está en scikit-learn.
-        """
-        try:
-            dataset = getattr(datasets, f"load_{self.dataset_name}")()
-            data = np.array(dataset.data)
-            target = np.array(dataset.target).reshape(-1, 1)
-            combined_data = np.hstack((data, target))
-            feature_names = list(dataset.feature_names)
-            column_names = feature_names + ['target']
-            self.df = pd.DataFrame(data=combined_data, columns=column_names)
-            if hasattr(dataset, 'target_names'):
-                self.class_labels = {i: name for i, name in enumerate(dataset.target_names)}
-        except AttributeError:
-            # Si no se encuentra el dataset, intentar cargar un archivo CSV
-            csv_path = f"program/almacen/datasets/{self.dataset_name}.csv"
-            if os.path.exists(csv_path):
-                self.df = pd.read_csv(csv_path)
-            else:
-                raise FileNotFoundError(f"No se pudo encontrar el dataset: {self.dataset_name}")
+        dataset_name = self.dataset_url.split(':')[1]
+        dataset = getattr(datasets, f"load_{dataset_name}")()
+        if hasattr(dataset, 'data'):
+            self.df = pd.DataFrame(data=dataset.data, columns=dataset.feature_names)
+            self.df[self.target_column] = dataset.target
+        else:
+            self.df = pd.DataFrame(data=dataset.data)
+
+    def load_web_dataset(self):
+        response = requests.get(self.dataset_url)
+        response.raise_for_status()  # Lanza una excepción para códigos de estado HTTP erróneos
+        content = StringIO(response.text)
+        self.df = pd.read_csv(content)
+
+    def load_local_dataset(self):
+        self.df = pd.read_csv(self.dataset_url)
 
     def as_dataframe(self) -> pd.DataFrame:
-        return self.df
+        return self.df if self.df is not None else pd.DataFrame()
     
+    @staticmethod
     def clean_filename(filename):
-    # Reemplaza caracteres no permitidos en nombres de archivo con guiones bajos
         return re.sub(r'[\\/*?:"<>|]', "_", filename)
+
+# ... (otros métodos de la clase Dataset)

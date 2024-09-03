@@ -1,5 +1,4 @@
 #modeloptimization.py
-
 import numpy as np
 import pandas as pd
 from sklearn.base import clone
@@ -14,47 +13,77 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from training.train import train_optimization
+from training.paramoptimization import get_optimized_params
+from sklearn.feature_selection import RFE
+from sklearn.preprocessing import PolynomialFeatures
+import time
+
 
 def recommend_best_model(X_train, y_train, X_test, y_test, problem_type, trained_models=None, feature_names=None, apply_transfer_learning=False):
+    print("Iniciando recomendación del mejor modelo...")
+    start_time = time.time()
+
     best_algorithms = select_best_algorithm(X_train, y_train, problem_type, trained_models, feature_names)
     
     best_model = None
     best_score = -np.inf
     best_selected_features = None
     
+    print("Creando características polinomiales...")
+    poly = PolynomialFeatures(degree=2, include_bias=False)
+    X_train_poly = poly.fit_transform(X_train)
+    X_test_poly = poly.transform(X_test)
+    
+    if feature_names is None:
+        feature_names = [f'x{i}' for i in range(X_train.shape[1])]
+    else:
+        feature_names = [f for f in feature_names if f != 'target']
+    
+    try:
+        poly_feature_names = poly.get_feature_names_out(feature_names)
+    except ValueError:
+        print("Error al obtener los nombres de las características polinomiales. Usando nombres genéricos.")
+        poly_feature_names = [f'poly_{i}' for i in range(X_train_poly.shape[1])]
+
+    print("Seleccionando características...")
+    selector = RFE(estimator=RandomForestRegressor(n_estimators=10), n_features_to_select=10, step=1)
+    selector = selector.fit(X_train_poly, y_train)
+    
+    X_train_selected = selector.transform(X_train_poly)
+    X_test_selected = selector.transform(X_test_poly)
+    
+    selected_features = poly_feature_names[selector.support_]
+    print(f"Características seleccionadas: {selected_features}")
+
     for name, score, model in best_algorithms:
-        optimized_model, X_new, selected_feature_names = train_optimization(X_train, y_train, model.__class__, problem_type, feature_names)
-        
-        # Seleccionar las características correctas para X_test
-        X_test_selected = X_test[selected_feature_names] if isinstance(X_test, pd.DataFrame) else X_test[:, [feature_names.index(f) for f in selected_feature_names]]
-        
-        # Evaluar el modelo optimizado
+        print(f"Optimizando {name}...")
+        optimized_model, X_train_opt, _ = train_optimization(X_train_selected, y_train, model.__class__, problem_type, selected_features, optimize_params=True)
+
+        print(f"Evaluando {name}...")
         if problem_type == 'classification':
             score = accuracy_score(y_test, optimized_model.predict(X_test_selected))
         else:
             score = r2_score(y_test, optimized_model.predict(X_test_selected))
         
+        print(f"Puntuación para {name}: {score:.4f}")
+        
         if score > best_score:
             best_score = score
             best_model = optimized_model
-            best_selected_features = selected_feature_names
-    
-    if best_model is not None:
-        # Asegurarse de que best_model tenga el atributo feature_names_
-        best_model.feature_names_ = best_selected_features
-        
-        print(f"\nMejor modelo recomendado: {best_model.__class__.__name__}")
-        print(f"Mejor puntuación: {best_score:.4f}")
-        print(f"Características seleccionadas: {best_selected_features}")
-        
-        if apply_transfer_learning:
-            # Aquí iría el código de transfer learning cuando lo implementemos
-            print("Transfer learning no implementado aún.")
-        
-    else:
-        print("No se pudo recomendar ningún modelo.")
-    
-    return best_model, best_selected_features
+            best_selected_features = selected_features
+
+    if apply_transfer_learning:
+        print("Aplicando transfer learning...")
+        best_model, X_train_selected, X_test_selected, best_selected_features = apply_transfer_learning(best_model, trained_models, X_train_selected, y_train, X_test_selected, poly_feature_names, best_selected_features)
+
+    print(f"\nMejor modelo recomendado: {best_model.__class__.__name__}")
+    print(f"Mejor puntuación: {best_score:.4f}")
+    print(f"Características seleccionadas: {best_selected_features}")
+
+    end_time = time.time()
+    print(f"Tiempo total de ejecución: {end_time - start_time:.2f} segundos")
+
+    return best_model, best_selected_features, X_train_selected, X_test_selected, poly, poly_feature_names
 
 def select_best_algorithm(X, y, problem_type, trained_models=None, feature_names=None, n_algorithms=3):
     """

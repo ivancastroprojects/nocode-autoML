@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+
 import scipy
 from sklearn.impute import SimpleImputer, KNNImputer
 from sklearn.experimental import enable_iterative_imputer
@@ -52,11 +53,17 @@ def EDA_processed_info(self):
     # Crear grupos de variables numéricas relacionadas
     groups = Visualizer.group_related_variables(self.df, numeric_cols)
     
+    # Identificar la columna objetivo
+    target_column = 'target' if 'target' in self.df.columns else None
+    
     # Crear histogramas agrupados
-    visualizer.create_grouped_histograms(self.df, groups)
+    visualizer.create_grouped_histograms(self.df, groups, target_column)
     
     # Gráficos de barras para variables categóricas
-    visualizer.create_bar_plots(self.df, categorical_cols)
+    if not categorical_cols.empty:
+        visualizer.create_bar_plots(self.df, categorical_cols)
+    else:
+        print("No hay columnas categóricas para crear gráficos de barras.")
     
     # Matriz de correlación
     visualizer.create_correlation_matrix(self.df, numeric_cols, "Dataset procesado")
@@ -65,19 +72,45 @@ def EDA_processed_info(self):
 def determine_problem_type(y):
     """
     Determine if the target variable is suitable for classification or regression.
-    aerg
+    
     Args:
     y (array-like): The target variable.
     
     Returns:
     str: 'classification' or 'regression'
     """
-    unique_values = np.unique(y)
+    # Verificar si y es una cadena
+    if isinstance(y, str):
+        raise ValueError("La variable objetivo 'y' no debe ser una cadena. Asegúrate de pasar los valores de la columna objetivo.")
     
-    if len(unique_values) < 10 or (len(unique_values) / len(y)) < 0.05:
-        return 'classification'
-    else:
+    unique_values = np.unique(y)
+    num_unique_values = len(unique_values)
+    total_values = len(y)
+    
+    # Si y es una cadena, convertirla a numérica si es posible
+    if y.dtype == object:
+        try:
+            y = y.astype(float)
+        except ValueError:
+            return 'classification'  # Si no se puede convertir a float, asumimos que es clasificación
+    
+    # Si los valores son continuos (float), es probablemente regresión
+    if np.issubdtype(y.dtype, np.floating):
         return 'regression'
+    
+    # Si hay pocos valores únicos en comparación con el total, es probablemente clasificación
+    if num_unique_values < 10 or (num_unique_values / total_values) < 0.05:
+        return 'classification'
+    
+    # Si hay muchos valores únicos enteros, es probablemente regresión
+    if np.issubdtype(y.dtype, np.integer) and num_unique_values > 10:
+        return 'regression'
+    
+    # Si los valores son categóricos
+    if np.issubdtype(y.dtype, np.object) or np.issubdtype(y.dtype, np.str_):
+        return 'classification'
+    
+    return 'classification'
 
 def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeric_features=None, 
                         datetime_features=None, text_features=None, outlier_columns=None,
@@ -103,6 +136,11 @@ def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeri
     tuple: (DataFrame preprocesado, objeto preprocessor)
     """
     print("\nIniciando procesado básico del dataset:")
+    
+    # Verificar si los datos ya están normalizados
+    if is_data_normalized(df):
+        print("Los datos parecen estar ya normalizados. Se omitirá la normalización adicional.")
+        return df, None
     
     # Crear una copia del DataFrame para no modificar el original
     df = df.copy()
@@ -355,7 +393,7 @@ def select_best_features(X, y, problem_type, feature_names, *, search_level='bas
     X (array-like): Características del dataset.
     y (array-like): Variable objetivo.
     problem_type (str): Tipo de problema ('classification' o 'regression').
-    feature_names (list): Nombres de las características.
+    feature_names (list or np.ndarray): Nombres de las características.
     search_level (str): Nivel de búsqueda ('basic', 'intermediate', 'advanced'). Por defecto 'basic'.
     k (int): Número máximo de características a seleccionar. Por defecto 10.
     time_limit (int): Tiempo límite en segundos para la ejecución. Por defecto 5.
@@ -365,6 +403,9 @@ def select_best_features(X, y, problem_type, feature_names, *, search_level='bas
     """
     n_samples, n_features = X.shape
     start_time = time.time()
+
+    # Convertir feature_names a lista si es un numpy.ndarray
+    feature_names = feature_names.tolist() if isinstance(feature_names, np.ndarray) else feature_names
 
     # Validar el nivel de búsqueda
     valid_levels = ['basic', 'intermediate', 'advanced']
@@ -389,12 +430,34 @@ def select_best_features(X, y, problem_type, feature_names, *, search_level='bas
     if isinstance(X, pd.DataFrame):
         X_new = X[selected_features]
     else:
-        feature_indices = [feature_names.index(feature) for feature in selected_features]
+        # Usar una comprensión de lista con un try-except para manejar características no encontradas
+        feature_indices = [i for i, feature in enumerate(feature_names) if feature in selected_features]
         X_new = X[:, feature_indices]
+        # Actualizar selected_features para que solo incluya las características que realmente están en X
+        selected_features = [feature_names[i] for i in feature_indices]
 
     print(f"Características seleccionadas: {selected_features}")
     return X_new, selected_features
 
+def is_data_normalized(df):
+    """
+    Verifica si los datos ya están normalizados comprobando si están en el rango [-1, 1].
+    """
+    numeric_cols = df.select_dtypes(include=[np.number]).columns.drop('target', errors='ignore')
+    
+    # Verificar si todos los valores están entre -1 y 1
+    values_in_range = ((df[numeric_cols] >= -1) & (df[numeric_cols] <= 1)).all()
+    
+    # Verificar si al menos una columna tiene valores negativos (para distinguir entre normalización [-1, 1] y [0, 1])
+    has_negative = (df[numeric_cols] < 0).any().any()
+    
+    is_normalized = values_in_range.all()
+    normalization_type = "[-1, 1]" if has_negative else "[0, 1]"
+    
+    print("Resultados de la verificación de normalización:")
+    print(f"¿Datos normalizados? {is_normalized} (Tipo de normalización: {normalization_type})")
+    
+    return is_normalized
 
 def select_features_basic(X, y, problem_type, feature_names, k):
     """

@@ -4,6 +4,7 @@ import pickle
 from typing import Protocol
 import os
 import pandas as pd
+import re
 
 import training.scikitdb.classification as clf
 import training.scikitdb.regression as reg
@@ -89,13 +90,17 @@ classification_models = {
     discriminant_analysis.QuadraticDiscriminantAnalysis,
     Perceptron, DecisionTreeClassifier, GradientBoostingClassifier,
     RandomForestClassifier, MLPClassifier, LogisticRegression, SVC,
-    KNeighborsClassifier, SGDClassifier, AdaBoostClassifier, BaggingClassifier
+    KNeighborsClassifier, SGDClassifier, AdaBoostClassifier, BaggingClassifier,
+    ExtraTreesClassifier, GaussianProcessClassifier, PassiveAggressiveClassifier,
 }
 
 regression_models = {
     LinearRegression, Lasso, Ridge, DecisionTreeRegressor,
     GradientBoostingRegressor, RandomForestRegressor, MLPRegressor,
-    SVR, KNeighborsRegressor, SGDRegressor, AdaBoostRegressor, BaggingRegressor
+    SVR, KNeighborsRegressor, SGDRegressor, AdaBoostRegressor, BaggingRegressor,
+    ExtraTreesRegressor, GaussianProcessRegressor, ElasticNet,
+    PassiveAggressiveRegressor, LassoLars, OrthogonalMatchingPursuit,
+    BayesianRidge, ARDRegression, HuberRegressor, TheilSenRegressor,
 }
 
 def serialize_model(model):
@@ -367,10 +372,14 @@ def load_model(model_name):
     """
     Carga un modelo entrenado desde el disco.
     """
-    model_path = find_model_path(model_name)
-    if not model_path:
-        raise FileNotFoundError(f"No se encontró el modelo {model_name}")
-    return from_pickle(model_path)
+    try:
+        model_path = find_model_path(model_name)
+        with open(model_path, 'rb') as file:
+            model = pickle.load(file)
+        return model
+    except FileNotFoundError:
+        print(f"No se pudo encontrar el modelo: {model_name}")
+        return None
 
 def find_model_path(model_name):
     """
@@ -389,6 +398,29 @@ def find_model_path(model_name):
             return os.path.join(dataset_dir, file)
     
     return None
+
+def clean_filename(filename):
+    """
+    Reemplaza caracteres no permitidos en nombres de archivo con guiones bajos.
+    """
+    return re.sub(r'[\\/*?:"<>|]', "_", filename)
+
+def ensure_directory_exists(directory):
+    """
+    Crea un directorio si no existe.
+    """
+    os.makedirs(directory, exist_ok=True)
+
+def get_safe_path(base_path, *parts):
+    """
+    Crea una ruta segura combinando base_path y partes adicionales,
+    asegurándose de que los nombres de archivo y directorio sean válidos.
+    """
+    safe_parts = [clean_filename(part) for part in parts]
+    safe_path = os.path.join(base_path, *safe_parts)
+    ensure_directory_exists(os.path.dirname(safe_path))
+    return safe_path
+
 
 class ModellNotSupported(Exception):
     pass

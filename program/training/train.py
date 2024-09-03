@@ -2,10 +2,10 @@
 
 import numpy as np
 import pandas as pd
-
-from data.datasetprocessing import select_best_features
 from training.paramoptimization import get_optimized_params
 import training.scikitdb.serializer as serializer
+from sklearn.base import BaseEstimator
+import inspect
 
 def train_simple_model(X, y, model_name, params=None):
     """
@@ -21,91 +21,87 @@ def train_simple_model(X, y, model_name, params=None):
     object: Modelo entrenado.
     """
     if model_name not in serializer.model_classes:
-        raise ValueError(f"Modelo {model_name} no soportado.")
+        print(f"Modelo {model_name} no soportado. Omitiendo...")
+        return None
     
     model_class = serializer.model_classes[model_name]
     
     if params is None:
         model = model_class()
     else:
-        model = model_class(**params)
+        # Filtrar los parámetros válidos para este modelo
+        valid_params = {}
+        for param, value in params.items():
+            if param in inspect.signature(model_class.__init__).parameters:
+                valid_params[param] = value
+            else:
+                print(f"Advertencia: El parámetro '{param}' no es válido para {model_name}. Se ignorará.")
+        
+        model = model_class(**valid_params)
     
-    model.fit(X, y)
-    return model
+    if isinstance(model, BaseEstimator):
+        model.fit(X, y)
+        return model
+    else:
+        print(f"Advertencia: {model_name} no es un estimador válido de scikit-learn. No se pudo entrenar.")
+        return None
 
 # Función para entrenar los modelos
-def train_custom_models(X_train, y_train, algorithm, problem_type, dataset_name, feature_names, recommendations=False):
+def train_custom_models(X_train, y_train, algorithm, problem_type, dataset_path, feature_names, recommendations):
     model_name = algorithm['name']
-    if model_name not in serializer.model_classes:
-        print(f"Modelo '{model_name}' no encontrado. Omitiendo...")
-        return None, None, None
+    params = algorithm.get('params', {})
 
-    model_class = serializer.model_classes[model_name]
-    
-    # Entrenamiento del modelo base con todas las características
-    base_model = train_simple_model(X_train, y_train, model_name, algorithm.get('params', {}))
-    print(f"Parámetros seleccionados por el usuario para {algorithm['name']}: {algorithm.get('params', {})}")
+    print(f"Parámetros seleccionados por el usuario para {model_name}: {params}")
 
-    # Entrenamiento del modelo optimizado con características seleccionadas
+    base_model = train_simple_model(X_train, y_train, model_name, params)
+
     if recommendations:
-        optimized_model, X_new, selected_feature_names = train_optimization(X_train, y_train, model_class, problem_type, feature_names)
-
-    return base_model, optimized_model, selected_feature_names
-
-def recommend_best_model(X_train, y_train, X_test, y_test, problem_type, feature_names):
-    algorithms = serializer.classification_models if problem_type == 'classification' else serializer.regression_models
-    best_model = None
-    best_score = -np.inf
-    
-    for algorithm in algorithms:
-        model_class = algorithm  # Asumiendo que algorithms contiene las clases de modelo, no instancias
-        optimized_model, X_new, selected_feature_names = train_optimization(X_train, y_train, model_class, problem_type, feature_names)
-        
-        # Seleccionar las características correctas para X_test
-        if isinstance(X_test, pd.DataFrame):
-            X_test_selected = X_test[selected_feature_names]
-        else:
-            feature_indices = [feature_names.index(feature) for feature in selected_feature_names]
-            X_test_selected = X_test[:, feature_indices]
-        
-        score = optimized_model.score(X_test_selected, y_test)
-        if score > best_score:
-            best_score = score
-            best_model = optimized_model
-    
-    if best_model is not None:
-        print(f"Mejor modelo recomendado: {best_model.__class__.__name__}")
-        print(f"Mejor puntuación: {best_score}")
+        try:
+            optimized_model, selected_features = train_optimization(X_train, y_train, model_name, problem_type, dataset_path, feature_names)
+        except Exception as e:
+            print(f"Error durante la optimización de {model_name}: {str(e)}")
+            print("Usando el modelo base como modelo optimizado.")
+            optimized_model = base_model
+            selected_features = feature_names
     else:
-        print("No se pudo recomendar ningún modelo.")
-    
-    return best_model
+        optimized_model = base_model
+        selected_features = feature_names
 
-def train_optimization(X_train, y_train, model, problem_type, feature_names, k=10, optimization_method='random'):
+    return base_model, optimized_model, selected_features
+
+def train_optimization(X_train, y_train, model_class, problem_type, selected_features, params=None, optimize_params=True):
     """
-    Entrena un modelo utilizando las características más importantes y parámetros optimizados.
-    """
-    X_new, selected_feature_names = select_best_features(X_train, y_train, problem_type, feature_names, k=k)
+    Entrena un modelo optimizado o con parámetros específicos.
     
-    if isinstance(model, type):
-        model_name = model.__name__
-        model = model()
+    Args:
+    X_train (array-like): Características de entrenamiento.
+    y_train (array-like): Etiquetas de entrenamiento.
+    model_class (class): Clase del modelo a entrenar.
+    problem_type (str): Tipo de problema ('classification' o 'regression').
+    selected_features (list): Lista de características seleccionadas.
+    params (dict): Parámetros específicos del modelo (opcional).
+    optimize_params (bool): Si se deben optimizar los parámetros o usar los proporcionados.
+
+    Returns:
+    tuple: (modelo optimizado, X_train seleccionado, características seleccionadas)
+    """
+    # Eliminar 'target' de selected_features si está presente
+    selected_features = [f for f in selected_features if f != 'target']
+
+    if isinstance(X_train, pd.DataFrame):
+        X_new = X_train[selected_features]
+    elif isinstance(X_train, np.ndarray):
+        # Asumimos que las características están en el mismo orden que en selected_features
+        X_new = X_train
     else:
-        model_name = model.__class__.__name__
+        raise ValueError("X_train debe ser un DataFrame de pandas o un array de numpy")
     
-    best_params = get_optimized_params(model, X_new, y_train, optimization_method)
+    if optimize_params:
+        best_params = get_optimized_params(model_class(), X_new, y_train, 'random')
+    else:
+        best_params = params if params is not None else {}
     
-    from training.train import train_simple_model
-    optimized_model = train_simple_model(X_new, y_train, model_name, best_params)
+    optimized_model = model_class(**best_params)
+    optimized_model.fit(X_new, y_train)
     
-    return optimized_model, X_new, selected_feature_names
-
-# Función para comparar los modelos entrenados
-def compare_models(base_model, optimized_model, X_test, y_test):
-    base_score = base_model.score(X_test, y_test)
-    optimized_score = optimized_model.score(X_test, y_test)
-    
-    print(f"Comparación de modelos:")
-    print(f"Base model score: {base_score}")
-    print(f"Optimized model score: {optimized_score}")
-    print(f"Improvement: {(optimized_score - base_score) / base_score * 100:.2f}%")
+    return optimized_model, X_new, selected_features
