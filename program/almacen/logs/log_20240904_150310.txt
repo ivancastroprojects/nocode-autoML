@@ -1,0 +1,45 @@
+Iniciando la aplicación...
+Autenticación simulada completada.
+Autenticación exitosa. Simulando inicio del cliente MQTT...
+Simulando inicio del cliente MQTT...
+
+////////// TOKII-NO CODE AI //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir
+El dataset no es válido o no está cargado correctamente.
+Dataset de sklearn 'iris' cargado exitosamente.
+Tipo de problema establecido: Clasificación
+
+////////// TOKII-NO CODE AI //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir
+Tipo de problema detectado: Clasificación
+Parámetros iniciales generados para RandomForestClassifier:
+n_estimators: 50
+min_samples_split: 3
+min_samples_leaf: 1
+verbose: 0
+Parámetros iniciales generados para GradientBoostingClassifier:
+n_estimators: 126
+max_depth: 1
+min_samples_split: 2
+min_samples_leaf: 1
+verbose: 0
+Conjuntos de entrenamiento y prueba guardados en program\almacen\datasets\iris\iris_basic_train.csv y program\almacen\datasets\iris\iris_basic_test.csv
+Error en split_and_train: 'Training' object has no attribute '_get_model_instance'
+
+////////// TOKII-NO CODE AI //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir

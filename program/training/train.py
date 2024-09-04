@@ -2,10 +2,12 @@
 
 import numpy as np
 import pandas as pd
-from training.paramoptimization import get_optimized_params
+from training.paramoptimization import get_optimized_params, get_param_grid
 import training.scikitdb.serializer as serializer
 from sklearn.base import BaseEstimator
 import inspect
+from sklearn.model_selection import GridSearchCV
+from utils.logger import logger
 
 def train_simple_model(X, y, model_name, params=None):
     """
@@ -47,27 +49,45 @@ def train_simple_model(X, y, model_name, params=None):
         return None
 
 # Función para entrenar los modelos
-def train_custom_models(X_train, y_train, algorithm, problem_type, dataset_path, feature_names, recommendations):
-    model_name = algorithm['name']
-    params = algorithm.get('params', {})
-
-    print(f"Parámetros seleccionados por el usuario para {model_name}: {params}")
-
-    base_model = train_simple_model(X_train, y_train, model_name, params)
-
-    if recommendations:
-        try:
-            optimized_model, selected_features = train_optimization(X_train, y_train, model_name, problem_type, dataset_path, feature_names)
-        except Exception as e:
-            print(f"Error durante la optimización de {model_name}: {str(e)}")
-            print("Usando el modelo base como modelo optimizado.")
+def train_custom_models(X_train, y_train, algorithm, problem_type, dataset_path, feature_names, recommendations=True):
+    model_name = algorithm["name"]
+    params = algorithm["params"]
+    
+    try:
+        # Asegurarse de que X_train es un DataFrame con las columnas correctas
+        X_train = pd.DataFrame(X_train, columns=feature_names)
+        
+        base_model = train_simple_model(X_train, y_train, model_name, params)
+        
+        if recommendations:
+            param_grid = get_param_grid(base_model)
+            optimized_model = optimize_model(X_train, y_train, base_model, param_grid)
+        else:
             optimized_model = base_model
-            selected_features = feature_names
-    else:
-        optimized_model = base_model
-        selected_features = feature_names
 
-    return base_model, optimized_model, selected_features
+        selected_features = feature_names  # Por ahora, usamos todas las características
+
+        return base_model, optimized_model, selected_features
+    except Exception as e:
+        logger.error(f"Error en train_custom_models para {model_name}: {str(e)}")
+        return None, None, None
+
+def optimize_model(X, y, model, param_grid, cv=5):
+    try:
+        # Asegurarse de que X es un DataFrame
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        
+        # Verificar que las columnas existen
+        if not all(col in X.columns for col in X.columns):
+            raise ValueError(f"Columnas no encontradas en X: {X.columns}")
+
+        grid_search = GridSearchCV(model, param_grid, cv=cv, n_jobs=-1, verbose=0)
+        grid_search.fit(X, y)
+        return grid_search.best_estimator_
+    except Exception as e:
+        logger.error(f"Error durante la optimización del modelo: {str(e)}")
+        return model  # Devolver el modelo original si hay un error
 
 def train_optimization(X_train, y_train, model_class, problem_type, selected_features, params=None, optimize_params=True):
     """

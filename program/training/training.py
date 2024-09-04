@@ -1,203 +1,246 @@
 # training.py
-import os
-from pathlib import Path
-import numpy as np
 import pandas as pd
+import os
 
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, r2_score
 from training.train import train_custom_models
 import training.scikitdb.serializer as serializer
-from data.datasetprocessing import basic_dfpreprocess
+from data.datasetprocessing import determine_problem_type_from_dataset, basic_dfpreprocess
 from data.dataset import Dataset
 from training.evaluation import Evaluation
+from utils.logger import logger
+from data.visualizer import Visualizer
 
 class Training:
     """
     Clase principal para gestionar el entrenamiento y evaluación de modelos de machine learning.
     """
 
-    def __init__(self, problem_type=None, target=None, features=None, algorithms=None, crossvalidation=80, recommendations=False):
+    def __init__(self):
         """
         Inicializa la clase Training con los parámetros necesarios para el entrenamiento.
         """
-        self.problem_type = problem_type  # Tipo de problema: 'classification' o 'regression'
-        self.target = target  # Variable objetivo
-        self.features = features if features is not None else []  # Características a utilizar
-        self.algorithms = algorithms if algorithms is not None else []  # Algoritmos a entrenar
-        self.crossvalidation = crossvalidation  # Porcentaje de datos para entrenamiento
-        self.recommendations = recommendations  # Si se deben hacer recomendaciones de modelos
+        self.problem_type = None
+        self.target = 'target'  # Asumimos que la columna objetivo se llama 'target' por defecto
+        self.dataset_name = None
+        self.features = None
+        self.algorithms = []
+        self.crossvalidation = 80  # Porcentaje de datos para entrenamiento
+        self.recommendations = False  # Si se deben hacer recomendaciones de modelos
         self.preprocessing = False  # Si se debe aplicar preprocesamiento a los datos
         self.trained_models = []  # Lista para almacenar los modelos entrenados
-        self.dataset_name = None  # Inicializamos el nombre del dataset como None
         self.poly_transform = None
         self.selected_features = None
 
+    def determine_problem_type(self, dataset):
+        """
+        Determina el tipo de problema basado en el dataset.
+
+        Args:
+        dataset (Dataset): Objeto Dataset con los datos cargados.
+        """
+        try:
+            self.problem_type = determine_problem_type_from_dataset(dataset, self.target)
+            logger.info(f"Tipo de problema determinado: {self.problem_type}")
+        except Exception as e:
+            logger.error(f"Error al determinar el tipo de problema: {str(e)}")
+            self.problem_type = None
+        
+        if self.problem_type is None:
+            logger.warning("No se pudo determinar el tipo de problema. Por favor, especifique manualmente.")
 
     def split_and_train(self, X, y, dataset_path, feature_names):
         """
-        Divide el dataset, entrena los modelos y opcionalmente recomienda el mejor modelo.
-        """
-        self.dataset_name = Path(dataset_path).stem  # Extraemos el nombre del dataset del path
-        print(f"\n------------------- ENTRENAMIENTOS PARA {self.dataset_name} --------------------")    
-        
-        # Asegurarse de que feature_names sea una lista de strings
-        if feature_names is None:
-            if isinstance(X, pd.DataFrame):
-                feature_names = X.columns.tolist()
-            else:
-                raise ValueError("Se deben proporcionar los nombres de las características cuando X no es un DataFrame.")
+        Divide el dataset, entrena los modelos y evalúa su rendimiento.
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-        
-        all_trained_models = self._train_models(X_train, y_train, X_test, y_test, dataset_path, feature_names)
-        
-        # Asegurarse de que all_trained_models sea una lista
-        if not isinstance(all_trained_models, list):
-            all_trained_models = [all_trained_models]
-        
-        return X_test, y_test, all_trained_models
+        Args:
+        X (DataFrame): Características del dataset.
+        y (Series): Variable objetivo.
+        dataset_path (str): Ruta del dataset.
+        feature_names (list): Nombres de las características.
 
-    def _prepare_data(self, df):
+        Returns:
+        tuple: (X_test, y_test, trained_models, evaluation_results)
         """
-        Prepara los datos para el entrenamiento, separando features y target.
-        """
-        if self.target is not None and self.target in df.columns:
-            df.target_names = self.target
-        else:
-            self.target = df.target_names
-        
-        y = df[self.target].values
-        X = df.drop(columns=self.target)
-        
-        if self.features:
-            X = X[self.features]
-        else:
-            self.features = X.columns.tolist()
+        try:
+            # Calcular el tamaño del conjunto de prueba basado en crossvalidation
+            test_size = (100 - self.crossvalidation) / 100
 
-        return X, y  # Devuelve X como DataFrame y y como array
+            # Dividir el dataset
+            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=42)
 
-    def _split_data(self, X, y):
-        """
-        Divide los datos en conjuntos de entrenamiento y prueba.
-        """
-        return train_test_split(X, y, test_size=(100 - self.crossvalidation) / 100, random_state=42)
+            # Preparar las rutas para los archivos de entrenamiento y prueba
+            base_name = os.path.splitext(os.path.basename(dataset_path))[0]
+            train_path = os.path.join(os.path.dirname(dataset_path), f"{base_name}_train.csv")
+            test_path = os.path.join(os.path.dirname(dataset_path), f"{base_name}_test.csv")
+
+            # Guardar los conjuntos de entrenamiento y prueba, sobrescribiendo si ya existen
+            pd.concat([X_train, y_train], axis=1).to_csv(train_path, index=False)
+            pd.concat([X_test, y_test], axis=1).to_csv(test_path, index=False)
+
+            logger.info(f"Conjuntos de entrenamiento y prueba guardados en {train_path} y {test_path}")
+            logger.info(f"Tamaño del conjunto de entrenamiento: {len(X_train)}, Tamaño del conjunto de prueba: {len(X_test)}")
+
+            logger.info(f"Preparando para entrenar modelos con dataset: {dataset_path}")
+            logger.info(f"Características: {feature_names}")
+            logger.info(f"Tipo de problema: {self.problem_type}")
+            logger.info(f"Algoritmos seleccionados: {[algo['name'] for algo in self.algorithms]}")
+
+            trained_models, evaluation_results = self._train_models(X_train, y_train, X_test, y_test, dataset_path, feature_names)
+
+            return X_test, y_test, trained_models, evaluation_results
+
+        except Exception as e:
+            logger.error(f"Error en split_and_train: {str(e)}")
+            # Devolver valores por defecto en caso de error
+            return None, None, [], {}
 
     def _train_models(self, X_train, y_train, X_test, y_test, dataset_path, feature_names):
-        all_trained_models = []
+        """
+        Entrena los modelos seleccionados por el usuario y los optimiza si se solicita.
+
+        Args:
+        X_train (DataFrame): Características de entrenamiento.
+        y_train (Series): Variable objetivo de entrenamiento.
+        X_test (DataFrame): Características de prueba.
+        y_test (Series): Variable objetivo de prueba.
+        dataset_path (str): Ruta del dataset.
+        feature_names (list): Nombres de las características.
+
+        Returns:
+        tuple: (trained_models, evaluation_results)
+        """
+        trained_models = []
+        evaluation_results = {}
+        evaluation = Evaluation(self.problem_type, dataset_path)
+        visualizer = Visualizer(dataset_path)
 
         for algorithm in self.algorithms:
-            # Verificar si el algoritmo es apropiado para el tipo de problema
-            if ((self.problem_type == 'classification' and algorithm['name'] in serializer.regression_models) or 
-                (self.problem_type == 'regression' and algorithm['name'] in serializer.classification_models)):
-                print(f"Advertencia: {algorithm['name']} no es apropiado para problemas de {self.problem_type}. Saltando...")
-                continue
-            
-            if algorithm['name'] in serializer.model_classes:
-                model_class = serializer.model_classes[algorithm['name']]
-                if self._is_appropriate_model(model_class):
-                    base_model, optimized_model, selected_features = train_custom_models(X_train, y_train, algorithm, self.problem_type, dataset_path, feature_names, self.recommendations)
-                    if base_model is not None and optimized_model is not None:
-                        # Almacenar las características utilizadas en cada modelo
-                        print(f"\nModelo base de {algorithm['name']}")
-                        base_model.feature_names_ = X_train.columns.tolist()
-                        print(f"Modelo optimizado de {algorithm['name']}")
-                        optimized_model.feature_names_ = selected_features
-                        all_trained_models.extend([base_model, optimized_model])
-                        
-                        # Seleccionar las características para X_test_optimized
-                        if isinstance(X_test, pd.DataFrame):
-                            X_test_optimized = X_test[selected_features]
-                        elif isinstance(X_test, np.ndarray):
-                            feature_indices = [feature_names.index(feature) for feature in selected_features]
-                            X_test_optimized = X_test[:, feature_indices]
-                        else:
-                            raise TypeError("X_test debe ser un DataFrame de pandas o un array de NumPy")
-                        
-                        # Calcular la precisión o mejor métrica
-                        if self.problem_type == 'classification':
-                            base_accuracy = accuracy_score(y_test, base_model.predict(X_test))
-                            optimized_accuracy = accuracy_score(y_test, optimized_model.predict(X_test_optimized))
-                        else:  # regression
-                            base_accuracy = r2_score(y_test, base_model.predict(X_test))
-                            optimized_accuracy = r2_score(y_test, optimized_model.predict(X_test_optimized))
-                        
-                        # Comparar modelos
-                        print("\nComparación de modelos:")
-                        evaluation = Evaluation(self.problem_type, dataset_path)
-                        evaluation.compare_models(base_model, optimized_model, X_test, y_test)
-                        
-                        # Generar visualizaciones
-                        from data.visualizer import Visualizer
-                        visualizer = Visualizer()
-                        visualizer.set_model_name(f"Training_{algorithm['name']}")  # Establecemos un nombre para la carpeta de salida
-                        visualizer.set_dataset_name(self.dataset_name)  # Asumiendo que tienes un atributo dataset_name en tu clase
-    
-                        # Generar visualizaciones para el modelo base
-                        y_pred_base = base_model.predict(X_test)
-                        visualizer.generate_visualizations(base_model, X_test, y_test, y_pred_base)
-                        
-                        # Generar visualizaciones para el modelo optimizado
-                        X_test_optimized = X_test[selected_features]
-                        y_pred_optimized = optimized_model.predict(X_test_optimized)
-                        visualizer.generate_visualizations(optimized_model, X_test_optimized, y_test, y_pred_optimized)
-                        
-                        # Guardar los modelos con el nombre correcto del dataset
-                        serializer.to_pickle(base_model, f"{algorithm['name']}_base", dataset_path, round(base_accuracy * 100, 1))
-                        serializer.to_pickle(optimized_model, f"{algorithm['name']}_optimized", dataset_path, round(optimized_accuracy * 100, 1))
-                        
-                        # Comparar modelos usando los conjuntos de datos apropiados
-                        print(f"\nComparación para {algorithm['name']}:")
-                        print("Modelo base (todas las características):")
-                        self._evaluate_model(base_model, X_test, y_test)
-                        print("\nModelo optimizado (características seleccionadas):")
-                        self._evaluate_model(optimized_model, X_test_optimized, y_test)
-                    else:
-                        print(f"No se pudo entrenar el modelo {algorithm['name']}. Omitiendo...")
+            try:
+                if isinstance(algorithm, dict):
+                    algorithm_name = algorithm.get('name')
+                    algorithm_params = algorithm.get('params', {})
+                elif isinstance(algorithm, str):
+                    algorithm_name = algorithm
+                    algorithm_params = {}
                 else:
-                    print(f"El algoritmo '{algorithm['name']}' no es apropiado para este caso. Omitiendo...")
-            else:
-                print(f"Modelo '{algorithm['name']}' no encontrado. Omitiendo...")
-        
-        # Modelo óptimo para el problema actual (mejor modelo y parámetros)
+                    logger.warning(f"Formato de algoritmo no reconocido: {algorithm}. Saltando...")
+                    continue
+
+                if not self._is_appropriate_model(algorithm_name):
+                    logger.warning(f"{algorithm_name} no es apropiado para problemas de {self.problem_type}. Saltando...")
+                    continue
+                
+                base_model, optimized_model, selected_features = train_custom_models(
+                    X_train, y_train, {'name': algorithm_name, 'params': algorithm_params}, 
+                    self.problem_type, dataset_path, feature_names, self.recommendations
+                )
+                
+                if base_model is not None:
+                    results = self._evaluate_and_visualize_model(base_model, optimized_model, X_test, y_test, selected_features, 
+                                                                evaluation, visualizer, dataset_path, algorithm_name)
+                    evaluation_results[algorithm_name] = results
+                    trained_models.extend([base_model, optimized_model] if optimized_model else [base_model])
+                else:
+                    logger.warning(f"No se pudo entrenar el modelo {algorithm_name}. Omitiendo...")
+            except Exception as e:
+                logger.error(f"Error al entrenar el modelo {algorithm_name}: {str(e)}")
+
         if self.recommendations:
-            best_model, best_selected_features, X_train_selected, X_test_selected, poly, poly_feature_names = self._recommend_best_model(X_train, y_train, X_test, y_test, self.problem_type, feature_names)
-        
-            # Usar X_train_selected y X_test_selected para entrenar y evaluar el modelo
-            best_model.fit(X_train_selected, y_train)
-            y_pred = best_model.predict(X_test_selected)
-        
-            # Evaluar el modelo
-            evaluation = Evaluation(self.problem_type, dataset_path)
-            evaluation.evaluate(best_model, X_test_selected, y_test, y_pred, best_selected_features)
-        
-            all_trained_models.append((best_model, evaluation, best_selected_features))
+            self._find_and_evaluate_best_model(X_train, y_train, X_test, y_test, feature_names, 
+                                            dataset_path, trained_models, evaluation, visualizer)
 
-            # Evaluar el mejor modelo
-            self._evaluate_model(best_model, X_test_selected, y_test)
+        return trained_models, evaluation_results
 
-            # Guardar información sobre la transformación polinomial
-            self.poly_transform = poly
-            self.selected_features = best_selected_features
-            
-            # Calcular la precisión del mejor modelo
-            if self.problem_type == 'classification':
-                best_accuracy = accuracy_score(y_test, best_model.predict(X_test_selected))
-            else:
-                best_accuracy = r2_score(y_test, best_model.predict(X_test_selected))
-            
-            # Usar el nombre de la clase del modelo en lugar de intentar acceder a 'name'
-            model_name = best_model.__class__.__name__
-            serializer.to_pickle(best_model, f"{model_name}_best", dataset_path, round(best_accuracy * 100, 1))
-        
-        return all_trained_models
-
-    def _is_appropriate_model(self, model_class):
+    def _is_appropriate_model(self, model_name):
         """
         Verifica si un modelo es apropiado para el tipo de problema actual.
         """
-        return ((self.problem_type == 'classification' and model_class in serializer.classification_models) or 
-                (self.problem_type == 'regression' and model_class in serializer.regression_models))
+        if self.problem_type is None:
+            logger.warning("El tipo de problema no ha sido determinado. No se puede verificar la idoneidad del modelo.")
+            return False
+        
+        classification_models = serializer.classification_models if hasattr(serializer, 'classification_models') else []
+        regression_models = serializer.regression_models if hasattr(serializer, 'regression_models') else []
+        
+        return ((self.problem_type == 'classification' and model_name in classification_models) or 
+                (self.problem_type == 'regression' and model_name in regression_models))
+
+    def _evaluate_and_visualize_model(self, base_model, optimized_model, X_test, y_test, selected_features, 
+                                      evaluation, visualizer, dataset_path, model_name):
+        """
+        Evalúa, compara y visualiza los modelos base y optimizado.
+        """
+        logger.info(f"\nEvaluación y visualización del modelo {model_name}:")
+        
+        # Evaluar y visualizar modelo base
+        base_results = self._evaluate_model(base_model, X_test, y_test, evaluation)
+        visualizer.plot_model_performance(base_model, X_test, y_test, f"{model_name}_base")
+        
+        if optimized_model:
+            # Evaluar y visualizar modelo optimizado
+            X_test_optimized = X_test[selected_features]
+            optimized_results = self._evaluate_model(optimized_model, X_test_optimized, y_test, evaluation)
+            visualizer.plot_model_performance(optimized_model, X_test_optimized, y_test, f"{model_name}_optimized")
+            
+            # Comparar modelos
+            logger.info("\nComparación de modelos:")
+            evaluation.compare_models(base_model, optimized_model, X_test, y_test)
+            visualizer.plot_model_comparison(base_model, optimized_model, X_test, y_test, model_name)
+            
+            return {'base': base_results, 'optimized': optimized_results}
+        
+        return {'base': base_results}
+
+    def _evaluate_model(self, model, X_test, y_test, evaluation):
+        """
+        Evalúa un modelo utilizando la clase Evaluation.
+        """
+        if self.problem_type == 'classification':
+            results = evaluation.evaluate_classification_models([model], X_test, y_test, self.target)
+        else:
+            results = evaluation.evaluate_regression_models([model], X_test, y_test, self.target)
+        self._print_evaluation_results(results)
+        return results
+
+    def _find_and_evaluate_best_model(self, X_train, y_train, X_test, y_test, feature_names, 
+                                      dataset_path, all_trained_models, evaluation, visualizer):
+        """
+        Encuentra, evalúa y visualiza el mejor modelo para el problema actual.
+        """
+        best_model, best_selected_features, X_train_selected, X_test_selected, poly, poly_feature_names = self._recommend_best_model(
+            X_train, y_train, X_test, y_test, self.problem_type, all_trained_models, feature_names
+        )
+        
+        if best_model is not None:
+            logger.info("\nEvaluación y visualización del mejor modelo recomendado:")
+            best_results = self._evaluate_model(best_model, X_test_selected, y_test, evaluation)
+            visualizer.plot_model_performance(best_model, X_test_selected, y_test, "best_model")
+            
+            self.poly_transform = poly
+            self.selected_features = best_selected_features
+            
+            accuracy = self._calculate_accuracy(best_model, X_test_selected, y_test)
+            model_name = best_model.__class__.__name__
+            serializer.to_pickle(best_model, f"{model_name}_best", dataset_path, round(accuracy * 100, 1))
+
+    def _print_evaluation_results(self, results):
+        """
+        Imprime los resultados de la evaluación de un modelo.
+        """
+        for key, value in results.items():
+            logger.info(f"{key}: {value}")
+        logger.info("-" * 50)
+
+    def _calculate_accuracy(self, model, X_test, y_test):
+        """
+        Calcula la precisión o R2 score del modelo.
+        """
+        if self.problem_type == 'classification':
+            return accuracy_score(y_test, model.predict(X_test))
+        else:
+            return r2_score(y_test, model.predict(X_test))
 
     def _recommend_best_model(self, X_train, y_train, X_test, y_test, problem_type, feature_names):
         from training.modeloptimization import recommend_best_model
@@ -205,65 +248,6 @@ class Training:
             X_train, y_train, X_test, y_test, problem_type, self.trained_models, feature_names
         )
         return best_model, best_selected_features, X_train_selected, X_test_selected, poly, poly_feature_names
-
-    def evaluate(self, X_test, y_test, all_trained_models):
-        print("\n------------------- EVALUACIONES --------------------")
-        eval_results = {}
-        
-        # Comprobar si all_trained_models es una lista o un solo modelo
-        if not isinstance(all_trained_models, list):
-            all_trained_models = [all_trained_models]
-        
-        for model in all_trained_models:
-            # Si el modelo es una tupla, extraer solo el modelo
-            if isinstance(model, tuple):
-                model = model[0]
-            
-            print(f"\nEvaluación del modelo {model.__class__.__name__}:")
-            model_results = self._evaluate_model(model, X_test, y_test)
-            self._print_evaluation_results(model_results)
-            eval_results[model.__class__.__name__] = model_results
-        
-        return eval_results
-
-    def _evaluate_model(self, model, X_test, y_test):
-        print(f"Evaluation class: {Evaluation}")
-        print(f"Problem type: {self.problem_type}, Dataset name: {self.dataset_name}")
-        
-        # Obtener las características utilizadas durante el entrenamiento
-        if hasattr(model, 'feature_names_'):
-            model_features = model.feature_names_
-        else:
-            # Si el modelo no tiene feature_names_, usar todas las características disponibles
-            model_features = X_test.columns.tolist() if isinstance(X_test, pd.DataFrame) else list(range(X_test.shape[1]))
-
-        # Convertir X_test a DataFrame si es un array de NumPy, manteniendo los nombres originales
-        if isinstance(X_test, np.ndarray):
-            X_test = pd.DataFrame(X_test, columns=model_features)
-
-        # Asegurarse de que X_test tenga las columnas correctas
-        X_test_filtered = X_test[model_features]
-
-        try:
-            evaluation = Evaluation(self.problem_type, self.dataset_name)
-        except TypeError:
-            print("Advertencia: La clase Evaluation no acepta argumentos. Usando inicialización por defecto.")
-            evaluation = Evaluation()
-            evaluation.problem_type = self.problem_type
-            evaluation.dataset_name = self.dataset_name
-
-        if self.problem_type == 'classification':
-            return evaluation.evaluate_classification_models([model], X_test_filtered, y_test, self.target, model_features)
-        else:
-            return evaluation.evaluate_regression_models([model], X_test_filtered, y_test, self.target, model_features)
-
-    def _print_evaluation_results(self, results):
-        """
-        Imprime los resultados de la evaluación de un modelo.
-        """
-        for key, value in results.items():
-            print(f"{key}: {value}")
-        print("-"*50)
 
     def predict(self, model_name, featuresPredict):
         """
@@ -301,7 +285,7 @@ class Training:
         class_label = self._get_class_label(prediction)
         self._print_prediction(featuresPredict, prediction, class_label, model_name)
         return prediction
-
+    
     def _prepare_features(self, featuresPredict):
         """
         Prepara las características para la predicción.
@@ -324,10 +308,10 @@ class Training:
         """
         Imprime el resultado de una predicción.
         """
-        print(f"\nPredicción realizada con el modelo: {model_name}")
-        print(f"La {self.target} predicha para las características proporcionadas es {prediction[0]:.2f} ({class_label})")
-        print("\nCaracterísticas utilizadas para la predicción:")
+        logger.info(f"\nPredicción realizada con el modelo: {model_name}")
+        logger.info(f"La {self.target} predicha para las características proporcionadas es {prediction[0]:.2f} ({class_label})")
+        logger.info("\nCaracterísticas utilizadas para la predicción:")
         for feature, value in featuresPredict.items():
-            print(f"  {feature}: {value:.4f}")
-        print("\nNota: Si algunas características esperadas por el modelo no estaban presentes,")
-        print("se utilizaron valores predeterminados (0 o la media del conjunto de entrenamiento).")
+            logger.info(f"  {feature}: {value:.4f}")
+        logger.info("\nNota: Si algunas características esperadas por el modelo no estaban presentes,")
+        logger.info("se utilizaron valores predeterminados (0 o la media del conjunto de entrenamiento).")

@@ -1,0 +1,27 @@
+Iniciando la aplicación...
+Autenticación simulada completada.
+Autenticación exitosa. Simulando inicio del cliente MQTT...
+Simulando inicio del cliente MQTT...
+
+////////// TOKII NO-CODE ML //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir
+Conjuntos de entrenamiento y prueba guardados en program\almacen\datasets\breast_cancer\breast_cancer_basic_train.csv y program\almacen\datasets\breast_cancer\breast_cancer_basic_test.csv
+Tamaño del conjunto de entrenamiento: 455, Tamaño del conjunto de prueba: 114
+Preparando para entrenar modelos con dataset: program\almacen\datasets\breast_cancer\breast_cancer_basic.csv
+Características: ['mean radius', 'mean texture', 'mean perimeter', 'mean area', 'mean smoothness', 'mean compactness', 'mean concavity', 'mean concave points', 'mean symmetry', 'mean fractal dimension', 'radius error', 'texture error', 'perimeter error', 'area error', 'smoothness error', 'compactness error', 'concavity error', 'concave points error', 'symmetry error', 'fractal dimension error', 'worst radius', 'worst texture', 'worst perimeter', 'worst area', 'worst smoothness', 'worst compactness', 'worst concavity', 'worst concave points', 'worst symmetry', 'worst fractal dimension']
+Tipo de problema: None
+Error en split_and_train: string indices must be integers, not 'str'
+
+////////// TOKII NO-CODE ML //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir
+Gracias por usar TOKII NO-CODE ML. ¡Hasta pronto!

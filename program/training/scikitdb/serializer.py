@@ -1,13 +1,11 @@
 # serializer.py
-from typing import Dict, Type
-import pickle
-from typing import Protocol
 import os
-import pandas as pd
 import re
-
-import training.scikitdb.classification as clf
-import training.scikitdb.regression as reg
+import json
+import pickle
+from pathlib import Path
+from typing import Dict, Type, Protocol
+import pandas as pd
 
 from sklearn.svm import SVC, SVR
 from sklearn import svm, discriminant_analysis, dummy
@@ -27,6 +25,12 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.gaussian_process import GaussianProcessClassifier, GaussianProcessRegressor
 
+from utils.logger import logger
+import training.scikitdb.classification as clf
+import training.scikitdb.regression as reg
+
+class ModellNotSupported(Exception):
+    pass
 class ScikitModel(Protocol):
     def fit(self, X, y, sample_weight=None): ...
     def predict(self, X): ...
@@ -196,16 +200,35 @@ def deserialize_model(model_dict):
         return reg.deserialize_mlp_regressor(model_dict)
     else:
         raise ModellNotSupported('Model type not supported or corrupt JSON file. Email support@mlrequest.com to request a feature or report a bug.')
+    
+    
+def clean_filename(filename):
+    """
+    Reemplaza caracteres no permitidos en nombres de archivo con guiones bajos.
+    """
+    return re.sub(r'[\\/*?:"<>|]', "_", filename)
+
+def ensure_directory_exists(directory):
+    """
+    Crea un directorio si no existe.
+    """
+    os.makedirs(directory, exist_ok=True)
+
+def get_safe_path(base_path, *parts):
+    """
+    Crea una ruta segura combinando base_path y partes adicionales,
+    asegurándose de que los nombres de archivo y directorio sean válidos.
+    """
+    safe_parts = [clean_filename(part) for part in parts]
+    safe_path = os.path.join(base_path, *safe_parts)
+    ensure_directory_exists(os.path.dirname(safe_path))
+    return safe_path
 
 def to_dict(model):
     return serialize_model(model)
 
 def from_dict(model_dict):
     return deserialize_model(model_dict)
-
-import os
-import pickle
-from pathlib import Path
 
 def to_pickle(model, model_name, dataset_path, accuracy=None, X_train=None):
     """
@@ -257,116 +280,52 @@ def to_pickle(model, model_name, dataset_path, accuracy=None, X_train=None):
         print(f"Error al guardar el modelo: {str(e)}")
         return None
 
-def from_pickle(path):
+def from_pickle(model_path):
     """
     Carga un modelo desde un archivo pickle.
 
     Args:
-    path (str): Ruta al archivo pickle del modelo.
+    model_path (str): Ruta al archivo pickle del modelo.
 
     Returns:
     object: El modelo cargado.
+
+    Raises:
+    FileNotFoundError: Si el archivo no existe.
+    pickle.UnpicklingError: Si hay un error al deserializar el archivo.
     """
     try:
-        with open(path, 'rb') as f:
-            model_info = pickle.load(f)
-        model = model_info['model']
-        if model_info['feature_names'] is not None:
-            model.feature_names_ = model_info['feature_names']
-        if model_info['feature_means'] is not None:
-            model.feature_means_ = model_info['feature_means']
-        else:
-            # Si no tenemos las medias, inicializamos a 0
-            model.feature_means_ = {feature: 0 for feature in getattr(model, 'feature_names_', [])}
-        return model
-    except Exception as e:
-        print(f"Error al cargar el modelo: {str(e)}")
-        return None
-
-def from_pickle(path):
-    """
-    Carga un modelo desde un archivo pickle.
-
-    Args:
-    path (str): Ruta al archivo pickle del modelo.
-
-    Returns:
-    object: El modelo cargado.
-    """
-    try:
-        with open(path, 'rb') as f:
-            model_info = pickle.load(f)
-        model = model_info['model']
-        if model_info['feature_names'] is not None:
-            model.feature_names_ = model_info['feature_names']
-        if model_info['feature_means'] is not None:
-            model.feature_means_ = model_info['feature_means']
-        else:
-            # Si no tenemos las medias, inicializamos a 0
-            model.feature_means_ = {feature: 0 for feature in model.feature_names_}
-        return model
-    except Exception as e:
-        print(f"Error al cargar el modelo: {str(e)}")
-        return None
-
-def from_pickle(path):
-    """
-    Carga un modelo desde un archivo pickle.
-
-    Args:
-    path (str): Ruta al archivo pickle del modelo.
-
-    Returns:
-    object: El modelo cargado.
-    """
-    try:
-        with open(path, 'rb') as model_file:
+        with open(model_path, 'rb') as model_file:
             model_info = pickle.load(model_file)
         
-        model = model_info['model']
-        if model_info['feature_names'] is not None:
-            model.feature_names_ = model_info['feature_names']
-        if model_info['feature_means'] is not None:
-            model.feature_means_ = model_info['feature_means']
+        if isinstance(model_info, dict):
+            model = model_info.get('model')
+            if model is None:
+                raise ValueError("El archivo pickle no contiene un modelo válido.")
+            
+            # Restaurar atributos adicionales si existen
+            if 'feature_names' in model_info:
+                model.feature_names_ = model_info['feature_names']
+            if 'feature_means' in model_info:
+                model.feature_means_ = model_info['feature_means']
+            else:
+                # Si no tenemos las medias, inicializamos a 0
+                model.feature_means_ = {feature: 0 for feature in getattr(model, 'feature_names_', [])}
+        else:
+            model = model_info  # El archivo contiene directamente el modelo
         
+        logger.info(f"Modelo cargado exitosamente desde: {model_path}")
         return model
+    except FileNotFoundError:
+        logger.error(f"No se encontró el archivo del modelo: {model_path}")
+        raise
+    except pickle.UnpicklingError as e:
+        logger.error(f"Error al deserializar el modelo: {str(e)}")
+        raise
     except Exception as e:
-        print(f"Error al cargar el modelo: {str(e)}")
-        return None
+        logger.error(f"Error inesperado al cargar el modelo: {str(e)}")
+        raise
 
-def from_pickle(path):
-    """
-    Carga un modelo desde un archivo pickle.
-
-    Args:
-    path (str): Ruta al archivo pickle del modelo.
-
-    Returns:
-    object: El modelo cargado.
-    """
-    try:
-        with open(path, 'rb') as f:
-            model_info = pickle.load(f)
-        model = model_info['model']
-        if model_info['feature_names'] is not None:
-            model.feature_names_ = model_info['feature_names']
-        return model
-    except Exception as e:
-        print(f"Error al cargar el modelo: {str(e)}")
-        return None
-
-def from_pickle(model_path):
-    with open(model_path, 'rb') as model_file:
-        model_info = pickle.load(model_file)
-    model = model_info['model']
-    if model_info['feature_names'] is not None:
-        model.feature_names_ = model_info['feature_names']
-    if model_info['feature_means'] is not None:
-        model.feature_means_ = model_info['feature_means']
-    else:
-        # Si no tenemos las medias, inicializamos a 0
-        model.feature_means_ = {feature: 0 for feature in getattr(model, 'feature_names_', [])}
-    return model
 
 def load_model(model_name):
     """
@@ -399,29 +358,74 @@ def find_model_path(model_name):
     
     return None
 
-def clean_filename(filename):
+def list_stored_models():
     """
-    Reemplaza caracteres no permitidos en nombres de archivo con guiones bajos.
+    Lista todos los modelos almacenados.
     """
-    return re.sub(r'[\\/*?:"<>|]', "_", filename)
+    models_dir = 'program/almacen/models'
+    stored_models = []
+    for model_name in os.listdir(models_dir):
+        model_path = os.path.join(models_dir, model_name)
+        if os.path.isdir(model_path):
+            stored_models.append((model_name, model_path))
+    return stored_models
 
-def ensure_directory_exists(directory):
+def get_dataset_path(dataset_name, optimized=False):
     """
-    Crea un directorio si no existe.
+    Obtiene la ruta del dataset almacenado.
+
+    Args:
+    dataset_name (str): Nombre del dataset
+    optimized (bool): Si se debe usar la versión optimizada
+
+    Returns:
+    str: Ruta al archivo CSV del dataset
     """
-    os.makedirs(directory, exist_ok=True)
+    suffix = "optimized" if optimized else "basic"
+    return str(Path(f"program/almacen/datasets/{dataset_name}/{dataset_name}_{suffix}.csv"))
 
-def get_safe_path(base_path, *parts):
+def list_stored_datasets():
     """
-    Crea una ruta segura combinando base_path y partes adicionales,
-    asegurándose de que los nombres de archivo y directorio sean válidos.
+    Lista los datasets almacenados en program/almacen/datasets.
+
+    Returns:
+    list: Lista de tuplas (nombre_dataset, ruta_basic, ruta_optimized)
     """
-    safe_parts = [clean_filename(part) for part in parts]
-    safe_path = os.path.join(base_path, *safe_parts)
-    ensure_directory_exists(os.path.dirname(safe_path))
-    return safe_path
+    datasets_dir = Path("program/almacen/datasets")
+    stored_datasets = []
 
+    for dataset_dir in datasets_dir.iterdir():
+        if dataset_dir.is_dir():
+            basic_path = dataset_dir / f"{dataset_dir.name}_basic.csv"
+            optimized_path = dataset_dir / f"{dataset_dir.name}_optimized.csv"
+            
+            if basic_path.exists() or optimized_path.exists():
+                stored_datasets.append((
+                    dataset_dir.name,
+                    str(basic_path) if basic_path.exists() else None,
+                    str(optimized_path) if optimized_path.exists() else None
+                ))
 
-class ModellNotSupported(Exception):
-    pass
+    return stored_datasets
 
+def get_dataset_for_model(model_name):
+    """
+    Obtiene el nombre del dataset asociado a un modelo.
+    """
+    model_info_path = f'program/almacen/models/{model_name}/model_info.json'
+    if os.path.exists(model_info_path):
+        with open(model_info_path, 'r') as f:
+            model_info = json.load(f)
+        return model_info.get('dataset_name')
+    return None
+
+def get_features_for_dataset(dataset_name):
+    """
+    Obtiene las características de un dataset.
+    """
+    dataset_info_path = f'program/almacen/datasets/{dataset_name}/dataset_info.json'
+    if os.path.exists(dataset_info_path):
+        with open(dataset_info_path, 'r') as f:
+            dataset_info = json.load(f)
+        return dataset_info.get('features', [])
+    return []

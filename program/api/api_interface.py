@@ -1,66 +1,78 @@
 #api_interface.py
+from api.config import Config
 import requests
+from utils.logger import logger
+import data.global_data as global_data
 
-# Función para descargar y cargar el dataset
-def GET_dataset(dataset_url):
-    from data.global_data import token
+class APIInterface:
+    api_config = Config.get_api_config()
 
-    header = {
-        "accept": "application/json",
-        "Authorization": "Token " + token
-    }
-    response = requests.get(dataset_url, headers=header)
-    # Guardar el dataset en el servidor o retornarlo para su uso
-    return response.content
+    @staticmethod
+    def _get_headers():
+        """
+        Obtiene los headers para las solicitudes API, incluyendo el token de autenticación.
+        """
+        return {
+            "Authorization": f"Bearer {global_data.auth_token}",
+            "Content-Type": "application/json"
+        }
 
-# Función para enviar las predicciones por API
-def POST_modeleval(trained_models, evaluation_results):
-    # URL de la API donde enviar las métricas de evaluación del modelo
-    api_url = "http://immersia.eu/model_evaluation"
+    @staticmethod
+    def send_dataset_results(dataset_info):
+        """
+        Envía los resultados del análisis del dataset a la API.
+        
+        Args:
+        dataset_info (dict): Información del dataset y resultados del análisis
+        """
+        try:
+            if Config.SIMULATION_MODE:
+                logger.info("Simulando envío de resultados del dataset a la API")
+            else:
+                response = requests.post(
+                    f"{APIInterface.api_config['base_url']}/dataset",
+                    json=dataset_info,
+                    headers=APIInterface._get_headers()
+                )
+                response.raise_for_status()
+            logger.info("Resultados del dataset enviados exitosamente a la API")
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error al enviar resultados del dataset a la API: {str(e)}")
 
-    # Payload de la solicitud POST
-    payload = {
-        "evaluation_results": evaluation_results  #Formato del payload según lo requiere la API
-    }
+    @staticmethod
+    def send_model_results(model_results):
+        """
+        Envía los resultados de los modelos entrenados a la API.
+        
+        Args:
+        model_results (dict): Resultados de los modelos entrenados
+        """
+        try:
+            response = requests.post(
+                f"{APIInterface.api_config['base_url']}/models",
+                json=model_results,
+                headers=APIInterface._get_headers()
+            )
+            response.raise_for_status()
+            logger.info("Resultados de los modelos enviados exitosamente a la API")
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error al enviar resultados de los modelos a la API: {str(e)}")
 
-    # Encabezados de la solicitud POST
-    headers = {
-        "Content-Type": "application/json"
-    }
-
-    try:
-        # Enviamos la solicitud POST a la API
-        response = requests.post(api_url, json=payload, headers=headers)
-        # Verificamos el código de estado de la respuesta
-        if response.status_code == 200:
-            print("Métricas de evaluación del modelo enviadas correctamente a la API.")
-        else:
-            print("Error al enviar las métricas de evaluación del modelo a la API:", response.status_code)
-    except Exception as e:
-        print("Error al enviar las métricas de evaluación del modelo a la API:", str(e))
-
-
-def POST_predictions(predictions):
-    # URL de la API donde enviar las métricas de la predicción
-    api_url = "http://tokii.com/predictions"
-
-    # Payload de la solicitud POST
-    payload = {
-        "predictions": predictions.tolist()  # Convertimos las predicciones a una lista si es necesario
-    }
-
-    # Encabezados de la solicitud POST
-    headers = {
-        "Content-Type": "application/json"
-    }
-
-    try:
-        # Enviamos la solicitud POST a la API
-        response = requests.post(api_url, json=payload, headers=headers)
-        # Verificamos el código de estado de la respuesta
-        if response.status_code == 200:
-            print("Predicciones enviadas correctamente a la API.")
-        else:
-            print("Error al enviar las predicciones a la API:", response.status_code)
-    except Exception as e:
-        print("Error al enviar las predicciones a la API:", str(e))
+    @staticmethod
+    def send_prediction_results(prediction_results):
+        """
+        Envía los resultados de las predicciones a la API.
+        
+        Args:
+        prediction_results (dict): Resultados de las predicciones
+        """
+        try:
+            response = requests.post(
+                f"{APIInterface.api_config['base_url']}/predictions",
+                json=prediction_results,
+                headers=APIInterface._get_headers()
+            )
+            response.raise_for_status()
+            logger.info("Resultados de las predicciones enviados exitosamente a la API")
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error al enviar resultados de las predicciones a la API: {str(e)}")

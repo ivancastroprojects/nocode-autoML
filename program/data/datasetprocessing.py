@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-
+import time
 import scipy
 from sklearn.impute import SimpleImputer, KNNImputer
 from sklearn.experimental import enable_iterative_imputer
@@ -12,9 +12,66 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.metrics import make_scorer, accuracy_score, r2_score
 from sklearn.decomposition import PCA
 from sklearn_genetic import GAFeatureSelectionCV
-import time
 
+from utils.logger import logger
 from data.visualizer import Visualizer
+
+def determine_problem_type(y, feature_names=None):
+    """
+    Determina si el problema es de clasificación o regresión basado en la variable objetivo.
+    
+    Args:
+    y (array-like): La variable objetivo.
+    feature_names (list, optional): Nombres de las características.
+    
+    Returns:
+    str: 'Clasificación Binaria', 'Clasificación Multiclase', o 'Regresión'
+    """
+    unique_values = np.unique(y)
+    n_unique = len(unique_values)
+
+    # Verificar si y es numérico
+    is_numeric = np.issubdtype(y.dtype, np.number)
+
+    if n_unique == 2:
+        problem_type = 'Clasificación Binaria'
+    elif not is_numeric or (n_unique > 2 and n_unique <= 10):
+        problem_type = 'Clasificación Multiclase'
+    elif is_numeric and (n_unique > 10 or np.issubdtype(y.dtype, np.floating)):
+        problem_type = 'Regresión'
+    else:
+        # Si no podemos determinar claramente, asumimos clasificación multiclase
+        problem_type = 'Clasificación Multiclase'
+        logger.warning("No se pudo determinar claramente el tipo de problema. Se asume Clasificación Multiclase.")
+
+    logger.info(f"Tipo de problema determinado: {problem_type}")
+    return problem_type
+
+def determine_problem_type_from_dataset(dataset, target_column='target'):
+    """
+    Determina el tipo de problema basado en el dataset completo.
+
+    Args:
+    dataset (Dataset o DataFrame): Dataset completo.
+    target_column (str): Nombre de la columna objetivo.
+
+    Returns:
+    str: Tipo de problema ('Clasificación Binaria', 'Clasificación Multiclase', o 'Regresión')
+    """
+    if hasattr(dataset, 'get_dataframe'):
+        df = dataset.get_dataframe()
+    elif isinstance(dataset, pd.DataFrame):
+        df = dataset
+    else:
+        raise ValueError("El dataset debe ser un objeto Dataset o un DataFrame de pandas.")
+
+    if target_column not in df.columns:
+        raise ValueError(f"La columna objetivo '{target_column}' no está presente en el dataset.")
+
+    y = df[target_column]
+    feature_names = df.columns.drop(target_column).tolist()
+    return determine_problem_type(y, feature_names)
+
 
 def EDA_initial_info(self):
     """
@@ -67,50 +124,6 @@ def EDA_processed_info(self):
     
     # Matriz de correlación
     visualizer.create_correlation_matrix(self.df, numeric_cols, "Dataset procesado")
-
-
-def determine_problem_type(y):
-    """
-    Determine if the target variable is suitable for classification or regression.
-    
-    Args:
-    y (array-like): The target variable.
-    
-    Returns:
-    str: 'classification' or 'regression'
-    """
-    # Verificar si y es una cadena
-    if isinstance(y, str):
-        raise ValueError("La variable objetivo 'y' no debe ser una cadena. Asegúrate de pasar los valores de la columna objetivo.")
-    
-    unique_values = np.unique(y)
-    num_unique_values = len(unique_values)
-    total_values = len(y)
-    
-    # Si y es una cadena, convertirla a numérica si es posible
-    if y.dtype == object:
-        try:
-            y = y.astype(float)
-        except ValueError:
-            return 'classification'  # Si no se puede convertir a float, asumimos que es clasificación
-    
-    # Si los valores son continuos (float), es probablemente regresión
-    if np.issubdtype(y.dtype, np.floating):
-        return 'regression'
-    
-    # Si hay pocos valores únicos en comparación con el total, es probablemente clasificación
-    if num_unique_values < 10 or (num_unique_values / total_values) < 0.05:
-        return 'classification'
-    
-    # Si hay muchos valores únicos enteros, es probablemente regresión
-    if np.issubdtype(y.dtype, np.integer) and num_unique_values > 10:
-        return 'regression'
-    
-    # Si los valores son categóricos
-    if np.issubdtype(y.dtype, np.object) or np.issubdtype(y.dtype, np.str_):
-        return 'classification'
-    
-    return 'classification'
 
 def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeric_features=None, 
                         datetime_features=None, text_features=None, outlier_columns=None,

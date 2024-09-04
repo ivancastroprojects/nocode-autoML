@@ -8,7 +8,7 @@ class Logger:
         self.logger.setLevel(logging.DEBUG)
 
         # Crear el directorio de logs si no existe
-        log_dir = os.path.join('program', 'almacen')
+        log_dir = os.path.join('program', 'almacen', 'logs')
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
 
@@ -22,7 +22,7 @@ class Logger:
         console_handler.setLevel(logging.INFO)
 
         # Crear el formato para los logs
-        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        formatter = logging.Formatter('%(message)s') #('%(asctime)s - %(levelname)s - %(message)s')
         file_handler.setFormatter(formatter)
         console_handler.setFormatter(formatter)
 

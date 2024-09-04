@@ -1,0 +1,33 @@
+Iniciando la aplicación...
+Autenticación simulada completada.
+Autenticación exitosa. Simulando inicio del cliente MQTT...
+Simulando inicio del cliente MQTT...
+
+////////// TOKII-NO CODE AI //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir
+Dataset cargado exitosamente desde sklearn:iris
+Simulando envío de resultados del dataset a la API
+Resultados del dataset enviados exitosamente a la API
+
+////////// TOKII-NO CODE AI //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir
+Error al obtener o seleccionar algoritmos: Tipo de problema no reconocido: Clasificación
+
+////////// TOKII-NO CODE AI //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir
+Gracias por usar TOKII-NO CODE AI. ¡Hasta luego!

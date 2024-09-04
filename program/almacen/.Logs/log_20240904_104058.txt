@@ -1,0 +1,18 @@
+2024-09-04 10:40:59,166 - INFO - 
+////////// TOKII-NO CODE AI //////////
+2024-09-04 10:40:59,166 - INFO - 
+Seleccione una acción:
+2024-09-04 10:40:59,166 - INFO - 1 - Cargar dataset
+2024-09-04 10:40:59,166 - INFO - 2 - Entrenar modelo
+2024-09-04 10:40:59,166 - INFO - 3 - Realizar predicción
+2024-09-04 10:40:59,166 - INFO - 4 - Salir
+2024-09-04 10:41:03,777 - INFO - Dataset cargado exitosamente desde sklearn:iris
+2024-09-04 10:41:06,631 - INFO - 
+////////// TOKII-NO CODE AI //////////
+2024-09-04 10:41:06,631 - INFO - 
+Seleccione una acción:
+2024-09-04 10:41:06,631 - INFO - 1 - Cargar dataset
+2024-09-04 10:41:06,635 - INFO - 2 - Entrenar modelo
+2024-09-04 10:41:06,635 - INFO - 3 - Realizar predicción
+2024-09-04 10:41:06,635 - INFO - 4 - Salir
+2024-09-04 10:42:26,475 - INFO - Dataset cargado exitosamente desde program/almacen/datasets/iris/iris_basic.csv

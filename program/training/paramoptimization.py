@@ -4,20 +4,10 @@ from sklearn.model_selection import RandomizedSearchCV, GridSearchCV
 from sklearn_genetic import GASearchCV
 import training.scikitdb.serializer as serializer
 import random
+from utils.logger import logger
 
 
-def get_optimized_params(model, X, y, optimization_method='random'):
-    """
-    Obtiene los parámetros optimizados para un modelo dado.
-    """
-    algorithm = [{'name': model.__class__.__name__, 'model': model}]
-    recommended_params = train_recommendedparams(X, y, algorithm, optimization_method)
-    
-    if recommended_params and recommended_params[0]['best_params']:
-        return recommended_params[0]['best_params']
-    else:
-        print(f"No se encontraron parámetros recomendados para {model.__class__.__name__}. Usando configuración por defecto.")
-        return {}
+
 
 def train_recommendedparams(X_train, y_train, algorithms, optimization_method='random'):
     """
@@ -100,9 +90,26 @@ def get_param_grid(estimator):
         elif isinstance(param_value, int):
             param_grid[param_name] = (max(1, param_value // 2), max(param_value * 2, param_value + 1))
         elif isinstance(param_value, float):
-            param_grid[param_name] = (max(0.0, param_value / 2), max(param_value * 2, param_value + 0.1))
+            if param_name == 'subsample':
+                param_grid[param_name] = (max(0.1, param_value / 2), min(1.0, param_value * 2))
+            else:
+                param_grid[param_name] = (max(0.0, param_value / 2), max(param_value * 2, param_value + 0.1))
         elif isinstance(param_value, str):
             param_grid[param_name] = [param_value]
+    return param_grid
+
+
+def get_default_param_grid(estimator):
+    param_grid = {}
+    for param, value in estimator.get_params().items():
+        if isinstance(value, bool):
+            param_grid[param] = [True, False]
+        elif isinstance(value, int):
+            param_grid[param] = [max(1, value // 2), value, value * 2]
+        elif isinstance(value, float):
+            param_grid[param] = [value / 2, value, value * 2]
+        elif isinstance(value, str):
+            param_grid[param] = [value]
     return param_grid
 
 def generate_random_param(param_name, param_range, estimator):
@@ -121,4 +128,23 @@ def generate_random_param(param_name, param_range, estimator):
                 if min_val == max_val:
                     return min_val
                 return random.uniform(min_val, max_val)
+    logger.warning(f"No se pudo generar un valor aleatorio para {param_name}")
     return None
+
+
+def get_basic_param_grid(estimator):
+    basic_params = ['n_estimators', 'max_depth', 'min_samples_split', 'min_samples_leaf', 'max_features']
+    return {k: v for k, v in get_default_param_grid(estimator).items() if k in basic_params}
+
+def get_optimized_params(model, X, y, optimization_method='random'):
+    """
+    Obtiene los parámetros optimizados para un modelo dado.
+    """
+    algorithm = [{'name': model.__class__.__name__, 'model': model}]
+    recommended_params = train_recommendedparams(X, y, algorithm, optimization_method)
+    
+    if recommended_params and recommended_params[0]['best_params']:
+        return recommended_params[0]['best_params']
+    else:
+        print(f"No se encontraron parámetros recomendados para {model.__class__.__name__}. Usando configuración por defecto.")
+        return {}

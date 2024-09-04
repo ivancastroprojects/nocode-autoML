@@ -1,0 +1,79 @@
+        {
+            "name": "iris",
+            "description": "Conjunto de datos clásico de flores iris. Clasificación de especies de iris basada en características de la flor.",
+            "target": "target",
+            "learning_type": "Clasificación",
+            "url": "sklearn:iris"
+        },
+        {
+            "name": "wine",
+            "description": "Datos de análisis químicos de vinos. Clasificación de vinos según su origen.",
+            "target": "target",
+            "learning_type": "Clasificación",
+            "url": "sklearn:wine"
+        },
+        {
+            "name": "breast_cancer",
+            "description": "Características de células de cáncer de mama. Clasificación de tumores como malignos o benignos.",
+            "target": "target",
+            "learning_type": "Clasificación",
+            "url": "sklearn:breast_cancer"
+        },
+        {
+            "name": "digits",
+            "description": "Imágenes de dígitos escritos a mano. Reconocimiento de dígitos del 0 al 9.",
+            "target": "target",
+            "learning_type": "Clasificación",
+            "url": "sklearn:digits"
+        },
+        # Regresión
+        {
+            "name": "diabetes",
+            "description": "Datos de progresión de diabetes. Predicción de la progresión de la enfermedad basada en características médicas.",
+            "target": "target",
+            "learning_type": "Regresión",
+            "url": "sklearn:diabetes"
+        },
+        {
+            "name": "boston",
+            "description": "Datos de viviendas en Boston. Predicción del precio de las viviendas.",
+            "target": "target",
+            "learning_type": "Regresión",
+            "url": "sklearn:boston"
+        },
+        {
+            "name": "california_housing",
+            "description": "Datos del censo de California de 1990. Predicción del valor medio de las viviendas por distrito.",
+            "target": "MedHouseVal",
+            "learning_type": "Regresión",
+            "url": "sklearn:california_housing"
+        },
+        {
+            "name": "linnerud",
+            "description": "Datos de aptitud física y medidas fisiológicas. Predicción de variables fisiológicas.",
+            "target": "target",
+            "learning_type": "Regresión multivariante",
+            "url": "sklearn:linnerud"
+        },
+        # Datasets adicionales
+        {
+            "name": "heart_disease",
+            "description": "Datos de pacientes cardíacos de UCI. Predicción de la presencia de enfermedad cardíaca.",
+            "target": "target",
+            "learning_type": "Clasificación",
+            "url": "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
+        },
+        {
+            "name": "titanic",
+            "description": "Datos de pasajeros del Titanic. Predicción de supervivencia en el desastre del Titanic.",
+            "target": "Survived",
+            "learning_type": "Clasificación",
+            "url": "https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/stuff/titanic.csv"
+        },
+        {
+            "name": "spotify_tracks",
+            "description": "Características de canciones de Spotify. Predicción de popularidad o agrupación por género.",
+            "target": "track_popularity",
+            "learning_type": "Regresión / Clustering",
+            "url": "https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-21/spotify_songs.csv"
+        }

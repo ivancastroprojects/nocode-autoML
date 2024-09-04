@@ -1,283 +1,319 @@
-# main.py
-from training.training import Training
+import json
 from api import mqtt
 from data import global_data
-import json
-import pandas as pd
-import random
-import training.scikitdb.serializer as serializer
-from sklearn.utils import all_estimators
-from training.paramoptimization import generate_random_param, get_param_grid
-
+from training.scikitdb import serializer
+from api.config import Config
+from training.training import Training
 from utils.logger import logger
 
 
-pd.set_option('future.no_silent_downcasting', True)
-
-DEBUG = True
-
 class FakeMsg:
-    def __init__(self, message):
-        self.payload = message
+    def __init__(self, payload):
+        self.payload = payload
 
-def init():
-    global_data.dataset = None  # Se establecerá cuando se cargue un dataset
+def main_menu():
+    """
+    Muestra el menú principal y maneja la interacción del usuario.
+    """    
+    logger.info("Iniciando la aplicación...")
+    simulate_authentication()
+    
     global_data.training = Training()
-
-    if not DEBUG:
-        mqtt.init()
+    global_data.dataset = None
+    
+    if global_data.auth_token:
+        if Config.SIMULATION_MODE:
+            logger.info("Autenticación exitosa. Simulando inicio del cliente MQTT...")
+            mqtt.init()
+            while True:
+                print("\n\n////////// TOKII-NO CODE AI //////////")
+                print("\nSeleccione una acción:")
+                print("1 - Cargar dataset")
+                print("2 - Entrenar modelo")
+                print("3 - Realizar predicción")
+                print("4 - Salir")
+                
+                choice = input("Ingrese su elección: ")
+                
+                try:
+                    if choice == '1':
+                        load_dataset()
+                    elif choice == '2':
+                        train_model()
+                    elif choice == '3':
+                        make_prediction()
+                    elif choice == '4':
+                        print("Gracias por usar TOKII-NO CODE AI. ¡Hasta luego!")
+                        break
+                    else:
+                        print("Opción no válida. Por favor, intente de nuevo.")
+                except Exception as e:
+                    logger.error(f"Error: {str(e)}")
+        else:
+            mqtt.init()
     else:
-        while True:
-            logger.info("\n////////// TOKII-NO CODE AI //////////")
-            logger.info("\nSeleccione una acción:")
-            logger.info("1 - Cargar dataset")
-            logger.info("2 - Entrenar modelo")
-            logger.info("3 - Realizar predicción")
-            logger.info("4 - Salir")
-            
-            choice = input("Ingrese su elección: ")
-            
-            if choice == '1':
-                load_dataset()
-            elif choice == '2':
-                train_model()
-            elif choice == '3':
-                make_prediction()
-            elif choice == '4':
-                logger.info("Saliendo del programa...")
-                break
-            else:
-                logger.warning("Opción no válida. Intente de nuevo.")
-
+        logger.error("Fallo en la autenticación. No se puede iniciar la aplicación.")
+        
+def simulate_authentication():
+    """
+    Simula un proceso de autenticación y almacena el token.
+    """
+    simulated_token = "simulated_auth_token_12345"
+    global_data.auth_token = simulated_token
+    logger.info("Autenticación simulada completada.")
+    
 def load_dataset():
-    datasets = [
-        # Clasificación
-        {
-            "name": "iris",
-            "description": "Conjunto de datos clásico de flores iris. Clasificación de especies de iris basada en características de la flor.",
-            "target": "target",
-            "learning_type": "Clasificación",
-            "url": "sklearn:iris"
-        },
-        {
-            "name": "wine",
-            "description": "Datos de análisis químicos de vinos. Clasificación de vinos según su origen.",
-            "target": "target",
-            "learning_type": "Clasificación",
-            "url": "sklearn:wine"
-        },
-        {
-            "name": "breast_cancer",
-            "description": "Características de células de cáncer de mama. Clasificación de tumores como malignos o benignos.",
-            "target": "target",
-            "learning_type": "Clasificación",
-            "url": "sklearn:breast_cancer"
-        },
-        {
-            "name": "digits",
-            "description": "Imágenes de dígitos escritos a mano. Reconocimiento de dígitos del 0 al 9.",
-            "target": "target",
-            "learning_type": "Clasificación",
-            "url": "sklearn:digits"
-        },
-        # Regresión
-        {
-            "name": "diabetes",
-            "description": "Datos de progresión de diabetes. Predicción de la progresión de la enfermedad basada en características médicas.",
-            "target": "target",
-            "learning_type": "Regresión",
-            "url": "sklearn:diabetes"
-        },
-        {
-            "name": "boston",
-            "description": "Datos de viviendas en Boston. Predicción del precio de las viviendas.",
-            "target": "target",
-            "learning_type": "Regresión",
-            "url": "sklearn:boston"
-        },
-        {
-            "name": "california_housing",
-            "description": "Datos del censo de California de 1990. Predicción del valor medio de las viviendas por distrito.",
-            "target": "MedHouseVal",
-            "learning_type": "Regresión",
-            "url": "sklearn:california_housing"
-        },
-        {
-            "name": "linnerud",
-            "description": "Datos de aptitud física y medidas fisiológicas. Predicción de variables fisiológicas.",
-            "target": "target",
-            "learning_type": "Regresión multivariante",
-            "url": "sklearn:linnerud"
-        },
-        # Datasets adicionales
-        {
-            "name": "heart_disease",
-            "description": "Datos de pacientes cardíacos de UCI. Predicción de la presencia de enfermedad cardíaca.",
-            "target": "target",
-            "learning_type": "Clasificación",
-            "url": "https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/processed.cleveland.data"
-        },
-        {
-            "name": "titanic",
-            "description": "Datos de pasajeros del Titanic. Predicción de supervivencia en el desastre del Titanic.",
-            "target": "Survived",
-            "learning_type": "Clasificación",
-            "url": "https://web.stanford.edu/class/archive/cs/cs109/cs109.1166/stuff/titanic.csv"
-        },
-        {
-            "name": "spotify_tracks",
-            "description": "Características de canciones de Spotify. Predicción de popularidad o agrupación por género.",
-            "target": "track_popularity",
-            "learning_type": "Regresión / Clustering",
-            "url": "https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2020/2020-01-21/spotify_songs.csv"
+    """
+    Recopila información para cargar un nuevo dataset.
+    """
+    print("\n--- Carga de Dataset ---")
+    
+    # Preguntar si se quiere usar un dataset almacenado o cargar uno nuevo
+    choice = input("¿Desea usar un dataset almacenado (1 o Enter) o cargar uno nuevo (2)? ").strip()
+    
+    if choice == '' or choice == '1':
+        stored_datasets = serializer.list_stored_datasets()
+        if not stored_datasets:
+            print("No hay datasets almacenados. Se procederá a cargar un nuevo dataset.")
+            return load_new_dataset()
+        
+        print("\nDatasets almacenados:")
+        for i, (name, basic_path, optimized_path) in enumerate(stored_datasets, 1):
+            print(f"{i}. {name}")
+        
+        dataset_choice = input("Seleccione el número del dataset a usar (Enter para el primero): ").strip()
+        dataset_choice = 0 if dataset_choice == '' else int(dataset_choice) - 1
+        selected_dataset = stored_datasets[dataset_choice]
+        
+        dataset_msg = {
+            "command": "dataset",
+            "data": {
+                "dataset": {
+                    "path": selected_dataset[1],  # Usamos el basic_path
+                    "name": selected_dataset[0],
+                    "target": None  # Se determinará automáticamente
+                },
+                "processing": {"optimized": False}  # Usamos el dataset básico
+            }
         }
-    ]
+    elif choice == '2':
+        dataset_msg = load_new_dataset()
+    else:
+        print("Opción no válida. Volviendo al menú principal.")
+        return
+
+    mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(dataset_msg)))
     
-    print("\nDatasets disponibles:")
-    for i, dataset in enumerate(datasets, 1):
-        print(f"{i} - {dataset['name']}")
-        print(f"   Descripción: {dataset['description']}")
-        print(f"   Tipo de aprendizaje: {dataset['learning_type']}")
-        print(f"   Variable objetivo: {dataset['target']}")
-        print()
+
+def load_new_dataset():
+    """
+    Recopila información para cargar un nuevo dataset.
+    """
+    print("\n--- Carga de Nuevo Dataset ---")
     
-    choice = int(input("Seleccione un dataset (número): ")) - 1
-    selected_dataset = datasets[choice]
+    source_choice = input("¿Desea cargar el dataset desde la nube (1) o desde un archivo local (2)? ").strip()
     
+    if source_choice == '1':
+        dataset_path = input("Por favor, ingrese la URL del dataset: ").strip()
+    elif source_choice == '2':
+        dataset_path = input("Por favor, ingrese la ruta del archivo local: ").strip()
+    else:
+        print("Opción no válida. Volviendo al menú principal.")
+        return
+
+    target_column = input("Por favor, ingrese el nombre de la columna objetivo (o Enter para determinar automáticamente): ").strip()
+    target_column = target_column if target_column else None
+    
+    preprocess_choice = input("\n¿Qué tipo de preprocesamiento desea aplicar?\n"
+                              "1 - Procesado personalizado\n"
+                              "2 - Procesado optimizado (automático)\n"
+                              "Ingrese su elección (1 o 2): ").strip()
+
+    processing = {"optimized": preprocess_choice == '2'}
+    
+    if preprocess_choice == '1':
+        # Recopilar información para el procesamiento personalizado
+        outlier_choice = input("¿Desea especificar columnas para detección de outliers? (s/n): ").strip().lower()
+        if outlier_choice == 's':
+            outlier_columns = input("Ingrese los nombres de las columnas separados por coma: ").strip().split(',')
+            processing['outlier_columns'] = [col.strip() for col in outlier_columns]
+        
+        print("\nEstrategias de imputación disponibles:")
+        print("1 - Simple (media/moda)")
+        print("2 - Mediana")
+        print("3 - KNN")
+        print("4 - Iterativa")
+        imputation_choice = input("Seleccione la estrategia de imputación (1-4): ").strip()
+        imputation_strategies = ['simple', 'median', 'knn', 'iterative']
+        processing['imputation_strategy'] = imputation_strategies[int(imputation_choice) - 1]
+        
+        print("\nEstrategias de escalado disponibles:")
+        print("1 - Estándar")
+        print("2 - Robusto")
+        print("3 - MinMax")
+        scaling_choice = input("Seleccione la estrategia de escalado (1-3): ").strip()
+        scaling_strategies = ['standard', 'robust', 'minmax']
+        processing['scaling_strategy'] = scaling_strategies[int(scaling_choice) - 1]
+        
+        print("\nEstrategias de codificación disponibles:")
+        print("1 - One-Hot")
+        print("2 - Ordinal")
+        encoding_choice = input("Seleccione la estrategia de codificación (1-2): ").strip()
+        encoding_strategies = ['onehot', 'ordinal']
+        processing['encoding_strategy'] = encoding_strategies[int(encoding_choice) - 1]
+        
+        print("\nEstrategias para manejar outliers:")
+        print("1 - Recorte (Clip)")
+        print("2 - Eliminación")
+        print("3 - IQR")
+        outlier_choice = input("Seleccione la estrategia para manejar outliers (1-3): ").strip()
+        outlier_strategies = ['clip', 'remove', 'iqr']
+        processing['handle_outliers_strategy'] = outlier_strategies[int(outlier_choice) - 1]
+
     dataset_msg = {
         "command": "dataset",
         "data": {
             "dataset": {
-                "path": selected_dataset['url'],
-                "name": selected_dataset['name'],
-                "target": selected_dataset['target'],
-                "features": None,
-                "class_labels": None,
-                "categorical_features": None,
-                "numeric_features": None,
-                "datetime_features": None,
-                "text_features": None
+                "path": dataset_path,
+                "target": target_column
             },
-            "processing": {
-                "outlier_columns": None,
-                "imputation_strategy": None,
-                "scaling_strategy": None,
-                "encoding_strategy": None,
-                "handle_outliers_strategy": None
-            }
+            "processing": processing
         }
     }
-    
-    input(f"Presione Enter para cargar el dataset {selected_dataset['name']}...")
-    mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(dataset_msg)))
-    
-def get_default_param_grid(estimator):
-    param_grid = {}
-    for param, value in estimator.get_params().items():
-        if isinstance(value, bool):
-            param_grid[param] = [True, False]
-        elif isinstance(value, int):
-            param_grid[param] = [max(1, value // 2), value, value * 2]
-        elif isinstance(value, float):
-            param_grid[param] = [value / 2, value, value * 2]
-        elif isinstance(value, str):
-            param_grid[param] = [value]
-    return param_grid
 
-def get_basic_param_grid(estimator):
-    basic_params = ['n_estimators', 'max_depth', 'min_samples_split', 'min_samples_leaf', 'max_features']
-    return {k: v for k, v in get_default_param_grid(estimator).items() if k in basic_params}
-
+    return dataset_msg
 
 
 def train_model():
-    cv_input = input("Ingrese el porcentaje para cross-validation (ej: 80, Enter para usar 80 por defecto): ")
+    """
+    Recopila información para entrenar un modelo.
+    """
+    print("\n--- Entrenamiento de Modelo ---")
+    
+    # Selección del dataset
+    if global_data.dataset is None:
+        print("No hay dataset cargado. Seleccionaremos uno de los datasets almacenados.")
+        stored_datasets = serializer.list_stored_datasets()
+        if not stored_datasets:
+            print("No hay datasets almacenados. Por favor, cargue un dataset primero.")
+            return
+        
+        print("\nDatasets almacenados:")
+        for i, (name, basic_path, optimized_path) in enumerate(stored_datasets, 1):
+            print(f"{i}. {name}")
+        
+        dataset_choice = input("Seleccione el número del dataset a usar (Enter para el primero): ").strip()
+        dataset_choice = 0 if dataset_choice == '' else int(dataset_choice) - 1
+        selected_dataset = stored_datasets[dataset_choice]
+        
+        global_data.training.dataset_name = selected_dataset[0]
+        print(f"Dataset seleccionado: {global_data.training.dataset_name}")
+
+    # Selección de características
+    feature_selection = input("\nSeleccione el método de selección de características:\n"
+                              "1 - Usar todas las características\n"
+                              "2 - Seleccionar características manualmente\n"
+                              "3 - Selección automática de características\n"
+                              "Ingrese su elección (1-3): ").strip()
+
+    selected_features = []
+    if feature_selection == '2':
+        # Obtener y mostrar las características disponibles
+        all_features = serializer.get_features_for_dataset(global_data.training.dataset_name)
+        print("\nCaracterísticas disponibles:")
+        for i, feature in enumerate(all_features, 1):
+            print(f"{i}. {feature}")
+        
+        # Permitir al usuario seleccionar características
+        feature_indices = input("Ingrese los números de las características que desea usar (separados por coma): ").strip()
+        selected_indices = [int(idx) - 1 for idx in feature_indices.split(',') if idx.strip().isdigit()]
+        selected_features = [all_features[i] for i in selected_indices if i < len(all_features)]
+    elif feature_selection == '3':
+        selected_features = 'auto'
+    # Para la opción 1, dejamos selected_features vacío para indicar que se usan todas
+
+    # Selección del tamaño de los conjuntos de entrenamiento y prueba
+    cv_input = input("Ingrese el porcentaje para cross-validation (enter para 80): ")
     crossvalidation = 80 if cv_input == '' else int(cv_input)
+    
+    # Selección de algoritmos
+    algo_choice = input("¿Desea ver algoritmos populares (1 o enter) o todos los algoritmos disponibles (2)? ")
+    
+    # Aquí iría el código para seleccionar algoritmos
+    # Por ahora, usaremos una lista de algoritmos de ejemplo
+    algorithms = ['RandomForest', 'SVM', 'LogisticRegression']
 
-    estimators = all_estimators()
-    print("\nAlgoritmos disponibles:")
-    for i, (name, _) in enumerate(estimators, 1):
-        print(f"{i} - {name}")
-    
-    choice = int(input("Seleccione un algoritmo (número): ")) - 1
-    selected_algo_name, selected_algo_class = estimators[choice]
-    
-    training_type = input("¿Desea hacer un entrenamiento básico (1) o personalizado (2)? ")
-    
-    algo_instance = selected_algo_class()   
-    param_grid = get_param_grid(algo_instance)
-    params = {}
-
-    if training_type == '1':  # Entrenamiento básico
-        basic_params = ['n_estimators', 'max_depth', 'min_samples_split', 'min_samples_leaf']
-        for param in basic_params:
-            if param in param_grid:
-                params[param] = generate_random_param(param, param_grid[param], algo_instance)
-    else:  # Entrenamiento personalizado
-        for param, values in param_grid.items():
-            params[param] = generate_random_param(param, values, algo_instance)
-
-    # Ajustar parámetros específicos
-    if 'min_samples_split' in params:
-        params['min_samples_split'] = max(2, params['min_samples_split'])
-    if 'min_samples_leaf' in params:
-        params['min_samples_leaf'] = max(1, params['min_samples_leaf'])
-    
-    # Asegurarse de que oob_score sea False si bootstrap es False
-    if 'bootstrap' in params and not params['bootstrap']:
-        params['oob_score'] = False
-    if 'min_samples_split' in params:
-        params['min_samples_split'] = max(2, params['min_samples_split'])
-    if 'min_samples_leaf' in params:
-        params['min_samples_leaf'] = max(1, params['min_samples_leaf'])
-
-    print("\nParámetros iniciales generados aleatoriamente:")
-    for param, value in params.items():
-        print(f"{param}: {value}")
-    
+    # Preparar el mensaje de entrenamiento
     train_msg = {
         "command": "train",
         "data": {
             "dataset": global_data.training.dataset_name,
             "crossvalidation": crossvalidation,
             "recommendations": True,
-            "algorithms": [
-                {"name": selected_algo_name, "params": params}
-            ]
+            "algorithms": algorithms,
+            "selected_features": selected_features
         }
     }
     
-    input("Presione Enter para entrenar el modelo...")
+    # Enviar el mensaje para procesamiento
     mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(train_msg)))
-    
+
 def make_prediction():
-    models = serializer.list_models()
+    """
+    Recopila información para realizar una predicción.
+    """
+    print("\n--- Realizar Predicción ---")
+    
+    # Obtener la lista de modelos almacenados
+    stored_models = serializer.list_stored_models()
+    
+    if not stored_models:
+        print("No hay modelos almacenados. Por favor, entrene un modelo primero.")
+        return
     
     print("\nModelos disponibles:")
-    for i, model in enumerate(models, 1):
-        print(f"{i} - {model}")
+    for i, (model_name, model_path) in enumerate(stored_models, 1):
+        print(f"{i}. {model_name}")
     
-    choice = int(input("Seleccione un modelo (número): ")) - 1
-    selected_model = models[choice]
+    choice = input("Seleccione un modelo (número): ").strip()
+    try:
+        choice = int(choice) - 1
+        selected_model, model_path = stored_models[choice]
+    except (ValueError, IndexError):
+        print("Selección no válida. Volviendo al menú principal.")
+        return
     
-    # Aquí deberías obtener las características del modelo seleccionado
-    # Por ahora, usaremos un ejemplo genérico
-    features = {
-        "feature1": random.uniform(-1, 1),
-        "feature2": random.uniform(-1, 1),
-        "feature3": random.uniform(-1, 1),
-    }
+    # Obtener el dataset asociado al modelo
+    dataset_name = serializer.get_dataset_for_model(selected_model)
+    if dataset_name is None:
+        print(f"No se pudo encontrar el dataset asociado al modelo {selected_model}.")
+        return
+    
+    print(f"Modelo seleccionado: {selected_model}")
+    print(f"Dataset asociado: {dataset_name}")
+    
+    # Cargar las características del dataset
+    features = serializer.get_features_for_dataset(dataset_name)
+    if not features:
+        print(f"No se pudieron cargar las características para el dataset {dataset_name}.")
+        return
+    
+    # Solicitar valores para las características
+    feature_values = {}
+    for feature in features:
+        value = input(f"Ingrese el valor para {feature}: ")
+        feature_values[feature] = float(value)
     
     predict_msg = {
         "command": "predict",
         "data": {
             "model": selected_model,
-            "features": features
+            "dataset": dataset_name,
+            "features": feature_values
         }
     }
     
-    input("Presione Enter para realizar la predicción...")
     mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(predict_msg)))
 
 if __name__ == "__main__":
-    init()
+    main_menu()

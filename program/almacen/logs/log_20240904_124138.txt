@@ -1,0 +1,35 @@
+
+////////// TOKII-NO CODE AI //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir
+Dataset cargado exitosamente desde sklearn:iris
+
+////////// TOKII-NO CODE AI //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir
+Parámetros iniciales generados para RandomForestClassifier:
+n_estimators: 135
+min_samples_split: 4
+min_samples_leaf: 2
+verbose: 0
+Parámetros iniciales generados para LogisticRegression:
+verbose: 0
+Dataset cargado exitosamente desde program/almacen/datasets/iris/iris_basic.csv
+Error en split_and_train: [WinError 183] No se puede crear un archivo que ya existe: 'program/almacen/datasets/iris/iris_basic.csv'
+
+////////// TOKII-NO CODE AI //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir
+Saliendo del programa...

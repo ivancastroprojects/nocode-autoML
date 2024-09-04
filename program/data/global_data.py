@@ -1,6 +1,6 @@
-import training.training as Training
-import data.dataset as Dataset
+from data.dataset import Dataset
+from training.training import Training
 
-training : Training = None
-dataset : Dataset = None
-token : str = None
+dataset: Dataset = None
+training: Training = None
+auth_token: str = None  # Nuevo: Token de autenticación

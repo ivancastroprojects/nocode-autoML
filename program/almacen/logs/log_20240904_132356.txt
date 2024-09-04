@@ -1,0 +1,46 @@
+Iniciando la aplicación...
+Autenticación simulada completada.
+Autenticación exitosa. Simulando inicio del cliente MQTT...
+Simulando inicio del cliente MQTT...
+
+////////// TOKII-NO CODE AI //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir
+Dataset cargado exitosamente desde sklearn:iris
+Simulando envío de resultados del dataset a la API
+Resultados del dataset enviados exitosamente a la API
+Tipo de problema establecido: Clasificación
+
+////////// TOKII-NO CODE AI //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir
+Tipo de problema detectado: Clasificación
+Parámetros iniciales generados para RandomForestClassifier:
+n_estimators: 176
+min_samples_split: 2
+min_samples_leaf: 1
+verbose: 0
+Parámetros iniciales generados para GradientBoostingClassifier:
+n_estimators: 118
+max_depth: 4
+min_samples_split: 2
+min_samples_leaf: 2
+verbose: 0
+Dataset cargado exitosamente desde program/almacen/datasets/iris/iris_basic.csv
+Error en split_and_train: [WinError 183] No se puede crear un archivo que ya existe: 'program/almacen/datasets/iris/iris_basic.csv'
+
+////////// TOKII-NO CODE AI //////////
+
+Seleccione una acción:
+1 - Cargar dataset
+2 - Entrenar modelo
+3 - Realizar predicción
+4 - Salir
