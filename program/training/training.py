@@ -1,7 +1,6 @@
 # training.py
 import pandas as pd
 import os
-
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, r2_score
 from training.train import train_custom_models
@@ -41,29 +40,61 @@ class Training:
         dataset (Dataset): Objeto Dataset con los datos cargados.
         """
         try:
-            self.problem_type = determine_problem_type_from_dataset(dataset, self.target)
+            df = dataset.get_dataframe()
+            if self.target not in df.columns:
+                raise ValueError(f"La columna objetivo '{self.target}' no está presente en el dataset.")
+            
+            self.problem_type = determine_problem_type_from_dataset(df, self.target)
             logger.info(f"Tipo de problema determinado: {self.problem_type}")
         except Exception as e:
             logger.error(f"Error al determinar el tipo de problema: {str(e)}")
             self.problem_type = None
         
         if self.problem_type is None:
-            logger.warning("No se pudo determinar el tipo de problema. Por favor, especifique manualmente.")
+            logger.warning("No se pudo determinar el tipo de problema automáticamente.")
+            self._manual_problem_type_selection()
 
-    def split_and_train(self, X, y, dataset_path, feature_names):
+    def _manual_problem_type_selection(self):
+        """
+        Permite al usuario seleccionar manualmente el tipo de problema.
+        """
+        while self.problem_type is None:
+            user_input = input("Por favor, seleccione el tipo de problema (1: Clasificación, 2: Regresión): ").strip()
+            if user_input == '1':
+                self.problem_type = 'classification'
+            elif user_input == '2':
+                self.problem_type = 'regression'
+            else:
+                print("Entrada no válida. Por favor, seleccione 1 o 2.")
+        
+        logger.info(f"Tipo de problema seleccionado manualmente: {self.problem_type}")
+
+    def split_and_train(self, dataset, dataset_path):
         """
         Divide el dataset, entrena los modelos y evalúa su rendimiento.
 
         Args:
-        X (DataFrame): Características del dataset.
-        y (Series): Variable objetivo.
+        dataset (Dataset): Objeto Dataset con los datos cargados.
         dataset_path (str): Ruta del dataset.
-        feature_names (list): Nombres de las características.
 
         Returns:
         tuple: (X_test, y_test, trained_models, evaluation_results)
         """
         try:
+            df = dataset.get_dataframe()
+            if self.problem_type is None:
+                self.determine_problem_type(dataset)
+            
+            if self.problem_type is None:
+                raise ValueError("No se pudo determinar el tipo de problema.")
+
+            if self.target not in df.columns:
+                raise ValueError(f"La columna objetivo '{self.target}' no está presente en el dataset.")
+
+            X = df.drop(columns=[self.target])
+            y = df[self.target]
+            feature_names = X.columns.tolist()
+
             # Calcular el tamaño del conjunto de prueba basado en crossvalidation
             test_size = (100 - self.crossvalidation) / 100
 
@@ -85,7 +116,7 @@ class Training:
             logger.info(f"Preparando para entrenar modelos con dataset: {dataset_path}")
             logger.info(f"Características: {feature_names}")
             logger.info(f"Tipo de problema: {self.problem_type}")
-            logger.info(f"Algoritmos seleccionados: {[algo['name'] for algo in self.algorithms]}")
+            logger.info(f"Algoritmos seleccionados: {self.algorithms}")
 
             trained_models, evaluation_results = self._train_models(X_train, y_train, X_test, y_test, dataset_path, feature_names)
 
@@ -118,15 +149,8 @@ class Training:
 
         for algorithm in self.algorithms:
             try:
-                if isinstance(algorithm, dict):
-                    algorithm_name = algorithm.get('name')
-                    algorithm_params = algorithm.get('params', {})
-                elif isinstance(algorithm, str):
-                    algorithm_name = algorithm
-                    algorithm_params = {}
-                else:
-                    logger.warning(f"Formato de algoritmo no reconocido: {algorithm}. Saltando...")
-                    continue
+                algorithm_name = algorithm if isinstance(algorithm, str) else algorithm.get('name')
+                algorithm_params = {} if isinstance(algorithm, str) else algorithm.get('params', {})
 
                 if not self._is_appropriate_model(algorithm_name):
                     logger.warning(f"{algorithm_name} no es apropiado para problemas de {self.problem_type}. Saltando...")

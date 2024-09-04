@@ -1,10 +1,14 @@
 import json
 from api import mqtt
+import pandas as pd
 from data import global_data
 from training.scikitdb import serializer
 from api.config import Config
 from training.training import Training
 from utils.logger import logger
+from sklearn.utils import all_estimators
+from data.datasetprocessing import determine_target_column, determine_problem_type
+from data.dataset import Dataset
 
 
 class FakeMsg:
@@ -26,7 +30,7 @@ def main_menu():
             logger.info("Autenticación exitosa. Simulando inicio del cliente MQTT...")
             mqtt.init()
             while True:
-                print("\n\n////////// TOKII-NO CODE AI //////////")
+                print("\n\n////////// TOKII NO-CODE ML //////////")
                 print("\nSeleccione una acción:")
                 print("1 - Cargar dataset")
                 print("2 - Entrenar modelo")
@@ -43,7 +47,7 @@ def main_menu():
                     elif choice == '3':
                         make_prediction()
                     elif choice == '4':
-                        print("Gracias por usar TOKII-NO CODE AI. ¡Hasta luego!")
+                        print("Gracias por usar TOKII NO-CODE ML. ¡Hasta pronto!")
                         break
                     else:
                         print("Opción no válida. Por favor, intente de nuevo.")
@@ -208,6 +212,45 @@ def train_model():
         
         global_data.training.dataset_name = selected_dataset[0]
         print(f"Dataset seleccionado: {global_data.training.dataset_name}")
+        
+        # Cargar el dataset seleccionado
+        global_data.dataset = Dataset(selected_dataset[1])  # Usar basic_path
+
+    # Obtener las características del dataset
+    features = global_data.dataset.get_features()
+    
+    if not features:
+        print("No se pudieron obtener las características del dataset. Volviendo al menú principal.")
+        return
+
+    print("\nSeleccionaremos la característica objetivo (target) para el modelo.")
+    
+    # Mostrar las características disponibles
+    print("\nCaracterísticas disponibles:")
+    for i, feature in enumerate(features, 1):
+        print(f"{i}. {feature}")
+
+    # Selección de la variable objetivo
+    target_column = None
+    if 'target' in features:
+        use_target = input("Se ha detectado una característica 'target'. ¿Desea usarla como variable objetivo? (1 o Enter para Sí, 2 para No): ").strip()
+        if use_target == '' or use_target == '1':
+            target_column = 'target'
+    
+    if target_column is None:
+        while True:
+            target_choice = input("Seleccione el número de la característica que será la variable objetivo: ").strip()
+            try:
+                target_index = int(target_choice) - 1
+                if 0 <= target_index < len(features):
+                    target_column = features[target_index]
+                    break
+                else:
+                    print("Número fuera de rango. Intente de nuevo.")
+            except ValueError:
+                print("Por favor, ingrese un número válido.")
+    
+    print(f"Variable objetivo seleccionada: {target_column}")
 
     # Selección de características
     feature_selection = input("\nSeleccione el método de selección de características:\n"
@@ -218,19 +261,29 @@ def train_model():
 
     selected_features = []
     if feature_selection == '2':
-        # Obtener y mostrar las características disponibles
-        all_features = serializer.get_features_for_dataset(global_data.training.dataset_name)
         print("\nCaracterísticas disponibles:")
-        for i, feature in enumerate(all_features, 1):
-            print(f"{i}. {feature}")
+        for i, feature in enumerate(features, 1):
+            if feature != target_column:
+                print(f"{i}. {feature}")
         
-        # Permitir al usuario seleccionar características
-        feature_indices = input("Ingrese los números de las características que desea usar (separados por coma): ").strip()
-        selected_indices = [int(idx) - 1 for idx in feature_indices.split(',') if idx.strip().isdigit()]
-        selected_features = [all_features[i] for i in selected_indices if i < len(all_features)]
+        while True:
+            feature_indices = input("Ingrese los números de las características que desea usar (separados por coma): ").strip()
+            try:
+                selected_indices = [int(idx) - 1 for idx in feature_indices.split(',') if idx.strip().isdigit()]
+                selected_features = [features[i] for i in selected_indices if i < len(features) and features[i] != target_column]
+                if selected_features:
+                    print("\nCaracterísticas seleccionadas:")
+                    for i, feature in enumerate(selected_features, 1):
+                        print(f"{i}. {feature}")
+                    break
+                else:
+                    print("No se seleccionaron características válidas. Intente de nuevo.")
+            except ValueError:
+                print("Por favor, ingrese números válidos separados por comas.")
     elif feature_selection == '3':
         selected_features = 'auto'
-    # Para la opción 1, dejamos selected_features vacío para indicar que se usan todas
+    else:
+        selected_features = [f for f in features if f != target_column]
 
     # Selección del tamaño de los conjuntos de entrenamiento y prueba
     cv_input = input("Ingrese el porcentaje para cross-validation (enter para 80): ")
@@ -239,15 +292,42 @@ def train_model():
     # Selección de algoritmos
     algo_choice = input("¿Desea ver algoritmos populares (1 o enter) o todos los algoritmos disponibles (2)? ")
     
-    # Aquí iría el código para seleccionar algoritmos
-    # Por ahora, usaremos una lista de algoritmos de ejemplo
-    algorithms = ['RandomForest', 'SVM', 'LogisticRegression']
+    # Determinar el tipo de problema
+    problem_type = determine_problem_type(global_data.dataset.get_dataframe()[target_column])
+    
+    if algo_choice == '2':
+        estimators = all_estimators()
+        print("\nTodos los algoritmos disponibles:")
+        for i, (name, _) in enumerate(estimators, 1):
+            print(f"{i}. {name}")
+    else:
+        if problem_type == 'Clasificación Binaria' or problem_type == 'Clasificación Multiclase':
+            popular_algorithms = ['RandomForestClassifier', 'LogisticRegression', 'SVC', 'GradientBoostingClassifier', 'KNeighborsClassifier', 'DecisionTreeClassifier']
+        elif problem_type == 'Regresión':
+            popular_algorithms = ['RandomForestRegressor', 'LinearRegression', 'SVR', 'GradientBoostingRegressor', 'ElasticNet', 'Lasso']
+        else:  # No supervisado
+            popular_algorithms = ['KMeans', 'DBSCAN', 'GaussianMixture', 'PCA']
+        
+        print("\nAlgoritmos populares para este tipo de problema:")
+        for i, algo in enumerate(popular_algorithms, 1):
+            print(f"{i}. {algo}")
+    
+    algo_selection = input("Seleccione los números de los algoritmos que desea usar (separados por coma): ")
+    selected_indices = [int(idx.strip()) - 1 for idx in algo_selection.split(',') if idx.strip().isdigit()]
+    
+    if algo_choice == '2':
+        algorithms = [estimators[i][0] for i in selected_indices if i < len(estimators)]
+    else:
+        algorithms = [popular_algorithms[i] for i in selected_indices if i < len(popular_algorithms)]
+    
+    print(f"Algoritmos seleccionados: {algorithms}")
 
     # Preparar el mensaje de entrenamiento
     train_msg = {
         "command": "train",
         "data": {
             "dataset": global_data.training.dataset_name,
+            "target_column": target_column,
             "crossvalidation": crossvalidation,
             "recommendations": True,
             "algorithms": algorithms,

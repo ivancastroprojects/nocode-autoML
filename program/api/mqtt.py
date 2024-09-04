@@ -9,7 +9,7 @@ import paho.mqtt.client as mqtt
 from data.dataset import Dataset
 import data.global_data as global_data
 from training.training import Training
-from data.datasetprocessing import basic_dfpreprocess, optimized_dfpreprocess, detect_outliers, handle_outliers, determine_problem_type, EDA_initial_info, EDA_processed_info
+from data.datasetprocessing import basic_dfpreprocess, optimized_dfpreprocess, determine_problem_type, EDA_initial_info, EDA_processed_info
 from training.scikitdb.serializer import clean_filename, get_safe_path
 from utils.logger import logger
 from training.scikitdb.serializer import get_dataset_path

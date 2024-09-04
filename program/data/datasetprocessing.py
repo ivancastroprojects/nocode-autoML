@@ -15,6 +15,7 @@ from sklearn_genetic import GAFeatureSelectionCV
 
 from utils.logger import logger
 from data.visualizer import Visualizer
+    
 
 def determine_problem_type(y, feature_names=None):
     """
@@ -561,3 +562,13 @@ def get_feature_importance(X, y, problem_type, feature_names):
     })
     importance['combined_score'] = importance['f_score'] * importance['mutual_info']
     return importance.sort_values('combined_score', ascending=False)
+
+def determine_target_column(df):
+    """
+    Determina automáticamente la columna objetivo basándose en heurísticas simples.
+    """
+    # Heurística 1: Buscar columnas con nombres comunes de variables objetivo
+    common_target_names = ['target', 'label', 'class', 'y', 'output']
+    for col in df.columns:
+        if col.lower() in common_target_names:
+            return col

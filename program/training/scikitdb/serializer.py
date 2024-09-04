@@ -421,11 +421,29 @@ def get_dataset_for_model(model_name):
 
 def get_features_for_dataset(dataset_name):
     """
-    Obtiene las características de un dataset.
+    Obtiene las características (columnas) de un dataset almacenado.
+
+    Args:
+    dataset_name (str): Nombre del dataset.
+
+    Returns:
+    list: Lista de nombres de las características del dataset.
     """
-    dataset_info_path = f'program/almacen/datasets/{dataset_name}/dataset_info.json'
-    if os.path.exists(dataset_info_path):
-        with open(dataset_info_path, 'r') as f:
-            dataset_info = json.load(f)
-        return dataset_info.get('features', [])
-    return []
+    try:
+        # Construir la ruta al archivo del dataset
+        dataset_path = os.path.join('program', 'almacen', 'datasets', dataset_name, f'{dataset_name}_basic.csv')
+        
+        logger.debug(f"Intentando leer el dataset desde: {dataset_path}")
+        
+        # Leer el archivo CSV
+        df = pd.read_csv(dataset_path)
+        
+        # Obtener los nombres de las columnas
+        features = df.columns.tolist()
+        
+        logger.debug(f"Características obtenidas: {features}")
+        
+        return features
+    except Exception as e:
+        logger.error(f"Error al obtener las características del dataset {dataset_name}: {str(e)}")
+        return []

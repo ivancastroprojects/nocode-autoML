@@ -1,10 +1,8 @@
-#dataset.py
+import pandas as pd
 import re
 from io import StringIO
-import pandas as pd
-from sklearn import datasets
-from training.scikitdb.serializer import clean_filename
 import requests
+from sklearn import datasets
 from utils.logger import logger
 import os
 
@@ -14,24 +12,54 @@ class Dataset:
         Inicializa un objeto Dataset.
 
         Args:
-        data: Puede ser un DataFrame de pandas, una ruta a un archivo CSV, o un string 'sklearn:nombre_dataset'.
+        data: Puede ser un DataFrame de pandas, una ruta a un archivo CSV, una URL, o un string 'sklearn:nombre_dataset'.
+        """
+        self.df = None
+        self.load_data(data)
+
+    def load_data(self, data):
+        """
+        Carga los datos en el DataFrame según el tipo de entrada.
         """
         if isinstance(data, pd.DataFrame):
             self.df = data
         elif isinstance(data, str):
             if data.startswith('sklearn:'):
-                self._load_sklearn_dataset(data[8:])  # Elimina 'sklearn:' del inicio
+                self._load_sklearn_dataset(data[8:])
+            elif data.startswith(('http://', 'https://')):
+                self._load_from_url(data)
             else:
-                self.df = pd.read_csv(data)
+                self._load_from_file(data)
         else:
-            raise ValueError("El argumento 'data' debe ser un DataFrame, una ruta a un archivo CSV, o 'sklearn:nombre_dataset'.")
+            raise ValueError("El argumento 'data' debe ser un DataFrame, una ruta a un archivo CSV, una URL, o 'sklearn:nombre_dataset'.")
+
+    def _load_from_url(self, url):
+        """
+        Carga un dataset desde una URL.
+        """
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+            self.df = pd.read_csv(StringIO(response.text))
+            logger.info(f"Dataset cargado exitosamente desde la URL: {url}")
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error al cargar el dataset desde la URL '{url}': {str(e)}")
+            raise
+
+    def _load_from_file(self, file_path):
+        """
+        Carga un dataset desde un archivo local.
+        """
+        try:
+            self.df = pd.read_csv(file_path)
+            logger.info(f"Dataset cargado exitosamente desde el archivo: {file_path}")
+        except Exception as e:
+            logger.error(f"Error al cargar el dataset desde el archivo '{file_path}': {str(e)}")
+            raise
 
     def _load_sklearn_dataset(self, dataset_name):
         """
         Carga un dataset de sklearn.
-
-        Args:
-        dataset_name (str): Nombre del dataset de sklearn a cargar.
         """
         try:
             dataset_loader = getattr(datasets, f"load_{dataset_name}")
@@ -40,9 +68,17 @@ class Dataset:
             self.df['target'] = data.target
             logger.info(f"Dataset de sklearn '{dataset_name}' cargado exitosamente.")
         except AttributeError:
-            raise ValueError(f"Dataset de sklearn '{dataset_name}' no encontrado.")
+            logger.error(f"Dataset de sklearn '{dataset_name}' no encontrado.")
+            raise
         except Exception as e:
-            raise ValueError(f"Error al cargar el dataset de sklearn '{dataset_name}': {str(e)}")
+            logger.error(f"Error al cargar el dataset de sklearn '{dataset_name}': {str(e)}")
+            raise
+
+    def get_features(self):
+        """
+        Retorna la lista de características (columnas) del DataFrame.
+        """
+        return self.df.columns.tolist() if self.df is not None else []
 
     def get_dataframe(self):
         """
@@ -50,54 +86,9 @@ class Dataset:
         """
         return self.df
 
-    def load_dataset(self):
-        try:
-            if self.dataset_url.startswith('sklearn:'):
-                self.load_sklearn_dataset()
-            elif self.dataset_url.startswith(('http://', 'https://')):
-                self.load_web_dataset()
-            else:
-                self.load_local_dataset()
-            
-            if self.df is not None and self.target_column:
-                self.target = self.target_column
-                self.features = self.df.columns.drop(self.target).tolist()
-            logger.info(f"Dataset cargado exitosamente desde {self.dataset_url}")
-
-        except Exception as e:
-            logger.error(f"Error al cargar el dataset: {str(e)}")
-            self.df = None
-
-    def load_sklearn_dataset(self):
-        dataset_name = self.dataset_url.split(':')[1]
-        dataset = getattr(datasets, f"load_{dataset_name}")()
-        if hasattr(dataset, 'data'):
-            self.df = pd.DataFrame(data=dataset.data, columns=dataset.feature_names)
-            if self.target_column:
-                self.df[self.target_column] = dataset.target
-        else:
-            self.df = pd.DataFrame(data=dataset.data)
-
-    def load_web_dataset(self):
-        response = requests.get(self.dataset_url)
-        response.raise_for_status()  # Lanza una excepción para códigos de estado HTTP erróneos
-        content = StringIO(response.text)
-        self.df = pd.read_csv(content)
-
-    def load_local_dataset(self):
-        self.df = pd.read_csv(self.dataset_url)
-
-    def as_dataframe(self) -> pd.DataFrame:
-        return self.df if self.df is not None else pd.DataFrame()
-    
-    @staticmethod
-    def clean_filename(filename):
-        return re.sub(r'[\\/*?:"<>|]', "_", filename)
-
     def save_to_csv(self, path):
         """
         Guarda el DataFrame en un archivo CSV.
-        Si el archivo ya existe, lo sobrescribe.
         """
         try:
             directory = os.path.dirname(path)
@@ -107,5 +98,11 @@ class Dataset:
             logger.info(f"Dataset guardado en: {path}")
         except Exception as e:
             logger.error(f"Error al guardar el dataset: {str(e)}")
+            raise
 
-# ... (otros métodos de la clase Dataset)
+    @staticmethod
+    def clean_filename(filename):
+        """
+        Limpia el nombre del archivo para que sea válido en el sistema de archivos.
+        """
+        return re.sub(r'[\\/*?:"<>|]', "_", filename)
