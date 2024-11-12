@@ -1,3 +1,4 @@
+#config.py
 class Config:
     """
     Clase para manejar todas las configuraciones de la aplicación.

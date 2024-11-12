@@ -1,3 +1,4 @@
+#global_data.py
 from data.dataset import Dataset
 from training.training import Training
 

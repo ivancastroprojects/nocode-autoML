@@ -1,39 +1,199 @@
-Programa para que un usuario pueda de manera sencilla poder probar datasets, crear múltiples modelos de aprendizaje automático de scikit, visualizar métricas y poder realizar predicciones (estilo amazon sage maker) haciendo uso de docker y mqtt para recibir los datos.
+# AutoML Simplificado: Plataforma de Aprendizaje Automático Accesible y Potente
 
-Proceso.
-Iniciaremos MQTT y nos quedaremos escuchando. Cuando el usuario haya configurado el modelo o las predicciones, obtendremos un mensaje con los siguientes campos:
-1) "train" o "predict".
-2) una url al dataset. 
-3) Que algoritmos utilizar de los posibles de scikit (naive bayes, random forest, clustering, redes neuronales, etc) ya sea para crear el modelo o predecir. Nos puede llegar 1 o N.
-4) Los valores de los parámetros a utilizar que requiere cada algoritmo para entrenar.
-5) La proporción de división del dataset en entrenamiento y test.
+## Descripción General
 
-Ejemplo de respuesta de MQTT:
-{"command": "train", "params": {"dataset": "http://tokii.datasets.iris", "target": "Class", "algorithms": [{"name": "knn", "params": {"k": 3}}, {"name": "svm", "params": {"k": 3}}], "crossvalidation": 80}}
+Nuestra plataforma de AutoML (Aprendizaje Automático Automatizado) revoluciona la forma en que los usuarios sin experiencia en ciencia de datos pueden aprovechar el poder del machine learning. Combinando la facilidad de uso con capacidades avanzadas, nuestro sistema permite probar datasets, crear múltiples modelos de machine learning, visualizar métricas y realizar predicciones de manera intuitiva y eficiente. Utilizando Docker para la contenerización y MQTT para la comunicación en tiempo real, nuestra solución ofrece una experiencia similar a Amazon SageMaker, pero con un enfoque en la simplicidad, personalización y transparencia.
 
-Fase 1. Configuración del dataset [FRONTEND, NO IMPLEMENTAR]
-Se le pedirá al cliente subir un dataset. Una vez subido, se almacenará en server con la url de donde se encuentre almacenado.
+## Características Principales
 
-Fase 2. Configuración del modelo [FRONTEND, NO IMPLEMENTAR]
-Luego . Para ello, se le darán dos opciones:
-1) Crear un modelo. le preguntaremos que porcentaje del dataset será para entrenamiento y para test.
-2) Se le preguntará con que algoritmos scikit le gustaría crearlo.
+1. **Interfaz Intuitiva y Flujo de Trabajo Guiado**: 
+   - Diseño centrado en el usuario que guía paso a paso en el proceso de creación y evaluación de modelos.
+   - Asistentes interactivos que explican conceptos de ML en lenguaje sencillo.
 
-Fase 3. Uso del programa creación de modelo
-Una vez tenemos configurado como construir el modelo, recibiremos por MQTT un mensaje con la configuración definida por el usuario (como el ejemplo de respuesta de MQTT mostrado al inicio).
-1) Descarga del dataset. Con la URL del dataset, haremos una solicitud GET a la API para obtener el dataset del usuario.
-2) Carga del dataset, lo analizaremos y limpiaremos aplicando la función eda() y almacenaremos información interesante de los datos del dataset.
-1) Desplegar el modelo. Configuraremos datos de entrenamiento y test pedidos. Buscaremos el/los tipos de algoritmos solicitados para entrenarlo dentro de los posibles algoritmos scikit que tenemos definidos en los scripts classification.py y regression.py. Acto seguido, lo crearemos.
-4) Una vez desplegado el/los modelos, obtendremos métricas de cada uno (accuracy, F1 score, matriz de confusión, curva ROC, etc). Ademas, a través de grid search, según el dataset y el tipo de variables que tiene, podremos recomendarle las mejores métricas con las que debería entrenarlo. (opcional)
-5) Recopilamos toda la información y la enviaremos con un POST al server.
+2. **Amplia Variedad de Algoritmos con Optimización Automática**: 
+   - Integración profunda con scikit-learn, ofreciendo una gama completa de algoritmos como Naive Bayes, Random Forest, SVM, redes neuronales y más.
+   - Optimización automática de hiperparámetros utilizando técnicas avanzadas como Bayesian Optimization.
 
-Fase 4. Configuración de predicciones [FRONTEND, NO IMPLEMENTAR]
-1) Una vez hemos entrenado el/los modelos y han sido recibidos en server, el usuario podrá subir sus datos de test para generar predicciones sobre el modelo. Subirá los datos de test y le molestraremos un listado de algoritmos scikit con los que podría predecir (además le podremos sugerir con que algoritmo le recomendamos entrenar).
-2) Le mostraremos los parámetros necesarios para crear la predicción con ese tipo de algoritmo y podrá editar el valor de cada parámetro. 
-3) Una vez rellenados, le dará a aceptar y enviaremos por MQTT un mensaje con la configuración definida por el usuario (como el ejemplo de respuesta de MQTT mostrado al inicio).
+3. **Análisis Exploratorio de Datos (EDA) Automatizado y Avanzado**: 
+   - Limpieza y análisis automático de datasets para identificar patrones y características importantes.
+   - Generación de visualizaciones interactivas para comprender mejor los datos.
 
-Fase 5. Uso del programa creación de predicciones
-Recibiremos por MQTT un mensaje con la configuración definida por el usuario (como el ejemplo de respuesta de MQTT mostrado al inicio).
-1) Algoritmos de predicción. Buscaremos el/los tipos de algoritmos solicitados para la predicción dentro de los posibles algoritmos scikit que tenemos definidos en los scripts classification.py y regression.py. Acto seguido, predeciremos.
-4) Una vez tengamos la predicción, obtendremos métricas. Ademas, con el dataset para generar predicciones, generaremos predicciones que según los datos, puedan ser interesantes para el usuario. (opcional)
-6) Recopilamos toda la información y la enviaremos con un POST al server.
+4. **Optimización de Hiperparámetros Inteligente y Eficiente**: 
+   - Utilización de técnicas avanzadas como Grid Search, Random Search y Bayesian Optimization.
+   - Paralelización automática para acelerar el proceso de búsqueda.
+
+5. **Visualización Interactiva y Explicabilidad de Modelos**: 
+   - Gráficos y dashboards dinámicos para interpretar fácilmente los resultados y métricas de los modelos.
+   - Implementación de técnicas de explicabilidad como SHAP (SHapley Additive exPlanations) para entender las decisiones del modelo.
+
+6. **Predicciones en Tiempo Real y Batch**: 
+   - Capacidad de realizar predicciones instantáneas una vez entrenados los modelos.
+   - Soporte para procesamiento batch de grandes volúmenes de datos.
+
+7. **Recomendaciones Inteligentes y Adaptativas**: 
+   - Sugerencias automáticas de algoritmos y configuraciones basadas en las características del dataset.
+   - Sistema de aprendizaje que mejora las recomendaciones con el tiempo.
+
+8. **Escalabilidad y Rendimiento Optimizados**: 
+   - Arquitectura basada en Docker para un despliegue y escalado eficientes.
+   - Optimización automática de recursos computacionales.
+
+9. **Seguridad Mejorada y Cumplimiento Normativo**: 
+   - Implementación de protocolos de seguridad avanzados para proteger datos sensibles.
+   - Herramientas integradas para asegurar el cumplimiento de normativas como GDPR y CCPA.
+
+10. **Integración Continua y MLOps Incorporado**: 
+    - Capacidad de actualizar y reentrenar modelos automáticamente con nuevos datos.
+    - Monitoreo de rendimiento de modelos en producción y detección de drift.
+
+## Ventajas sobre Otras Soluciones de AutoML
+
+Comparado con plataformas populares como Google AutoML, H2O.ai, o DataRobot, nuestro sistema ofrece:
+
+1. **Mayor Personalización y Transparencia**: 
+   - Los usuarios tienen más control sobre los parámetros y algoritmos, sin sacrificar la facilidad de uso.
+   - Acceso completo al código fuente y pipelines de ML, promoviendo la comprensión y la confianza en los modelos.
+
+2. **Aprendizaje Integrado**: 
+   - Explicaciones detalladas de cada paso del proceso de machine learning, fomentando el aprendizaje del usuario.
+   - Recursos educativos integrados que ayudan a los usuarios a comprender los conceptos de ML mientras usan la plataforma.
+
+3. **Costo-Eficiencia y Flexibilidad de Despliegue**: 
+   - Al ser una solución basada en Docker, puede desplegarse en infraestructura propia, reduciendo costos de computación en la nube.
+   - Opciones flexibles de despliegue, desde servidores locales hasta múltiples proveedores de nube.
+
+4. **Flexibilidad en Datos y Compatibilidad**: 
+   - Soporta una amplia gama de formatos de datos y fuentes, incluyendo APIs y bases de datos en tiempo real.
+   - Integración sencilla con herramientas de BI y visualización existentes.
+
+5. **Comunidad Activa y Desarrollo Ágil**: 
+   - Al basarse en herramientas de código abierto como scikit-learn, se beneficia de una gran comunidad de desarrolladores y actualizaciones frecuentes.
+   - Ciclos de desarrollo rápidos que incorporan las últimas innovaciones en ML.
+
+6. **Enfoque en Interpretabilidad y Ética en IA**: 
+   - Herramientas integradas para evaluar y mitigar sesgos en los modelos.
+   - Énfasis en la interpretabilidad de los modelos, crucial para aplicaciones en sectores regulados.
+
+7. **Optimización Automática de Pipelines Completos**: 
+   - A diferencia de muchas soluciones que solo optimizan modelos, nuestra plataforma optimiza todo el pipeline de ML, incluyendo preprocesamiento y feature engineering.
+
+8. **Soporte para Aprendizaje Federado**: 
+   - Capacidad única de entrenar modelos en datos distribuidos sin comprometer la privacidad, ideal para colaboraciones entre organizaciones.
+
+## Proceso de Uso Simplificado
+
+1. **Carga de Datos Inteligente**: 
+   - Subida sencilla de datasets o conexión a fuentes de datos en tiempo real.
+   - Detección automática de tipos de datos y sugerencias de limpieza.
+
+2. **Configuración del Modelo Asistida**: 
+   - Selección guiada de algoritmos y parámetros, con recomendaciones automáticas basadas en el tipo de problema y características de los datos.
+   - Interfaz visual para configurar experimentos de ML complejos sin necesidad de codificación.
+
+3. **Entrenamiento y Evaluación Transparentes**: 
+   - Proceso automatizado con visualización en tiempo real del progreso y resultados.
+   - Comparación side-by-side de múltiples modelos y configuraciones.
+
+4. **Ajuste y Optimización Interactivos**: 
+   - Herramientas interactivas para refinar los modelos basándose en los resultados iniciales.
+   - Sugerencias de mejora basadas en el análisis de errores y patrones en los datos.
+
+5. **Despliegue y Monitoreo Simplificados**: 
+   - Implementación sencilla de modelos para predicciones en producción con un solo clic.
+   - Dashboards de monitoreo en tiempo real para seguir el rendimiento de los modelos desplegados.
+
+| Características | Nuestro AutoML | Google AutoML | H2O.ai | DataRobot | Amazon SageMaker Canvas | Azure AutoML |
+|-----------------|----------------|---------------|--------|-----------|-------------------------|--------------|
+| Interfaz intuitiva | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Variedad de algoritmos | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| EDA automatizado | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Optimización de hiperparámetros | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Visualización interactiva | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Predicciones en tiempo real | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Escalabilidad (Docker) | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Integración continua (MLOps) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Personalización avanzada | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ |
+| Transparencia (acceso al código) | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ |
+| Aprendizaje integrado | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Flexibilidad de despliegue | ✅ | ❌ | ✅ | ✅ | ❌ | ✅ |
+| Soporte para datos en tiempo real | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Comunidad activa | ✅ | ✅ | ✅ | ❌ | ✅ | ✅ |
+| Enfoque en interpretabilidad | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Optimización de pipelines completos | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Soporte para aprendizaje federado | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ |
+| Integración con ecosistema cloud | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ |
+| Procesamiento de lenguaje natural avanzado | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Soporte para modelos de visión por computadora | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
+Análisis realista de nuestro programa:
+Puntos fuertes:
+Interfaz intuitiva y flujo de trabajo guiado
+Amplia variedad de algoritmos con integración de scikit-learn
+Personalización avanzada y transparencia (acceso al código)
+Flexibilidad de despliegue gracias a Docker
+Enfoque en interpretabilidad y ética en IA
+Soporte para aprendizaje federado
+
+Puntos fuertes:
+Interfaz intuitiva y flujo de trabajo guiado
+Amplia variedad de algoritmos con integración de scikit-learn
+Personalización avanzada y transparencia (acceso al código)
+Flexibilidad de despliegue gracias a Docker
+Enfoque en interpretabilidad y ética en IA
+Soporte para aprendizaje federado
+
+2. Áreas de mejora:
+Integración con ecosistemas cloud: Actualmente carecemos de integración nativa con plataformas cloud populares.
+Procesamiento de lenguaje natural avanzado: No tenemos capacidades avanzadas en este campo.
+Soporte para modelos de visión por computadora: Carecemos de funcionalidades específicas para este tipo de modelos.
+Realismo en las capacidades:
+Aunque afirmamos tener optimización de pipelines completos, es posible que nuestra implementación no sea tan robusta como la de competidores establecidos.
+Nuestra comunidad activa, aunque existente, probablemente no sea tan grande como la de Google o Microsoft.
+La escalabilidad con Docker es una ventaja, pero puede requerir más configuración manual comparada con soluciones cloud nativas.
+Conclusión:
+Nuestro programa destaca en su flexibilidad, transparencia y capacidad de personalización. La integración con scikit-learn y el enfoque en la interpretabilidad son puntos fuertes significativos. 
+Sin embargo, hay áreas claras de mejora, especialmente en la integración con ecosistemas cloud y en capacidades avanzadas de NLP y visión por computadora.
+
+Próximos pasos recomendados:
+1. Desarrollar integraciones nativas con principales proveedores de cloud (AWS, Azure, GCP) para mejorar la escalabilidad y accesibilidad.
+Invertir en el desarrollo de capacidades de NLP y visión por computadora para ampliar el rango de aplicaciones de nuestra plataforma.
+Fortalecer nuestras capacidades de MLOps y monitoreo de modelos en producción.
+Expandir nuestra comunidad de desarrolladores y usuarios mediante programas de divulgación y documentación mejorada.
+Mejorar la automatización en la optimización de pipelines completos para competir más efectivamente con soluciones establecidas.
+Estos pasos nos ayudarán a cerrar la brecha con competidores más establecidos y a capitalizar nuestras fortalezas únicas en personalización y transparencia.
+
+
+Diseño e Implementación del Sistema de Predicción
+Nuestro sistema de predicción AutoML se ha diseñado con un enfoque en la modularidad, escalabilidad y facilidad de uso. La arquitectura del sistema se basa en una estructura de microservicios, lo que permite una gran flexibilidad y facilita la integración de nuevas funcionalidades.
+En el corazón de nuestra plataforma se encuentra un potente motor de procesamiento de datos y modelado predictivo. Este motor está construido sobre una base sólida de tecnologías modernas y probadas. Docker juega un papel fundamental en nuestra arquitectura, proporcionando un entorno de ejecución consistente y aislado para cada componente del sistema. Esto no solo mejora la portabilidad y la reproducibilidad de nuestros modelos, sino que también simplifica significativamente el proceso de despliegue y escalado.
+Para la comunicación en tiempo real entre los diferentes componentes del sistema, hemos optado por utilizar MQTT. Este protocolo ligero de mensajería nos permite implementar un sistema de eventos robusto y eficiente, crucial para la coordinación de tareas en un entorno distribuido de machine learning.
+El preprocesamiento de datos, una etapa crítica en cualquier pipeline de machine learning, se realiza de manera automática y adaptativa en nuestro sistema. Utilizamos técnicas avanzadas de análisis exploratorio de datos (EDA) para identificar y tratar valores atípicos, manejar datos faltantes y realizar transformaciones de características. Este proceso no solo mejora la calidad de los datos de entrada, sino que también proporciona insights valiosos que se presentan al usuario de manera intuitiva a través de visualizaciones interactivas.
+La selección de características es otro componente clave de nuestro sistema. Empleamos una combinación de métodos estadísticos y algoritmos de aprendizaje automático para identificar las características más relevantes para cada problema específico. Esto no solo mejora el rendimiento de los modelos, sino que también ayuda a reducir la complejidad computacional y mejora la interpretabilidad de los resultados.
+
+En cuanto a la selección de modelos, nuestro sistema incorpora una amplia gama de algoritmos de machine learning, desde modelos lineales simples hasta complejas redes neuronales. La selección del modelo más adecuado para cada tarea se realiza de manera automática, basándose en las características del conjunto de datos y en el tipo de problema a resolver. Además, implementamos técnicas de ensemble learning para combinar las predicciones de múltiples modelos y mejorar la robustez y precisión de nuestras predicciones.
+
+La optimización de hiperparámetros es un aspecto crucial en el rendimiento de los modelos de machine learning. Nuestro sistema utiliza técnicas avanzadas como la optimización bayesiana y la búsqueda aleatoria para explorar eficientemente el espacio de hiperparámetros. Este proceso se realiza de manera paralela y distribuida, aprovechando al máximo los recursos computacionales disponibles.
+
+La interfaz de usuario de nuestra plataforma ha sido diseñada con un enfoque en la usabilidad y la intuitividad. Proporciona una experiencia fluida y guiada a través de todo el proceso de machine learning, desde la carga de datos hasta la interpretación de resultados. Las visualizaciones interactivas y los paneles de control personalizables permiten a los usuarios obtener insights profundos de sus datos y modelos, incluso sin tener conocimientos técnicos avanzados.
+
+En resumen, nuestro sistema de predicción AutoML representa una solución completa y sofisticada para el desarrollo y despliegue de modelos de machine learning. Combinando tecnologías de vanguardia con un diseño centrado en el usuario, nuestra plataforma democratiza el acceso al machine learning, permitiendo a organizaciones de todos los tamaños aprovechar el poder de la inteligencia artificial para impulsar la innovación y la toma de decisiones basada en datos.
+
+Un aspecto destacado de nuestra plataforma es su grado de personalización, permitiendo a los usuarios adaptar varios aspectos clave del sistema a sus necesidades específicas. En el preprocesamiento de datos, los usuarios pueden seleccionar y configurar diferentes técnicas de limpieza y transformación de datos utilizando una interfaz intuitiva. En cuanto a los algoritmos, ofrecemos una amplia gama de modelos de scikit-learn y XGBoost, permitiendo a los usuarios ajustar sus parámetros principales. La optimización de hiperparámetros puede ser personalizada eligiendo entre diferentes estrategias como búsqueda en cuadrícula, aleatoria o bayesiana. La interfaz de usuario, aunque no es totalmente personalizable, ofrece opciones para configurar los dashboards y seleccionar diferentes tipos de visualizaciones para los resultados. Además, proporcionamos APIs bien documentadas que permiten a usuarios avanzados integrar la plataforma con sus propias herramientas y flujos de trabajo existentes. Aunque no ofrecemos un sistema completo de plugins, estamos abiertos a colaboraciones para desarrollar extensiones específicas para casos de uso particulares. Esta flexibilidad permite que nuestra plataforma se adapte a una variedad de escenarios, desde análisis de negocios hasta proyectos de investigación, manteniendo un equilibrio entre facilidad de uso y capacidad de ajuste a necesidades específicas.
+
+
+Apéndices A. Detalles de Implementación
+Nuestro sistema AutoML se ha desarrollado con un enfoque modular y escalable, utilizando Python como lenguaje principal debido a su rica ecosistema de bibliotecas de machine learning y análisis de datos. La arquitectura del sistema se basa en una serie de componentes interconectados, cada uno responsable de una parte específica del proceso de AutoML.
+El núcleo del sistema está construido sobre scikit-learn, aprovechando su amplia gama de algoritmos de machine learning y utilidades de preprocesamiento. Para mejorar el rendimiento en conjuntos de datos más grandes, hemos integrado pandas para la manipulación eficiente de datos y numpy para operaciones numéricas de alto rendimiento.
+El módulo de preprocesamiento de datos utiliza una combinación de técnicas de scikit-learn y pandas. Implementamos detección automática de tipos de datos, manejo de valores faltantes utilizando SimpleImputer, y codificación de variables categóricas con OneHotEncoder y OrdinalEncoder. Para la normalización y escalado de características, ofrecemos opciones como StandardScaler y MinMaxScaler.
+La selección de características se realiza mediante una combinación de métodos de filtro y wrapper. Utilizamos correlación de Pearson para eliminar características altamente correlacionadas y aplicamos SelectKBest con diferentes métricas (chi-squared para clasificación, f_regression para regresión) para identificar las características más relevantes. También implementamos Recursive Feature Elimination (RFE) para una selección más robusta cuando es computacionalmente factible.
+
+El componente de selección de modelos utiliza un enfoque de validación cruzada para evaluar múltiples algoritmos en paralelo. Implementamos un conjunto diverso de modelos, incluyendo regresión logística, árboles de decisión, random forests, gradient boosting (utilizando XGBoost), y SVM. Para problemas de regresión, incluimos regresión lineal, Lasso, Ridge, y ElasticNet.
+La optimización de hiperparámetros se realiza utilizando RandomizedSearchCV y GridSearchCV de scikit-learn. Para búsquedas más eficientes en espacios de hiperparámetros grandes, hemos integrado Optuna, que permite la optimización bayesiana y otras estrategias avanzadas de búsqueda.
+Para la evaluación de modelos, utilizamos métricas estándar de scikit-learn como accuracy, precision, recall, y f1-score para clasificación, y mean squared error, mean absolute error, y R-squared para regresión. Implementamos visualizaciones de estas métricas utilizando matplotlib y seaborn.
+La explicabilidad de los modelos se aborda mediante la integración de SHAP (SHapley Additive exPlanations), que proporciona interpretaciones consistentes y precisas para cualquier modelo de machine learning. Esto permite a los usuarios comprender las predicciones individuales y la importancia global de las características.
+El sistema de predicción en tiempo real se implementa utilizando Flask para crear una API RESTful. Los modelos entrenados se serializan utilizando joblib y se cargan en memoria para realizar predicciones rápidas. Implementamos un sistema de caché simple para modelos frecuentemente utilizados, mejorando así el tiempo de respuesta.
+Para la gestión de experimentos y el seguimiento de modelos, integramos MLflow. Esto nos permite registrar parámetros, métricas, y artefactos para cada ejecución, facilitando la reproducibilidad y la comparación de diferentes configuraciones de modelos.
+La interfaz de usuario se desarrolló utilizando Streamlit, lo que nos permitió crear rápidamente una interfaz interactiva y fácil de usar. Streamlit facilita la creación de formularios para la configuración de parámetros, la visualización de resultados y la interacción con los modelos entrenados.
+En cuanto a la escalabilidad, aunque no implementamos una solución completamente distribuida, utilizamos multiprocessing de Python para paralelizar ciertas operaciones intensivas en CPU, como la evaluación de modelos y la optimización de hiperparámetros.
+La seguridad de los datos se aborda mediante la implementación de autenticación básica en la API y el cifrado de datos en reposo utilizando la biblioteca cryptography de Python. Sin embargo, reconocemos que para aplicaciones empresariales, se necesitarían medidas de seguridad más robustas.
+Finalmente, para facilitar el despliegue y la reproducibilidad, todo el sistema se empaqueta en un contenedor Docker. El Dockerfile incluye todas las dependencias necesarias y configura el entorno para ejecutar el sistema AutoML de manera consistente en diferentes plataformas.
+Este enfoque de implementación nos permite ofrecer una solución AutoML robusta y flexible, capaz de manejar una variedad de tareas de machine learning, desde la preparación de datos hasta la implementación de modelos, mientras mantenemos la facilidad de uso y la interpretabilidad como prioridades clave.
