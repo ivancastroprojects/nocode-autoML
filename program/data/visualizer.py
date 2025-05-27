@@ -2,15 +2,22 @@
 import os
 import numpy as np
 import pandas as pd
+import matplotlib
+import matplotlib.style as mplstyle
+matplotlib.use('Agg') # Configurar el backend ANTES de importar pyplot
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import confusion_matrix, roc_curve, auc
+from sklearn.metrics import confusion_matrix, roc_curve, auc, precision_recall_curve, average_precision_score
 from sklearn.preprocessing import label_binarize
 from sklearn.model_selection import learning_curve
 
 from itertools import cycle
 from scipy import stats
 from training.scikitdb.serializer import clean_filename, ensure_directory_exists, get_safe_path
+from io import StringIO
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Visualizer:
     def __init__(self, base_output_dir='program/almacen/visualizaciones'):
@@ -19,10 +26,17 @@ class Visualizer:
         self.model_name = None
         self.dataset_name = None
         ensure_directory_exists(self.base_output_dir)
+        mplstyle.use('fast') # Apply fast style for performance
         
         # Paleta de colores personalizada
         self.color_palette = sns.color_palette("husl", 8)
         sns.set_palette(self.color_palette)
+
+    def _sanitize_text(self, text):
+        """Replaces $ with \$ to avoid mathtext parsing issues."""
+        if isinstance(text, str):
+            return text.replace('$', '\\$')
+        return text # Return as is if not a string (e.g. numeric)
 
     def set_model_name(self, model_name):
         self.model_name = clean_filename(model_name)
@@ -86,7 +100,7 @@ class Visualizer:
         plt.figure(figsize=(10, 8))
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
                     xticklabels=class_names, yticklabels=class_names)
-        plt.title(f'Matriz de Confusión - {self.model_name}')
+        plt.title(self._sanitize_text(f'Matriz de Confusión - {self.model_name}'))
         plt.ylabel('Etiqueta Verdadera')
         plt.xlabel('Etiqueta Predicha')
         plt.savefig(os.path.join(self.output_dir, 'confusion_matrix.png'))
@@ -129,26 +143,10 @@ class Visualizer:
         plt.ylim([0.0, 1.05])
         plt.xlabel('Tasa de Falsos Positivos')
         plt.ylabel('Tasa de Verdaderos Positivos')
-        plt.title(f'Curva ROC - {self.model_name}')
+        plt.title(self._sanitize_text(f'Curva ROC - {self.model_name}'))
         plt.legend(loc="lower right")
         plt.savefig(os.path.join(self.output_dir, 'roc_curve.png'))
         plt.close()
-
-    def plot_roc_curve_multiclass(self, y_test, y_pred_proba, classes):
-        n_classes = len(classes)
-        fpr = dict()
-        tpr = dict()
-        roc_auc = dict()
-        for i in range(n_classes):
-            fpr[i], tpr[i], _ = roc_curve(y_test[:, i], y_pred_proba[:, i])
-            roc_auc[i] = auc(fpr[i], tpr[i])
-
-        plt.figure(figsize=(10, 8))
-        colors = cycle(self.color_palette)
-        for i, color in zip(range(n_classes), colors):
-            plt.plot(fpr[i], tpr[i], color=color, lw=2,
-                     label=f'ROC curve of class {classes[i]} (AUC = {roc_auc[i]:.2f})')
-        
         
     def plot_learning_curve(self, model, X, y):
         train_sizes, train_scores, test_scores = learning_curve(
@@ -161,7 +159,7 @@ class Visualizer:
         test_scores_std = np.std(test_scores, axis=1)
         
         plt.figure(figsize=(10, 8))
-        plt.title(f'Curva de Aprendizaje - {self.model_name}')
+        plt.title(self._sanitize_text(f'Curva de Aprendizaje - {self.model_name}'))
         plt.xlabel("Tamaño del conjunto de entrenamiento")
         plt.ylabel("Puntuación")
         plt.fill_between(train_sizes, train_scores_mean - train_scores_std,
@@ -173,15 +171,6 @@ class Visualizer:
         plt.legend(loc="best")
         plt.savefig(f'{self.output_dir}/learning_curve.png')
         plt.close()
-        plt.plot([0, 1], [0, 1], 'k--', lw=2)
-        plt.xlim([0.0, 1.0])
-        plt.ylim([0.0, 1.05])
-        plt.xlabel('Tasa de Falsos Positivos')
-        plt.ylabel('Tasa de Verdaderos Positivos')
-        plt.title(f'Curva ROC multiclase - {self.model_name}\nDataset: {self.dataset_name}')
-        plt.legend(loc="lower right")
-        plt.savefig(os.path.join(self.output_dir, 'roc_curve_multiclass.png'))
-        plt.close()
 
     def plot_feature_importance(self, model, feature_names):
         if hasattr(model, 'feature_importances_'):
@@ -189,9 +178,11 @@ class Visualizer:
             indices = np.argsort(importances)[::-1]
             
             plt.figure(figsize=(10, 8))
-            plt.title(f'Importancia de Características - {self.model_name}')
+            plt.title(self._sanitize_text(f'Importancia de Características - {self.model_name}'))
             plt.bar(range(len(importances)), importances[indices])
-            plt.xticks(range(len(importances)), [feature_names[i] for i in indices], rotation=90)
+            # Sanitize feature names for x-ticks
+            sanitized_feature_names = [self._sanitize_text(feature_names[i]) for i in indices]
+            plt.xticks(range(len(importances)), sanitized_feature_names, rotation=90)
             plt.tight_layout()
             plt.savefig(f'{self.output_dir}/feature_importance.png')
             plt.close()
@@ -201,7 +192,7 @@ class Visualizer:
         n_rows = (n_features + 1) // 2
         
         fig, axes = plt.subplots(n_rows, 2, figsize=(20, 5*n_rows))
-        fig.suptitle(f'Distribución de Características - {self.model_name}\nDataset: {self.dataset_name}', fontsize=16)
+        fig.suptitle(self._sanitize_text(f'Distribución de Características - {self.model_name}\nDataset: {self.dataset_name}'), fontsize=16)
         axes = axes.flatten()
         
         for i, feature in enumerate(feature_names):
@@ -211,7 +202,7 @@ class Visualizer:
                 data = X[:, i]
             
             sns.histplot(data, kde=True, ax=axes[i], color=self.color_palette[i % len(self.color_palette)])
-            axes[i].set_title(f'Distribución de {feature}')
+            axes[i].set_title(self._sanitize_text(f'Distribución de {feature}'))
         
         # Eliminar subplots vacíos
         for i in range(n_features, len(axes)):
@@ -219,6 +210,55 @@ class Visualizer:
         
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])  # Ajustar el diseño respetando el título
         plt.savefig(os.path.join(self.output_dir, 'feature_distributions.png'))
+        plt.close()
+
+    def plot_precision_recall_curve(self, y_true, y_pred_proba):
+        plt.figure(figsize=(10, 8))
+
+        # Binarizar y_true si es necesario (similar a ROC)
+        classes = np.unique(y_true)
+        n_classes = len(classes)
+        y_bin = label_binarize(y_true, classes=classes)
+
+        if n_classes == 2:
+            # Para el caso binario, y_pred_proba puede ser (n_samples,) o (n_samples, 2)
+            # Usaremos la probabilidad de la clase positiva (generalmente la segunda columna o la única si es 1D)
+            if y_pred_proba.ndim == 1:
+                precision, recall, _ = precision_recall_curve(y_bin, y_pred_proba)
+                ap = average_precision_score(y_bin, y_pred_proba)
+            else:
+                precision, recall, _ = precision_recall_curve(y_bin, y_pred_proba[:, 1])
+                ap = average_precision_score(y_bin, y_pred_proba[:, 1])
+            
+            plt.plot(recall, precision, color='blue', lw=2, 
+                     label=f'Curva Precisión-Recall (AP = {ap:.2f})')
+            plt.xlabel('Recall')
+            plt.ylabel('Precisión')
+            plt.title(self._sanitize_text(f'Curva Precisión-Recall - {self.model_name}'))
+        else:
+            # Caso multiclase: graficar una curva por clase (micro-promedio o una por una)
+            # Aquí un ejemplo de una por una, similar a ROC multiclase
+            precision = dict()
+            recall = dict()
+            average_precision = dict()
+            colors = cycle(self.color_palette) # Usar la paleta de la clase
+
+            for i, color in zip(range(n_classes), colors):
+                precision[i], recall[i], _ = precision_recall_curve(y_bin[:, i], y_pred_proba[:, i])
+                average_precision[i] = average_precision_score(y_bin[:, i], y_pred_proba[:, i])
+                plt.plot(recall[i], precision[i], color=color, lw=2,
+                         label=f'Clase {classes[i]} (AP = {average_precision[i]:.2f})')
+            
+            plt.xlabel('Recall')
+            plt.ylabel('Precisión')
+            plt.title(self._sanitize_text(f'Curva Precisión-Recall Multiclase - {self.model_name}'))
+
+        plt.legend(loc="best")
+        plt.grid(True)
+        # Guardar el gráfico
+        plot_filename = os.path.join(self.output_dir, f'precision_recall_curve.png')
+        ensure_directory_exists(os.path.dirname(plot_filename)) # Asegurar que el directorio existe
+        plt.savefig(plot_filename)
         plt.close()
 
     def plot_residuals(self, y_true, y_pred):
@@ -248,26 +288,26 @@ class Visualizer:
         plt.scatter(y_pred, residuals, alpha=0.5)
         plt.xlabel('Valores predichos')
         plt.ylabel('Residuos')
-        plt.title('Residuos vs Valores predichos')
+        plt.title(self._sanitize_text(f'Residuos vs Valores predichos - {self.model_name}'))
         plt.axhline(y=0, color='r', linestyle='--')
         
         # Histograma de residuos
         plt.subplot(2, 2, 2)
         sns.histplot(residuals, kde=True)
         plt.xlabel('Residuos')
-        plt.title('Distribución de residuos')
+        plt.title(self._sanitize_text('Distribución de residuos'))
         
         # Q-Q plot
         plt.subplot(2, 2, 3)
         stats.probplot(residuals, dist="norm", plot=plt)
-        plt.title('Q-Q plot de residuos')
+        plt.title(self._sanitize_text('Q-Q plot de residuos'))
         
         # Residuos vs orden
         plt.subplot(2, 2, 4)
         plt.plot(residuals)
         plt.xlabel('Orden de observaciones')
         plt.ylabel('Residuos')
-        plt.title('Residuos vs Orden')
+        plt.title(self._sanitize_text('Residuos vs Orden'))
         plt.axhline(y=0, color='r', linestyle='--')
         
         plt.tight_layout()
@@ -298,12 +338,12 @@ class Visualizer:
             n_features = len(valid_features)
             n_rows = (n_features + 1) // 2
             fig, axes = plt.subplots(n_rows, 2, figsize=(20, 5*n_rows))
-            fig.suptitle(f'Distribución de Características - Grupo {i+1}\n{self.model_name}\nDataset: {self.dataset_name}', fontsize=16)
+            fig.suptitle(self._sanitize_text(f'Distribución de Características - Grupo {i+1}\n{self.model_name}\nDataset: {self.dataset_name}'), fontsize=16)
             axes = axes.flatten()
 
             for j, feature in enumerate(valid_features):
                 sns.histplot(df[feature], kde=True, ax=axes[j], color=self.color_palette[j % len(self.color_palette)])
-                axes[j].set_title(f'Distribución de {feature}')
+                axes[j].set_title(self._sanitize_text(f'Distribución de {feature}'))
                 
                 if target_column in df.columns:
                     ax2 = axes[j].twinx()
@@ -319,26 +359,79 @@ class Visualizer:
             plt.close()
 
     def create_bar_plots(self, df, categorical_cols):
-        if categorical_cols is None or len(categorical_cols) == 0:
+        if not categorical_cols.any(): # Check if the pandas Index/Series is empty
             print("No hay columnas categóricas para crear gráficos de barras.")
             return
 
-        for col in categorical_cols:
-            plt.figure(figsize=(10, 6))
-            df[col].value_counts().plot(kind='bar')
-            plt.title(f'Distribución de {col}')
-            plt.xlabel(col)
-            plt.ylabel('Frecuencia')
-            plt.tight_layout()
-            plt.savefig(os.path.join(self.output_dir, f'bar_plot_{col}.png'))
-            plt.close()
+        num_plots = len(categorical_cols)
+        n_cols_fig = 3  # Número de columnas de subplots por figura
+        n_rows_fig = (num_plots + n_cols_fig - 1) // n_cols_fig
+
+        fig, axes = plt.subplots(n_rows_fig, n_cols_fig, figsize=(5 * n_cols_fig, 4 * n_rows_fig))
+        axes = axes.flatten() # Convertir a un array 1D para fácil iteración
+
+        for i, col in enumerate(categorical_cols):
+            ax = axes[i]
+            # Contar frecuencias y limitar el número de barras si hay demasiadas categorías
+            counts = df[col].value_counts()
+            if len(counts) > 20: # Limitar a las 20 categorías más frecuentes
+                counts = counts.nlargest(20)
+                plot_title = f'{self._sanitize_text(col)} (Top 20)'
+            else:
+                plot_title = self._sanitize_text(col)
+            
+            # Sanitize category names (index of counts Series)
+            sanitized_index = [self._sanitize_text(str(idx)) for idx in counts.index]
+
+            # sns.barplot(x=sanitized_index, y=counts.values, ax=ax, palette="viridis") # Old call
+            # Addressing FutureWarning: Assign x to hue and set legend=False.
+            # Since we are plotting value_counts, x is the unique categories (sanitized_index) and y is their counts.
+            # For a simple bar plot of counts without a separate hue dimension, 
+            # simply providing x, y, and palette should be fine. The warning might be overly broad
+            # or apply more directly when hue is explicitly used for a different variable.
+            # However, to be safe and potentially silence it if it's just about palette + no hue:
+            sns.barplot(x=sanitized_index, y=counts.values, ax=ax, palette="viridis", hue=sanitized_index, legend=False)
+            ax.set_title(plot_title)
+            ax.set_ylabel('Frecuencia')
+            # ax.tick_params(axis='x', rotation=45, ha='right') # Incorrect: ha is not for tick_params
+            # Set rotation and alignment on the tick labels themselves
+            plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+        # Ocultar ejes no utilizados
+        for j in range(i + 1, len(axes)):
+            fig.delaxes(axes[j])
+
+        fig.suptitle(self._sanitize_text(f'Gráficos de Barras para Columnas Categóricas\nDataset: {self.dataset_name}'), fontsize=16)
+        plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+        plot_filename = os.path.join(self.output_dir, f'bar_plots_categorical.png')
+        ensure_directory_exists(os.path.dirname(plot_filename))
+        plt.savefig(plot_filename)
+        plt.close()
 
     def create_correlation_matrix(self, df, numeric_cols, title):
-        plt.figure(figsize=(12, 10))
-        corr_matrix = df[numeric_cols].corr()
-        sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', vmin=-1, vmax=1, center=0)
-        plt.title(f'Matriz de Correlación - {title}')
-        plt.tight_layout()
+        if not numeric_cols.any():
+            print("No hay columnas numéricas para la matriz de correlación.")
+            return
+        
+        logger.info(f"[Visualizer.create_correlation_matrix] Received numeric_cols: {numeric_cols.tolist()}")
+        logger.info(f"[Visualizer.create_correlation_matrix] DataFrame info before filtering numeric_cols:")
+        # Log df.info() to a string buffer to avoid large console output if df is huge
+        buffer = StringIO()
+        df.info(buf=buffer)
+        logger.info(buffer.getvalue())
+            
+        plt.figure(figsize=(15, 12))
+        # Asegurarse que solo se usen columnas numéricas que existan en el df
+        valid_numeric_cols = [col for col in numeric_cols if col in df.columns and pd.api.types.is_numeric_dtype(df[col])]
+        if not valid_numeric_cols:
+            print("No hay columnas numéricas válidas en el DataFrame para la matriz de correlación.")
+            logger.warning(f"[Visualizer.create_correlation_matrix] No valid numeric columns found from input. Original numeric_cols: {numeric_cols.tolist()}. Df columns: {df.columns.tolist()[:20]}...")
+            return
+
+        logger.info(f"[Visualizer.create_correlation_matrix] Valid numeric columns for heatmap: {valid_numeric_cols}")
+        correlation_matrix = df[valid_numeric_cols].corr()
+        sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f', linewidths=.5)
+        plt.title(self._sanitize_text(title), fontsize=18)
         plt.savefig(os.path.join(self.output_dir, 'correlation_matrix.png'))
         plt.close()
 

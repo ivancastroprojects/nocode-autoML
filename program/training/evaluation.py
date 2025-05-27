@@ -11,11 +11,10 @@ from data.visualizer import Visualizer
 
 # Funci\u00f3n para evaluar modelos de clasificaci\u00f3n
 class Evaluation:
-    def __init__(self, problem_type, dataset_name):
+    def __init__(self, problem_type, short_dataset_name):
         self.problem_type = problem_type
-        self.dataset_name = dataset_name
         self.visualizer = Visualizer()
-        self.visualizer.set_dataset_name(dataset_name)
+        self.visualizer.set_dataset_name(short_dataset_name)
 
     def evaluate(self, model, X_test, y_test, y_pred, selected_features):
         """
@@ -31,14 +30,13 @@ class Evaluation:
         print(f"\nEvaluación del modelo {model.__class__.__name__}:")
         
         if self.problem_type == 'classification':
-            self.evaluate_classification(y_test, y_pred)
+            self.evaluate_classification_metrics(y_test, y_pred)
         else:
-            self.evaluate_regression(y_test, y_pred)
+            self.evaluate_regression_metrics(y_test, y_pred)
         
         self.visualizer.set_model_name(model.__class__.__name__)
-        self.generate_visualizations(model, X_test, y_test, y_pred, selected_features)
 
-    def evaluate_classification(self, y_test, y_pred):
+    def evaluate_classification_metrics(self, y_test, y_pred):
         accuracy = accuracy_score(y_test, y_pred)
         precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
         recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
@@ -48,8 +46,14 @@ class Evaluation:
         print(f"Precision: {precision:.4f}")
         print(f"Recall: {recall:.4f}")
         print(f"F1-score: {f1:.4f}")
+        return {
+            "accuracy": accuracy,
+            "precision": precision,
+            "recall": recall,
+            "f1_score": f1
+        }
 
-    def evaluate_regression(self, y_test, y_pred):
+    def evaluate_regression_metrics(self, y_test, y_pred):
         mse = mean_squared_error(y_test, y_pred)
         rmse = np.sqrt(mse)
         mae = mean_absolute_error(y_test, y_pred)
@@ -59,6 +63,12 @@ class Evaluation:
         print(f"Root Mean Squared Error: {rmse:.4f}")
         print(f"Mean Absolute Error: {mae:.4f}")
         print(f"R-squared: {r2:.4f}")
+        return {
+            "r2_score": r2,
+            "mean_squared_error": mse,
+            "root_mean_squared_error": rmse,
+            "mean_absolute_error": mae
+        }
 
     def generate_visualizations(self, model, X_test, y_test, y_pred, selected_features):
         if self.problem_type == 'classification':
@@ -75,42 +85,62 @@ class Evaluation:
         self.visualizer.plot_feature_distributions(X_test, selected_features)
 
     def evaluate_classification_models(self, models, X_test, y_test, target, feature_names):
+        if not isinstance(X_test, pd.DataFrame):
+            X_test = pd.DataFrame(X_test, columns=feature_names if feature_names else [f'feature_{i}' for i in range(X_test.shape[1])])
+
+        evaluation_results = {}
+        features = X_test.columns.tolist()
+
         for model in models:
+            model_name = model.__class__.__name__
+            self.visualizer.set_model_name(model_name)
+            
             y_pred = model.predict(X_test)
             
-            # Intentar obtener probabilidades
-            try:
+            accuracy = accuracy_score(y_test, y_pred)
+            precision = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            recall = recall_score(y_test, y_pred, average='weighted', zero_division=0)
+            f1 = f1_score(y_test, y_pred, average='weighted', zero_division=0)
+            
+            roc_auc = np.nan
+            if hasattr(model, "predict_proba"):
                 y_pred_proba = model.predict_proba(X_test)
-            except AttributeError:
-                # Si el modelo no tiene predict_proba, usar decision_function si está disponible
-                try:
-                    y_pred_proba = model.decision_function(X_test)
-                except AttributeError:
-                    # Si tampoco tiene decision_function, usar y_pred
-                    y_pred_proba = y_pred
-            
-            # Si y_pred_proba es unidimensional, convertirlo a bidimensional
-            if y_pred_proba.ndim == 1:
-                y_pred_proba = np.column_stack((1 - y_pred_proba, y_pred_proba))
-            
-            # ... (resto del código de evaluación)
-            
-            self.visualizer.plot_roc_curve(y_test, y_pred_proba)
-            
-            # ... (resto del código)
+                if y_pred_proba.shape[1] == 2:
+                    roc_auc = roc_auc_score(y_test, y_pred_proba[:, 1])
+                else:
+                    try:
+                        roc_auc = roc_auc_score(y_test, y_pred_proba, multi_class='ovr', average='weighted')
+                    except ValueError as e:
+                        print(f"Could not calculate ROC AUC for {model_name}: {e}")
 
-    # ... (otros métodos)
-        # Asegurarse de que X_test sea un DataFrame
+            cv_scoring_metric = 'accuracy'
+            cv_score = np.mean(cross_val_score(model, X_test, y_test, cv=5, scoring=cv_scoring_metric))
+
+            evaluation_results[model_name] = {
+                "accuracy": accuracy,
+                "precision": precision,
+                "recall": recall,
+                "f1_score": f1,
+                "roc_auc": roc_auc,
+                "cross_validation_score": cv_score
+            }
+
+            self.visualizer.plot_confusion_matrix(y_test, y_pred, np.unique(y_test))
+            if hasattr(model, 'predict_proba'):
+                self.visualizer.plot_roc_curve(y_test, y_pred_proba)
+            
+            if hasattr(model, 'feature_importances_'):
+                self.visualizer.plot_feature_importance(model, features)
+            self.visualizer.plot_feature_distributions(X_test, features)
+
+        return evaluation_results
+
+    def evaluate_regression_models(self, models, X_test, y_test, target, feature_names):
         if not isinstance(X_test, pd.DataFrame):
-            X_test = pd.DataFrame(X_test, columns=feature_names)
+            X_test = pd.DataFrame(X_test, columns=feature_names if feature_names else [f'feature_{i}' for i in range(X_test.shape[1])])
         
         evaluation_results = {}
-
-        # Asegurarse de que features contiene los nombres correctos de las columnas
-        if isinstance(X_test, pd.DataFrame):
-            features = X_test.columns.tolist()
-        else:
-            features = [f'Feature_{i}' for i in range(X_test.shape[1])]
+        features = X_test.columns.tolist()
 
         for model in models:
             model_name = model.__class__.__name__
@@ -120,54 +150,79 @@ class Evaluation:
             
             r2 = r2_score(y_test, y_pred)
             mse = mean_squared_error(y_test, y_pred)
-            cv_score = np.mean(cross_val_score(model, X_test, y_test, cv=5, scoring='r2'))
+            mae = mean_absolute_error(y_test, y_pred)
+            rmse = np.sqrt(mse)
+            
+            cv_scoring_metric = 'r2'
+            cv_score = np.mean(cross_val_score(model, X_test, y_test, cv=5, scoring=cv_scoring_metric))
 
             evaluation_results[model_name] = {
                 "r2_score": r2,
                 "mean_squared_error": mse,
+                "mean_absolute_error": mae,
+                "root_mean_squared_error": rmse,
                 "cross_validation_score": cv_score
             }
 
-            # Visualizaciones
             self.visualizer.plot_residuals(y_test, y_pred)
-            self.visualizer.plot_feature_importance(model, features)
+            if hasattr(model, 'feature_importances_'):
+                self.visualizer.plot_feature_importance(model, features)
             self.visualizer.plot_feature_distributions(X_test, features)
-            
-            # Crear un DataFrame con las características y el objetivo
-            X_test_with_target = X_test.copy()
-            X_test_with_target[target] = y_test
-
-            # Crear grupos de características
-            groups = [[feature] for feature in features]
-            
-            # Llamar a create_grouped_histograms con los grupos correctos
-            self.visualizer.create_grouped_histograms(X_test_with_target, groups, target)
 
         return evaluation_results
-    
     
     def compare_models(self, base_model, optimized_model, X_test, y_test):
         base_pred = base_model.predict(X_test)
         optimized_pred = optimized_model.predict(X_test)
 
-        metrics = ['accuracy', 'precision', 'recall', 'f1']
-        
+        print("\nComparación de modelos:")
         print("Métrica    | Modelo Base | Modelo Optimizado | Diferencia")
         print("-----------+-------------+-------------------+-----------")
         
-        for metric in metrics:
-            if metric == 'accuracy':
-                base_value = accuracy_score(y_test, base_pred)
-                opt_value = accuracy_score(y_test, optimized_pred)
-            elif metric == 'precision':
-                base_value = precision_score(y_test, base_pred, average='weighted')
-                opt_value = precision_score(y_test, optimized_pred, average='weighted')
-            elif metric == 'recall':
-                base_value = recall_score(y_test, base_pred, average='weighted')
-                opt_value = recall_score(y_test, optimized_pred, average='weighted')
-            elif metric == 'f1':
-                base_value = f1_score(y_test, base_pred, average='weighted')
-                opt_value = f1_score(y_test, optimized_pred, average='weighted')
+        problem_type_lower = self.problem_type.lower()
+
+        if 'clasificación' in problem_type_lower or 'clasificacion' in problem_type_lower:
+            metrics_to_compare = ['accuracy', 'precision', 'recall', 'f1']
+            for metric_name in metrics_to_compare:
+                if metric_name == 'accuracy':
+                    base_value = accuracy_score(y_test, base_pred)
+                    opt_value = accuracy_score(y_test, optimized_pred)
+                elif metric_name == 'precision':
+                    base_value = precision_score(y_test, base_pred, average='weighted', zero_division=0)
+                    opt_value = precision_score(y_test, optimized_pred, average='weighted', zero_division=0)
+                elif metric_name == 'recall':
+                    base_value = recall_score(y_test, base_pred, average='weighted', zero_division=0)
+                    opt_value = recall_score(y_test, optimized_pred, average='weighted', zero_division=0)
+                elif metric_name == 'f1':
+                    base_value = f1_score(y_test, base_pred, average='weighted', zero_division=0)
+                    opt_value = f1_score(y_test, optimized_pred, average='weighted', zero_division=0)
+                
+                diff = opt_value - base_value
+                print(f"{metric_name.capitalize():10} | {base_value:.4f}      | {opt_value:.4f}            | {diff:+.4f}")
+        
+        elif 'regresión' in problem_type_lower or 'regresion' in problem_type_lower:
+            metrics_to_compare = ['r2_score', 'mean_squared_error', 'mean_absolute_error'] # RMSE is derived from MSE
+            for metric_name in metrics_to_compare:
+                if metric_name == 'r2_score':
+                    base_value = r2_score(y_test, base_pred)
+                    opt_value = r2_score(y_test, optimized_pred)
+                    diff_format = "{diff:+.4f}" # Higher R2 is better
+                elif metric_name == 'mean_squared_error':
+                    base_value = mean_squared_error(y_test, base_pred)
+                    opt_value = mean_squared_error(y_test, optimized_pred)
+                    diff_format = "{diff:+.4f}" # Lower MSE is better, so positive diff is worse
+                elif metric_name == 'mean_absolute_error':
+                    base_value = mean_absolute_error(y_test, base_pred)
+                    opt_value = mean_absolute_error(y_test, optimized_pred)
+                    diff_format = "{diff:+.4f}" # Lower MAE is better
             
-            diff = opt_value - base_value
-            print(f"{metric.capitalize():10} | {base_value:.4f}      | {opt_value:.4f}            | {diff:+.4f}")
+                diff = opt_value - base_value
+                # Adjust interpretation of diff for error metrics (lower is better)
+                if metric_name in ['mean_squared_error', 'mean_absolute_error']:
+                     # For error metrics, a negative diff means the optimized model is better (error decreased)
+                     # A positive diff means optimized model is worse (error increased)
+                     print(f"{metric_name.replace('_', ' ').capitalize():10} | {base_value:.4f}      | {opt_value:.4f}            | {diff_format.format(diff=diff)}") 
+                else: # For R2 score (higher is better)
+                    print(f"{metric_name.replace('_', ' ').capitalize():10} | {base_value:.4f}      | {opt_value:.4f}            | {diff_format.format(diff=diff)}")
+        else:
+            print("Tipo de problema no reconocido para la comparación de modelos.")

@@ -1,0 +1,112 @@
+Iniciando la aplicación...
+Autenticación simulada completada.
+Autenticación exitosa. Simulando inicio del cliente MQTT...
+Simulando inicio del cliente MQTT...
+Processing dataset. Name: titanic, Path: program\almacen\datasets\titanic\titanic.csv
+Tipo de problema determinado: Regresión
+Columnas eliminadas explícitamente: ['Name']
+Columnas en X después de eliminación explícita: ['Survived', 'Pclass', 'Sex', 'Age', 'Siblings/Spouses Aboard', 'Parents/Children Aboard', 'Fare']
+Características numéricas finales para transformador: ['Survived', 'Pclass', 'Age', 'Siblings/Spouses Aboard', 'Parents/Children Aboard', 'Fare']
+Características categóricas finales para transformador: ['Sex']
+Características de fecha/hora finales para transformador: []
+DataFrame interno del Dataset actualizado. Nuevo shape: (887, 8)
+[MQTT] DataFrame en global_data.dataset actualizado. Shape: (887, 8)
+[MQTT] Before EDA_processed_info: global_data.dataset ID = 1449821819232, global_data.dataset.df.shape = (887, 8)
+[EDA_processed_info] Entry: self ID = 1449821819232, self.df.shape = (887, 8)
+[EDA_processed_info] Numeric columns for correlation matrix: ['num__Survived', 'num__Pclass', 'num__Age', 'num__Siblings/Spouses Aboard', 'num__Parents/Children Aboard', 'num__Fare', 'cat__Sex_female', 'cat__Sex_male']
+Simulando envío de resultados del dataset a la API
+Resultados del dataset enviados exitosamente a la API
+Tipo de problema determinado: Clasificación Binaria
+Enviando mensaje de entrenamiento: {
+  "command": "train",
+  "data": {
+    "dataset": "titanic",
+    "target": "num__Survived",
+    "features": [
+      "num__Pclass",
+      "num__Age",
+      "num__Siblings/Spouses Aboard",
+      "num__Parents/Children Aboard",
+      "num__Fare",
+      "cat__Sex_female",
+      "cat__Sex_male"
+    ],
+    "crossvalidation": 80,
+    "recommendations": false,
+    "optimization_strategy": "random",
+    "n_iter_random": 20,
+    "n_trials_optuna": 30,
+    "model": [
+      "RandomForestClassifier"
+    ],
+    "params": {}
+  }
+}
+[MQTT train_model] Target column set to: num__Survived
+[MQTT train_model] Dataset name set to: titanic
+[MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+[MQTT train_model] Crossvalidation set to: 80
+[MQTT train_model] Recommendations set to: False
+Intentando cargar dataset desde (referencia original): program\almacen\datasets\titanic\titanic.csv
+[MQTT train_model] Using dataset object: global_data.dataset (name: titanic)
+[MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: titanic
+DataFrame original para preprocesar (primeras filas):
+   num__Survived  num__Pclass  num__Age  num__Siblings/Spouses Aboard  num__Parents/Children Aboard  num__Fare  cat__Sex_female  cat__Sex_male
+0            0.0          0.0 -0.338028                           1.0                           0.0  -0.310359              0.0            1.0
+1            1.0         -2.0  0.563380                           1.0                           0.0   2.448211              1.0            0.0
+2            1.0          0.0 -0.112676                           0.0                           0.0  -0.281279              1.0            0.0
+3            1.0         -2.0  0.394366                           1.0                           0.0   1.664870              1.0            0.0
+4            0.0          0.0  0.394366                           0.0                           0.0  -0.275894              0.0            1.0
+Columnas del DataFrame original: ['num__Survived', 'num__Pclass', 'num__Age', 'num__Siblings/Spouses Aboard', 'num__Parents/Children Aboard', 'num__Fare', 'cat__Sex_female', 'cat__Sex_male']
+Target column para basic_dfpreprocess: num__Survived
+Columnas en X después de eliminación explícita: ['num__Pclass', 'num__Age', 'num__Siblings/Spouses Aboard', 'num__Parents/Children Aboard', 'num__Fare', 'cat__Sex_female', 'cat__Sex_male']
+Características numéricas finales para transformador: ['num__Pclass', 'num__Age', 'num__Siblings/Spouses Aboard', 'num__Parents/Children Aboard', 'num__Fare', 'cat__Sex_female', 'cat__Sex_male']
+Características categóricas finales para transformador: []
+Características de fecha/hora finales para transformador: []
+DataFrame después de basic_dfpreprocess (primeras filas):
+   num__num__Pclass  num__num__Age  num__num__Siblings/Spouses Aboard  ...  num__cat__Sex_female  num__cat__Sex_male  num__Survived
+0               0.0      -0.338028                                1.0  ...                   0.0                 0.0            0.0
+1              -2.0       0.563380                                1.0  ...                   1.0                -1.0            1.0
+2               0.0      -0.112676                                0.0  ...                   1.0                -1.0            1.0
+3              -2.0       0.394366                                1.0  ...                   1.0                -1.0            1.0
+4               0.0       0.394366                                0.0  ...                   0.0                 0.0            0.0
+
+[5 rows x 8 columns]
+Columnas después de basic_dfpreprocess: ['num__num__Pclass', 'num__num__Age', 'num__num__Siblings/Spouses Aboard', 'num__num__Parents/Children Aboard', 'num__num__Fare', 'num__cat__Sex_female', 'num__cat__Sex_male', 'num__Survived']
+Características finales para entrenamiento (después de drop target): ['num__num__Pclass', 'num__num__Age', 'num__num__Siblings/Spouses Aboard', 'num__num__Parents/Children Aboard', 'num__num__Fare', 'num__cat__Sex_female', 'num__cat__Sex_male']
+Columnas de X_train_processed INMEDIATAMENTE después de split_and_train (antes de _train_models): ['num__num__Pclass', 'num__num__Age', 'num__num__Siblings/Spouses Aboard', 'num__num__Parents/Children Aboard', 'num__num__Fare', 'num__cat__Sex_female', 'num__cat__Sex_male']
+Primeras filas de X_train_processed:
+   num__num__Pclass  num__num__Age  num__num__Siblings/Spouses Aboard  num__num__Parents/Children Aboard  num__num__Fare  num__cat__Sex_female  num__cat__Sex_male
+0               0.0      -0.450704                                0.0                                0.0       -0.311255                   0.0                 0.0
+1               0.0      -0.394366                                0.0                                0.0       -0.297435                   0.0                 0.0
+2              -1.0      -1.539718                                1.0                                1.0        0.001973                   0.0                 0.0
+3               0.0       0.450704                                1.0                                0.0        0.126906                   1.0                -1.0
+4               0.0       2.591549                                0.0                                0.0       -0.287742                   0.0                 0.0
+Columnas de X_test_processed INMEDIATAMENTE después de split_and_train: ['num__num__Pclass', 'num__num__Age', 'num__num__Siblings/Spouses Aboard', 'num__num__Parents/Children Aboard', 'num__num__Fare', 'num__cat__Sex_female', 'num__cat__Sex_male']
+Algoritmos a procesar en _train_models: ['RandomForestClassifier']
+[train_custom_models] Inicio. Recibido X_train con columnas: ['num__num__Pclass', 'num__num__Age', 'num__num__Siblings/Spouses Aboard', 'num__num__Parents/Children Aboard', 'num__num__Fare', 'num__cat__Sex_female', 'num__cat__Sex_male']
+[train_custom_models] X_train (DataFrame) primeras filas ANTES de train_simple_model:
+   num__num__Pclass  num__num__Age  num__num__Siblings/Spouses Aboard  num__num__Parents/Children Aboard  num__num__Fare  num__cat__Sex_female  num__cat__Sex_male
+0               0.0      -0.450704                                0.0                                0.0       -0.311255                   0.0                 0.0
+1               0.0      -0.394366                                0.0                                0.0       -0.297435                   0.0                 0.0
+2              -1.0      -1.539718                                1.0                                1.0        0.001973                   0.0                 0.0
+3               0.0       0.450704                                1.0                                0.0        0.126906                   1.0                -1.0
+4               0.0       2.591549                                0.0                                0.0       -0.287742                   0.0                 0.0
+[train_custom_models] Columnas de X_train (DataFrame): ['num__num__Pclass', 'num__num__Age', 'num__num__Siblings/Spouses Aboard', 'num__num__Parents/Children Aboard', 'num__num__Fare', 'num__cat__Sex_female', 'num__cat__Sex_male']
+[train_custom_models] Llamando a train_simple_model para RandomForestClassifier con X_train_df (columnas: ['num__num__Pclass', 'num__num__Age', 'num__num__Siblings/Spouses Aboard', 'num__num__Parents/Children Aboard', 'num__num__Fare', 'num__cat__Sex_female', 'num__cat__Sex_male'])
+Iniciando selección de características para RandomForestClassifier antes de la optimización de hiperparámetros...
+Características seleccionadas por select_best_features: ['num__cat__Sex_male', 'num__num__Pclass', 'num__num__Age', 'num__cat__Sex_female', 'num__num__Siblings/Spouses Aboard', 'num__num__Fare', 'num__num__Parents/Children Aboard']
+Características seleccionadas para RandomForestClassifier (pre-optimización): ['num__cat__Sex_male', 'num__num__Pclass', 'num__num__Age', 'num__cat__Sex_female', 'num__num__Siblings/Spouses Aboard', 'num__num__Fare', 'num__num__Parents/Children Aboard']
+Ajustando grid para RandomForestClassifier: eliminando 'oob_score' debido a posible conflicto con 'bootstrap=False'.
+Generated param grid for RandomForestClassifier: {'n_estimators': [50, 100, 200, 300], 'max_depth': [None, 5, 10, 15, 20], 'min_samples_split': [2, 5, 10, 15], 'min_samples_leaf': [1, 2, 5, 10], 'max_features': ['sqrt', 'log2', None, 0.5, 0.7, 1.0], 'bootstrap': [True, False], 'criterion': ['gini', 'entropy'], 'warm_start': [True, False]}
+Optimizando modelo RandomForestClassifier con estrategia: random
+Guardando modelo: RandomForestClassifier_Base para el dataset program\almacen\datasets\titanic\titanic.csv
+Modelo guardado en: program\almacen\models\titanic\RandomForestClassifier_Base.pkl con feature_names: True, preprocessor: True
+Modelo RandomForestClassifier_Base guardado exitosamente.
+Guardando modelo: RandomForestClassifier_Optimized para el dataset program\almacen\datasets\titanic\titanic.csv
+Modelo guardado en: program\almacen\models\titanic\RandomForestClassifier_Optimized.pkl con feature_names: True, preprocessor: True
+Modelo RandomForestClassifier_Optimized guardado exitosamente.
+Comparing models for RandomForestClassifier: Base (accuracy=0.7901) vs Optimized (accuracy=0.7887)
+Base model is better or equal for RandomForestClassifier. Selecting base.
+Cargando modelo desde: program/almacen/models\titanic\RandomForestClassifier_Base.pkl
+Modelo y metadatos cargados exitosamente desde: program/almacen/models\titanic\RandomForestClassifier_Base.pkl

@@ -87,6 +87,19 @@ class Dataset:
         """
         return self.df
 
+    def set_dataframe(self, new_df):
+        """
+        Actualiza el DataFrame interno del objeto Dataset.
+        Args:
+            new_df (pd.DataFrame): El nuevo DataFrame a establecer.
+        """
+        if isinstance(new_df, pd.DataFrame):
+            self.df = new_df
+            logger.info(f"DataFrame interno del Dataset actualizado. Nuevo shape: {self.df.shape}")
+        else:
+            logger.error("Intento de establecer un DataFrame no válido. Debe ser un pd.DataFrame.")
+            # Considerar si se debe lanzar un error aquí
+
     def save_to_csv(self, path):
         """
         Guarda el DataFrame en un archivo CSV.

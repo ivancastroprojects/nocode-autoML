@@ -1,0 +1,190 @@
+Iniciando la aplicación...
+Autenticación simulada completada.
+Autenticación exitosa. Simulando inicio del cliente MQTT...
+Simulando inicio del cliente MQTT...
+Tipo de problema determinado: Clasificación Binaria
+Enviando mensaje de entrenamiento: {
+  "command": "train",
+  "data": {
+    "dataset": "titanic",
+    "target": "Survived",
+    "features": [
+      "Pclass",
+      "Name",
+      "Sex",
+      "Age",
+      "Siblings/Spouses Aboard",
+      "Parents/Children Aboard",
+      "Fare"
+    ],
+    "crossvalidation": 80,
+    "recommendations": true,
+    "optimization_strategy": "random",
+    "n_iter_random": 20,
+    "n_trials_optuna": 30,
+    "model": [
+      "RandomForestClassifier"
+    ],
+    "params": {}
+  }
+}
+[MQTT train_model] Target column set to: Survived
+[MQTT train_model] Dataset name set to: titanic
+[MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+[MQTT train_model] Crossvalidation set to: 80
+[MQTT train_model] Recommendations set to: True
+Intentando cargar dataset desde (referencia original): program\almacen\datasets\titanic\titanic.csv
+[MQTT train_model] Using dataset object: global_data.dataset (name: titanic)
+Conjuntos de entrenamiento y prueba guardados en program\almacen\datasets\titanic\titanic_train.csv y program\almacen\datasets\titanic\titanic_test.csv
+Tamaño del conjunto de entrenamiento: 709, Tamaño del conjunto de prueba: 178
+Preparando para entrenar modelos con dataset: program\almacen\datasets\titanic\titanic.csv
+Características: ['Pclass', 'Name', 'Sex', 'Age', 'Siblings/Spouses Aboard', 'Parents/Children Aboard', 'Fare']
+Tipo de problema: Clasificación Binaria
+Algoritmos seleccionados: ['RandomForestClassifier']
+Algoritmos a procesar en _train_models: ['RandomForestClassifier']
+Error en train_custom_models para RandomForestClassifier: could not convert string to float: 'Mr. Moses Aaron Troupiansky'
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\train.py", line 66, in train_custom_models
+    base_model = train_simple_model(X_train_df, y_train, model_name, params)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\train.py", line 51, in train_simple_model
+    model.fit(X, y)
+    ~~~~~~~~~^^^^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\ensemble\_forest.py", line 360, in fit
+    X, y = validate_data(
+           ~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<5 lines>...
+        ensure_all_finite=False,
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\utils\validation.py", line 2961, in validate_data
+    X, y = check_X_y(X, y, **check_params)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\utils\validation.py", line 1370, in check_X_y
+    X = check_array(
+        X,
+    ...<12 lines>...
+        input_name="X",
+    )
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\utils\validation.py", line 1055, in check_array
+    array = _asarray_with_order(array, order=order, dtype=dtype, xp=xp)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\utils\_array_api.py", line 839, in _asarray_with_order
+    array = numpy.asarray(array, order=order, dtype=dtype)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\pandas\core\generic.py", line 2153, in __array__
+    arr = np.asarray(values, dtype=dtype)
+ValueError: could not convert string to float: 'Mr. Moses Aaron Troupiansky'
+
+Error al procesar el algoritmo RandomForestClassifier en _train_models: name 'model' is not defined
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\train.py", line 66, in train_custom_models
+    base_model = train_simple_model(X_train_df, y_train, model_name, params)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\train.py", line 51, in train_simple_model
+    model.fit(X, y)
+    ~~~~~~~~~^^^^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\ensemble\_forest.py", line 360, in fit
+    X, y = validate_data(
+           ~~~~~~~~~~~~~^
+        self,
+        ^^^^^
+    ...<5 lines>...
+        ensure_all_finite=False,
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\utils\validation.py", line 2961, in validate_data
+    X, y = check_X_y(X, y, **check_params)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\utils\validation.py", line 1370, in check_X_y
+    X = check_array(
+        X,
+    ...<12 lines>...
+        input_name="X",
+    )
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\utils\validation.py", line 1055, in check_array
+    array = _asarray_with_order(array, order=order, dtype=dtype, xp=xp)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\utils\_array_api.py", line 839, in _asarray_with_order
+    array = numpy.asarray(array, order=order, dtype=dtype)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\pandas\core\generic.py", line 2153, in __array__
+    arr = np.asarray(values, dtype=dtype)
+ValueError: could not convert string to float: 'Mr. Moses Aaron Troupiansky'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 173, in _train_models
+    base_model_instance, optimized_model_instance, selected_features_for_optimized = train_custom_models(
+                                                                                     ~~~~~~~~~~~~~~~~~~~^
+        X_train, y_train, {'name': algorithm_name, 'params': algorithm_params},
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        n_trials_optuna=self.n_trials_optuna
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\train.py", line 127, in train_custom_models
+    return model  # Devolver el modelo original si hay un error
+           ^^^^^
+NameError: name 'model' is not defined
+
+
+Iniciando recomendación del mejor modelo...
+Iniciando recomendación del mejor modelo...
+Seleccionando las mejores características (llamada a select_best_features)...
+Error durante la búsqueda del mejor modelo global: max_features == 10, must be <= 7.
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 429, in _find_and_evaluate_best_model
+    _poly_transform_placeholder, _poly_feature_names_placeholder = self._recommend_best_model(
+                                                                   ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        X_train, y_train, X_test, y_test,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+        model_instances_for_recommendation
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 484, in _recommend_best_model
+    best_model, best_selected_features, X_train_selected, X_test_selected, poly, poly_feature_names = recommend_best_model(
+                                                                                                      ~~~~~~~~~~~~~~~~~~~~^
+        X_train, y_train, X_test, y_test, problem_type, current_trained_models_list, feature_names
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\modeloptimization.py", line 56, in recommend_best_model
+    selected_feature_names, X_train_sel = select_best_features(
+                                          ~~~~~~~~~~~~~~~~~~~~^
+        X_train, y_train, current_problem_type, feature_names=feature_names
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\data\datasetprocessing.py", line 529, in select_best_features
+    selected_features = select_features_basic(X, y, problem_type, feature_names, k)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\data\datasetprocessing.py", line 587, in select_features_basic
+    selector.fit(X, y)
+    ~~~~~~~~~~~~^^^^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\feature_selection\_from_model.py", line 353, in fit
+    self._check_max_features(X)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\feature_selection\_from_model.py", line 311, in _check_max_features
+    check_scalar(
+    ~~~~~~~~~~~~^
+        max_features,
+        ^^^^^^^^^^^^^
+    ...<3 lines>...
+        max_val=n_features,
+        ^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\utils\validation.py", line 1950, in check_scalar
+    raise ValueError(
+    ...<2 lines>...
+    )
+ValueError: max_features == 10, must be <= 7.
+

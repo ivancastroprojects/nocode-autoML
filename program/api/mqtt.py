@@ -62,7 +62,20 @@ def process_dataset(data):
     print("\n\n\n\n------------------- DATASET --------------------")
     dataset_info = data["dataset"]
     dataset_path = dataset_info["path"]
-    dataset_name = clean_filename(dataset_path.split(':')[-1])
+    # Usar el nombre del dataset proporcionado en el mensaje si existe,
+    # de lo contrario, derivarlo del path.
+    dataset_name = dataset_info.get("name") 
+    if not dataset_name:
+        # Fallback si no hay nombre: usar el nombre del directorio padre del archivo del dataset
+        # Por ejemplo, si path es '.../datasets/titanic/dataset.csv', dataset_name será 'titanic'
+        # Si path es '.../datasets/iris.csv', dataset_name será 'iris' (del stem)
+        p = Path(dataset_path)
+        if p.is_file() and p.parent.name != 'datasets': # Asegurarse que no sea el directorio 'datasets' en sí
+            dataset_name = clean_filename(p.parent.name)
+        else: # Si es un archivo directamente en 'datasets' o si el path es un dir, usar el stem
+            dataset_name = clean_filename(p.stem)
+
+    logger.info(f"Processing dataset. Name: {dataset_name}, Path: {dataset_path}")
     
     try:
         if dataset_path.startswith(('http://', 'https://')):
@@ -75,8 +88,10 @@ def process_dataset(data):
 
     global_data.dataset = Dataset(df)
     global_data.training.dataset_name = dataset_name
+    global_data.dataset.dataset_name = dataset_name
 
-    basic_path = get_safe_path('program/almacen/datasets', dataset_name, 'dataset.csv')
+    # Guardar el dataset original/raw con el nombre de la carpeta.
+    basic_path = get_safe_path('program/almacen/datasets', dataset_name, f'{dataset_name}.csv')
     df.to_csv(basic_path, index=False)
     print(f"Dataset guardado en: {basic_path}")
 
@@ -94,20 +109,42 @@ def process_dataset(data):
     EDA_initial_info(global_data.dataset)
     
     processing = data.get("processing", {})
-    if processing.get("optimized", False):
+    is_already_loaded_processed = processing.get("is_already_loaded_processed", False)
+
+    if is_already_loaded_processed:
+        logger.info(f"Dataset '{dataset_name}' se cargó desde una versión ya procesada. Omitiendo el reprocesamiento.")
+        df_processed = df # El df cargado ya es el procesado en este caso
+    elif processing.get("optimized", False):
         df_processed = optimized_dfpreprocess(df, target_column=global_data.training.target)
     else:
         # Filtrar argumentos válidos para basic_dfpreprocess
         valid_args = {'target_column', 'categorical_features', 'numerical_features', 'drop_columns'}
-        filtered_processing = {k: v for k, v in processing.items() if k in valid_args}
-        df_processed = basic_dfpreprocess(df, **filtered_processing)
+        # Cuidado: 'is_already_loaded_processed' no es un arg para basic_dfpreprocess
+        filtered_processing_args = {k: v for k, v in processing.items() if k in valid_args}
+        df_processed, _ = basic_dfpreprocess(df, **filtered_processing_args)
 
+    # Actualizar el DataFrame en el objeto Dataset global con el df procesado
+    if df_processed is not None:
+        global_data.dataset.set_dataframe(df_processed)
+        logger.info(f"[MQTT] DataFrame en global_data.dataset actualizado. Shape: {global_data.dataset.get_dataframe().shape}")
+    else:
+        logger.error("[MQTT] df_processed es None, no se pudo actualizar global_data.dataset.")
+
+    # EDA sobre el dataset PROCESADO
+    logger.info(f"[MQTT] Before EDA_processed_info: global_data.dataset ID = {id(global_data.dataset)}, global_data.dataset.df.shape = {global_data.dataset.df.shape}")
     EDA_processed_info(global_data.dataset)
 
-    processed_path = get_safe_path('program/almacen/datasets', dataset_name, f'{dataset_name}_processed.csv')
-    df_processed.to_csv(processed_path, index=False)
+    # Si el dataset se cargó como ya procesado, no necesitamos sobreescribir el archivo "_processed.csv"
+    # a menos que queramos asegurar que está allí (podría haber sido borrado externamente).
+    # Por ahora, si se cargó procesado, asumimos que df_processed es correcto y no lo guardamos de nuevo,
+    # a menos que queramos normalizar el guardado. Para evitar una escritura innecesaria:
+    if not is_already_loaded_processed:
+        processed_path = get_safe_path('program/almacen/datasets', dataset_name, f'{dataset_name}_processed.csv')
+        df_processed.to_csv(processed_path, index=False)
+        print(f"Dataset procesado guardado en {processed_path}")
+    else:
+        print(f"Dataset '{dataset_name}' ya estaba procesado. No se requiere nuevo guardado del archivo procesado.")
 
-    print(f"Dataset procesado guardado en {processed_path}")
     
     dataset_info.update({
         "name": dataset_name,
@@ -122,24 +159,87 @@ def train_model(data):
     Entrena el modelo con los datos recibidos.
     """
     print("\n\n\n\n------------------- TRAIN --------------------")
-    training: Training = global_data.training
-    training.algorithms = data["algorithms"]
-    training.crossvalidation = data["crossvalidation"]
-    training.recommendations = data["recommendations"]
+    
+    training_instance: Training = global_data.training # Get the global instance
 
-    dataset_path = get_dataset_path(data["dataset"])
-    print(f"Intentando cargar dataset desde: {dataset_path}")
+    # CRITICAL: Set the target for this training session based on MQTT payload
+    if "target" in data:
+        training_instance.target = data["target"]
+        logger.info(f"[MQTT train_model] Target column set to: {training_instance.target}")
+    else:
+        logger.error("[MQTT train_model] 'target' not found in MQTT data for train_model. Cannot proceed.")
+        return
 
-    df = pd.read_csv(dataset_path)
-    X = df.drop(columns=[training.target])
-    y = df[training.target]
-    feature_names = X.columns.tolist()
+    # Set dataset name on the training instance
+    if "dataset" in data:
+        training_instance.dataset_name = data["dataset"]
+        logger.info(f"[MQTT train_model] Dataset name set to: {training_instance.dataset_name}")
+    else:
+        logger.error("[MQTT train_model] 'dataset' name not found in MQTT data for train_model. Cannot proceed.")
+        return
 
-    X_test, y_test, trained_models, evaluation_results = training.split_and_train(
-        X=X,
-        y=y,
-        dataset_path=dataset_path,
-        feature_names=feature_names
+    # Map 'model' from MQTT (which is likely algorithm names) to training_instance.algorithms
+    # The Training class expects algorithms typically as a list of strings or list of dicts with params
+    if "model" in data: 
+        algorithms_from_mqtt = data["model"]
+        if isinstance(algorithms_from_mqtt, str):
+            training_instance.algorithms = [algorithms_from_mqtt]
+        elif isinstance(algorithms_from_mqtt, list):
+            training_instance.algorithms = algorithms_from_mqtt
+        else:
+            logger.warning(f"[MQTT train_model] 'model' (algorithms) in MQTT data is of unexpected type: {type(algorithms_from_mqtt)}. Using empty list.")
+            training_instance.algorithms = []
+        logger.info(f"[MQTT train_model] Algorithms set to: {training_instance.algorithms}")
+    else:
+        logger.warning("[MQTT train_model] 'model' (algorithms) not found in MQTT data. Using defaults or previously set.")
+        # Consider setting a default e.g., training_instance.algorithms = []
+
+    # For crossvalidation and recommendations, they need to be in the MQTT message from web/app.py
+    # if they are to be configured per "train" command.
+    if "crossvalidation" in data: 
+        training_instance.crossvalidation = data["crossvalidation"]
+        logger.info(f"[MQTT train_model] Crossvalidation set to: {training_instance.crossvalidation}")
+    else:
+        logger.warning(f"[MQTT train_model] 'crossvalidation' not found in MQTT data. Using default from Training class: {training_instance.crossvalidation}.")
+
+    if "recommendations" in data: 
+        training_instance.recommendations = data["recommendations"]
+        logger.info(f"[MQTT train_model] Recommendations set to: {training_instance.recommendations}")
+    else:
+        logger.warning(f"[MQTT train_model] 'recommendations' not found in MQTT data. Using default from Training class: {training_instance.recommendations}.")
+    
+    # Ensure global_data.dataset is loaded and corresponds to training_instance.dataset_name.
+    # This is crucial. `process_dataset` should have populated global_data.dataset.
+    # If global_data.dataset is not for training_instance.dataset_name, it's a potential issue.
+    if global_data.dataset is None or global_data.dataset.dataset_name != training_instance.dataset_name:
+        logger.error(f"[MQTT train_model] Mismatch or missing global_data.dataset ('{global_data.dataset.dataset_name if global_data.dataset else 'None'}') for expected dataset '{training_instance.dataset_name}'. This should be set by a 'dataset' command flow prior to 'train'.")
+        # Potentially, you could attempt to load it here, but it's safer if the 'dataset' command ensures this.
+        # Example:
+        # dataset_csv_path_to_load = get_dataset_path(training_instance.dataset_name)
+        # if dataset_csv_path_to_load and Path(dataset_csv_path_to_load).exists():
+        #     df_load = pd.read_csv(dataset_csv_path_to_load) # Or load the processed one if that's the expectation
+        #     global_data.dataset = Dataset(df_load)
+        #     global_data.dataset.dataset_name = training_instance.dataset_name
+        #     logger.info(f"[MQTT train_model] Loaded dataset {training_instance.dataset_name} into global_data.dataset")
+        # else:
+        #     logger.error(f"[MQTT train_model] Could not load dataset {training_instance.dataset_name}.")
+        #     return
+        return # Stop if dataset is not correctly pre-loaded
+
+    dataset_csv_path = get_dataset_path(training_instance.dataset_name) # Path to the original CSV for reference
+    logger.info(f"Intentando cargar dataset desde (referencia original): {dataset_csv_path}")
+    logger.info(f"[MQTT train_model] Using dataset object: global_data.dataset (name: {global_data.dataset.dataset_name if global_data.dataset else 'None'})")
+
+    # The `training_instance` should now be properly configured with target, dataset_name, algorithms etc.
+    # `split_and_train` internally calls `determine_problem_type` which uses `self.target`.
+
+    # CRÍTICO: Asignar el global_data.dataset a la instancia de training ANTES de llamar a split_and_train
+    training_instance.dataset = global_data.dataset
+    logger.info(f"[MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: {training_instance.dataset.dataset_name if training_instance.dataset else 'None'}")
+
+    X_test, y_test, trained_models, evaluation_results = training_instance.split_and_train(
+        dataset=global_data.dataset, # Aunque split_and_train lo reciba, internamente usará self.dataset que acabamos de setear
+        dataset_path=dataset_csv_path
     )
 
     if trained_models:

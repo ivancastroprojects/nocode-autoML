@@ -6,6 +6,8 @@ import pickle
 from pathlib import Path
 from typing import Dict, Type, Protocol
 import pandas as pd
+import numpy as np
+import traceback
 
 from sklearn.svm import SVC, SVR
 from sklearn import svm, discriminant_analysis, dummy
@@ -230,7 +232,7 @@ def to_dict(model):
 def from_dict(model_dict):
     return deserialize_model(model_dict)
 
-def to_pickle(model, model_name, dataset_path, accuracy=None, X_train=None):
+def to_pickle(model, model_name, dataset_path, accuracy=None, X_train=None, actual_feature_names: list | None = None, preprocessor=None):
     """
     Guarda el modelo en formato pickle.
 
@@ -239,83 +241,165 @@ def to_pickle(model, model_name, dataset_path, accuracy=None, X_train=None):
     model_name (str): Nombre base del modelo (ej. 'KNeighborsClassifier_base').
     dataset_path (str): Ruta completa al archivo del dataset.
     accuracy (float, optional): Precisión del modelo para clasificación o mejor métrica para regresión.
-    X_train (pd.DataFrame, optional): Datos de entrenamiento para calcular las medias de las características.
+    X_train (pd.DataFrame, optional): Datos de entrenamiento para calcular las medias/mins/maxs de las características.
+    actual_feature_names (list, optional): Lista explícita de nombres de características utilizados para entrenar el modelo.
+    preprocessor (object, optional): El objeto preprocesador (ej. ColumnTransformer) ajustado.
 
     Returns:
     str: Ruta donde se guardó el modelo.
     """
     try:
         # Extraer el nombre del dataset del path
-        dataset_name = Path(dataset_path).stem
-        model_name = Path(model_name).stem
+        dataset_name_from_path = Path(dataset_path).stem # Esto podría ser el nombre corto del dataset
         
-        # Construir el nombre del modelo
-        if accuracy is not None:
-            accuracy_str = f"{accuracy:.2f}".replace(".", "_")
-            full_model_name = f"{model_name}_{accuracy_str}_{dataset_name}.pkl"
-        else:
-            full_model_name = f"{model_name}_{dataset_name}.pkl"
-        
-        # Crear la estructura de carpetas
-        model_dir = os.path.join('program', 'almacen', 'models', dataset_name)
+        full_model_name_stem = clean_filename(Path(model_name).stem)
+        full_model_name_pkl = f"{full_model_name_stem}.pkl"
+
+        model_dir = os.path.join('program', 'almacen', 'models', clean_filename(dataset_name_from_path))
         os.makedirs(model_dir, exist_ok=True)
         
-        # Ruta completa del archivo
-        model_path = os.path.join(model_dir, full_model_name)
+        model_path = os.path.join(model_dir, full_model_name_pkl)
         
+        feature_names_to_save = None
+        if actual_feature_names:
+            feature_names_to_save = actual_feature_names
+        elif isinstance(X_train, pd.DataFrame) and not X_train.empty:
+            feature_names_to_save = X_train.columns.tolist()
+        elif hasattr(model, 'feature_names_in_'):
+            feature_names_to_save = list(getattr(model, 'feature_names_in_'))
+        elif hasattr(model, 'feature_names_'): 
+            feature_names_to_save = list(getattr(model, 'feature_names_'))
+
+        if feature_names_to_save and hasattr(model, 'fit'): 
+            try:
+                if not hasattr(model, 'feature_names_in_') or getattr(model, 'feature_names_in_', None) is None:
+                    setattr(model, 'feature_names_in_', np.array(feature_names_to_save, dtype=object))
+                    logger.info(f"Atributo 'feature_names_in_' establecido en el modelo '{full_model_name_stem}' antes de guardar.")
+            except Exception as e:
+                logger.warning(f"No se pudo establecer 'feature_names_in_' en el modelo '{full_model_name_stem}': {e}")
+        
+        feature_means_dict = None
+        feature_mins_dict = None
+        feature_maxs_dict = None
+
+        if isinstance(X_train, pd.DataFrame) and not X_train.empty:
+            # Asegurarse de que solo se calculan para columnas numéricas si es posible
+            # o manejar el error si .mean(), .min(), .max() fallan en columnas no numéricas.
+            # Por ahora, se asume que X_train aquí ya está preprocesado si aplica, o es puramente numérico.
+            try:
+                numeric_X_train = X_train.select_dtypes(include=np.number)
+                if not numeric_X_train.empty:
+                    feature_means_dict = numeric_X_train.mean().to_dict()
+                    feature_mins_dict = numeric_X_train.min().to_dict()
+                    feature_maxs_dict = numeric_X_train.max().to_dict()
+                else: # Si no hay columnas numéricas en X_train (improbable pero posible)
+                    logger.warning(f"X_train para {full_model_name_stem} no contiene columnas numéricas para calcular min/max/mean.")
+            except Exception as e:
+                 logger.warning(f"Error calculando min/max/mean para {full_model_name_stem} desde X_train: {e}")
+
         # Preparar la información del modelo
         model_info = {
             'model': model,
-            'feature_names': getattr(model, 'feature_names_', None),
-            'feature_means': X_train.mean().to_dict() if isinstance(X_train, pd.DataFrame) else None
+            'feature_names': feature_names_to_save,
+            'feature_means': feature_means_dict if feature_means_dict is not None else (getattr(model, 'feature_means_', None) if feature_names_to_save else None),
+            'feature_mins': feature_mins_dict,
+            'feature_maxs': feature_maxs_dict,
+            'preprocessor': preprocessor 
         }
         
-        # Guardar el modelo
+        if model_info['feature_means'] is None and hasattr(model, 'feature_means_'):
+            model_info['feature_means'] = getattr(model, 'feature_means_')
+
         with open(model_path, 'wb') as model_file:
             pickle.dump(model_info, model_file)
         
-        print(f"Modelo guardado en: {model_path}")
+        logger.info(f"Modelo guardado en: {model_path} con feature_names: {feature_names_to_save is not None}, preprocessor: {preprocessor is not None}")
         return model_path
     except Exception as e:
-        print(f"Error al guardar el modelo: {str(e)}")
+        logger.error(f"Error al guardar el modelo '{model_name}' en '{dataset_path}': {str(e)}")
+        logger.error(traceback.format_exc())
         return None
 
 def from_pickle(model_path):
     """
     Carga un modelo desde un archivo pickle.
+    Devuelve siempre un diccionario {'model': model_obj, 'feature_names': ..., 'feature_means': ..., 'feature_mins': ..., 'feature_maxs': ..., 'preprocessor': ...}.
+    Si el pickle contiene un objeto modelo crudo, lo envuelve.
+    También intenta asegurar que los atributos feature_names_ y feature_means_ estén en el objeto modelo.
 
     Args:
     model_path (str): Ruta al archivo pickle del modelo.
 
     Returns:
-    object: El modelo cargado.
+    dict: Un diccionario con el modelo y metadatos asociados.
 
     Raises:
     FileNotFoundError: Si el archivo no existe.
     pickle.UnpicklingError: Si hay un error al deserializar el archivo.
+    ValueError: Si el formato del pickle es inesperado o no se puede extraer un modelo.
     """
     try:
         with open(model_path, 'rb') as model_file:
-            model_info = pickle.load(model_file)
-        
-        if isinstance(model_info, dict):
-            model = model_info.get('model')
-            if model is None:
-                raise ValueError("El archivo pickle no contiene un modelo válido.")
+            loaded_content = pickle.load(model_file)
+
+        final_model_dict = {}
+        model_obj = None
+
+        if isinstance(loaded_content, dict) and 'model' in loaded_content:
+            final_model_dict = loaded_content
+            model_obj = final_model_dict.get('model')
             
-            # Restaurar atributos adicionales si existen
-            if 'feature_names' in model_info:
-                model.feature_names_ = model_info['feature_names']
-            if 'feature_means' in model_info:
-                model.feature_means_ = model_info['feature_means']
-            else:
-                # Si no tenemos las medias, inicializamos a 0
-                model.feature_means_ = {feature: 0 for feature in getattr(model, 'feature_names_', [])}
-        else:
-            model = model_info  # El archivo contiene directamente el modelo
+            if model_obj:
+                saved_feature_names = final_model_dict.get('feature_names')
+                saved_feature_means = final_model_dict.get('feature_means')
+                # feature_mins, feature_maxs, preprocessor son obtenidos directamente por .get() abajo
+
+                if saved_feature_names is not None:
+                    setattr(model_obj, 'feature_names_', saved_feature_names)
+                
+                if saved_feature_means is not None:
+                    setattr(model_obj, 'feature_means_', saved_feature_means)
+                elif hasattr(model_obj, 'feature_names_') and model_obj.feature_names_ is not None:
+                    default_means = {fn: 0 for fn in model_obj.feature_names_}
+                    setattr(model_obj, 'feature_means_', default_means)
+                    final_model_dict['feature_means'] = default_means 
+
+        elif not isinstance(loaded_content, dict): 
+            logger.warning(f"El archivo pickle {model_path} contenía un objeto modelo crudo. Envolviéndolo en un diccionario.")
+            model_obj = loaded_content
+            
+            feature_names = getattr(model_obj, 'feature_names_', None)
+            feature_means = getattr(model_obj, 'feature_means_', None)
+
+            if feature_names and feature_means is None: 
+                feature_means = {fn: 0 for fn in feature_names}
+                setattr(model_obj, 'feature_means_', feature_means) 
+
+            final_model_dict = {
+                'model': model_obj,
+                'feature_names': feature_names,
+                'feature_means': feature_means,
+                'feature_mins': None, # No disponible en formato antiguo
+                'feature_maxs': None, # No disponible en formato antiguo
+                'preprocessor': None  # No disponible en formato antiguo
+            }
+        else: 
+            raise ValueError(f"Formato de diccionario inesperado o clave 'model' faltante en el archivo pickle: {model_path}")
+
+        if not model_obj: 
+             raise ValueError(f"No se pudo extraer un objeto modelo válido de {model_path}")
+
+        # Asegurar que las claves nuevas existan en el diccionario final, incluso si son None
+        final_model_dict.setdefault('feature_mins', None)
+        final_model_dict.setdefault('feature_maxs', None)
+        final_model_dict.setdefault('preprocessor', None)
         
-        logger.info(f"Modelo cargado exitosamente desde: {model_path}")
-        return model
+        # Si feature_mins/maxs se cargaron y son None, pero X_train estaba presente en el dict (caso raro), intentar recalcular (esto es más para retrocompatibilidad)
+        # Sin embargo, el enfoque principal es que se guarden correctamente con to_pickle.
+
+        logger.info(f"Modelo y metadatos cargados exitosamente desde: {model_path}")
+        return final_model_dict
+        
     except FileNotFoundError:
         logger.error(f"No se encontró el archivo del modelo: {model_path}")
         raise
@@ -370,53 +454,86 @@ def list_stored_models():
             stored_models.append((model_name, model_path))
     return stored_models
 
-def get_dataset_path(dataset_name, optimized=False):
-    """
-    Obtiene la ruta del dataset almacenado.
-
-    Args:
-    dataset_name (str): Nombre del dataset
-    optimized (bool): Si se debe usar la versión optimizada
-
-    Returns:
-    str: Ruta al archivo CSV del dataset
-    """
-    suffix = "optimized" if optimized else "basic"
-    return str(Path(f"program/almacen/datasets/{dataset_name}/{dataset_name}_{suffix}.csv"))
-
 def list_stored_datasets():
     """
     Lista los datasets almacenados en program/almacen/datasets.
+    Busca un archivo '{dataset_name}.csv' como el principal y un '{dataset_name}_processed.csv' como el procesado.
 
     Returns:
-    list: Lista de tuplas (nombre_dataset, ruta_basic, ruta_optimized)
+    list: Lista de tuplas (nombre_dataset, ruta_original_raw, ruta_procesada_opcional)
     """
-    datasets_dir = Path("program/almacen/datasets")
+    datasets_base_dir = Path("program/almacen/datasets")
     stored_datasets = []
 
-    for dataset_dir in datasets_dir.iterdir():
-        if dataset_dir.is_dir():
-            basic_path = dataset_dir / f"{dataset_dir.name}_basic.csv"
-            optimized_path = dataset_dir / f"{dataset_dir.name}_optimized.csv"
+    if not datasets_base_dir.is_dir():
+        logger.warning(f"El directorio base de datasets no existe: {datasets_base_dir}")
+        return stored_datasets
+
+    for dataset_folder in datasets_base_dir.iterdir():
+        if dataset_folder.is_dir():
+            dataset_name = dataset_folder.name  # e.g., "titanic", "iris"
             
-            if basic_path.exists() or optimized_path.exists():
+            # El archivo original/virgen se llama igual que la carpeta contenedora
+            original_raw_path = dataset_folder / f"{dataset_name}.csv"
+            processed_path = dataset_folder / f"{dataset_name}_processed.csv"
+            
+            # El dataset se lista si existe el archivo original "{dataset_name}.csv".
+            # El archivo procesado es opcional.
+            if original_raw_path.exists():
                 stored_datasets.append((
-                    dataset_dir.name,
-                    str(basic_path) if basic_path.exists() else None,
-                    str(optimized_path) if optimized_path.exists() else None
+                    dataset_name,
+                    str(original_raw_path),
+                    str(processed_path) if processed_path.exists() else None
                 ))
+            elif processed_path.exists():
+                # Si solo existe el procesado pero no el original que coincide con el nombre de la carpeta,
+                # podríamos considerarlo, pero complica la lógica de "cuál es el virgen".
+                # Por ahora, la regla es que el virgen DEBE llamarse como la carpeta.
+                logger.info(f"Dataset folder '{dataset_name}' tiene un archivo procesado pero no '{dataset_name}.csv'. No se listará para carga directa del original según la nueva lógica.")
 
     return stored_datasets
 
-def get_dataset_for_model(model_name):
+def get_dataset_path(dataset_name):
     """
-    Obtiene el nombre del dataset asociado a un modelo.
+    Obtiene la ruta del archivo CSV principal del dataset almacenado.
+    El archivo principal es el que se llama igual que la carpeta del dataset (ej. titanic.csv).
+
+    Args:
+    dataset_name (str): Nombre del dataset (que coincide con el nombre de la carpeta).
+
+    Returns:
+    str: Ruta al archivo CSV principal del dataset.
     """
-    model_info_path = f'program/almacen/models/{model_name}/model_info.json'
-    if os.path.exists(model_info_path):
-        with open(model_info_path, 'r') as f:
-            model_info = json.load(f)
-        return model_info.get('dataset_name')
+    # El archivo principal se llama igual que la carpeta contenedora {dataset_name}.csv
+    return str(Path("program/almacen/datasets") / clean_filename(dataset_name) / f"{clean_filename(dataset_name)}.csv")
+
+def get_dataset_for_model(dataset_name):
+    """
+    Obtiene la ruta del archivo CSV del dataset asociado a un modelo.
+
+    Args:
+    dataset_name (str): Nombre del dataset.
+
+    Returns:
+    str: Ruta al archivo CSV del dataset.
+    """
+    dataset_base_path = os.path.join('program', 'almacen', 'datasets', clean_filename(dataset_name))
+    # Try to find a common pattern like _basic.csv or _optimized.csv
+    potential_basic_path = os.path.join(dataset_base_path, f"{clean_filename(dataset_name)}_basic.csv")
+    if os.path.exists(potential_basic_path):
+        return potential_basic_path
+    
+    potential_optimized_path = os.path.join(dataset_base_path, f"{clean_filename(dataset_name)}_optimized.csv")
+    if os.path.exists(potential_optimized_path):
+        return potential_optimized_path
+        
+    # Fallback: list files in the directory and pick the first csv if any
+    if os.path.isdir(dataset_base_path):
+        for f in os.listdir(dataset_base_path):
+            if f.endswith('.csv'):
+                return os.path.join(dataset_base_path, f)
+                
+    logger.warning(f"No se pudo encontrar un archivo CSV de dataset para '{dataset_name}' en '{dataset_base_path}'.")
     return None
 
 def get_features_for_dataset(dataset_name):
@@ -429,21 +546,73 @@ def get_features_for_dataset(dataset_name):
     Returns:
     list: Lista de nombres de las características del dataset.
     """
-    try:
-        # Construir la ruta al archivo del dataset
-        dataset_path = os.path.join('program', 'almacen', 'datasets', dataset_name, f'{dataset_name}_basic.csv')
-        
-        logger.debug(f"Intentando leer el dataset desde: {dataset_path}")
-        
-        # Leer el archivo CSV
-        df = pd.read_csv(dataset_path)
-        
-        # Obtener los nombres de las columnas
-        features = df.columns.tolist()
-        
-        logger.debug(f"Características obtenidas: {features}")
-        
-        return features
-    except Exception as e:
-        logger.error(f"Error al obtener las características del dataset {dataset_name}: {str(e)}")
+    dataset_path = get_dataset_for_model(dataset_name)
+    if dataset_path:
+        try:
+            df = pd.read_csv(dataset_path)
+            return df.columns.tolist()
+        except Exception as e:
+            logger.error(f"Error al leer características del dataset {dataset_path}: {e}")
+    return []
+
+# --- Funciones nuevas para el menú de predicción ---
+
+def list_model_dataset_groups():
+    """
+    Lista los subdirectorios (grupos de dataset) en program/almacen/models.
+    """
+    base_models_dir = 'program/almacen/models'
+    if not os.path.isdir(base_models_dir):
         return []
+    
+    groups = [d for d in os.listdir(base_models_dir) if os.path.isdir(os.path.join(base_models_dir, d))]
+    return sorted(groups)
+
+def list_model_files_in_group(dataset_group_name):
+    """
+    Lista los archivos .pkl de modelos dentro de un grupo de dataset específico.
+    Args:
+        dataset_group_name (str): El nombre del subdirectorio del dataset.
+    Returns:
+        list: Lista de nombres de archivo .pkl.
+    """
+    group_path = os.path.join('program', 'almacen', 'models', dataset_group_name)
+    if not os.path.isdir(group_path):
+        return []
+    
+    model_files = [f for f in os.listdir(group_path) if f.endswith('.pkl') and os.path.isfile(os.path.join(group_path, f))]
+    return sorted(model_files)
+
+def load_model_from_group(dataset_group_name, model_filename_pkl):
+    """
+    Carga un modelo desde un grupo de dataset y nombre de archivo .pkl específico.
+    Args:
+        dataset_group_name (str): El nombre del subdirectorio del dataset (ej. 'iris_basic').
+        model_filename_pkl (str): El nombre del archivo .pkl del modelo (ej. 'AdaBoost_base.pkl').
+    Returns:
+        dict: El diccionario del modelo cargado (incluyendo 'model' y 'features') o None.
+    """
+    base_models_dir = 'program/almacen/models'
+    model_path = os.path.join(base_models_dir, dataset_group_name, model_filename_pkl)
+    
+    if os.path.isfile(model_path):
+        logger.info(f"Cargando modelo desde: {model_path}")
+        # from_pickle debería devolver el diccionario completo {'model': ..., 'features': ...}
+        loaded_data = from_pickle(model_path) 
+        if loaded_data and 'model' in loaded_data:
+            return loaded_data
+        else:
+            logger.error(f"Error al deserializar o formato incorrecto del modelo en: {model_path}")
+            return None
+    else:
+        logger.error(f"No se pudo encontrar el archivo de modelo en: {model_path}")
+        return None
+
+# --- Fin de funciones nuevas ---
+
+
+# TODO: Revisar y posiblemente deprecar la vieja función load_model si no se usa
+# o si causa ambigüedad con la nueva estructura de carga para predicción.
+# Por ahora, la dejamos pero el nuevo flujo de predicción debería usar load_model_from_group.
+
+# (Código existente de load_model, find_model_path, etc. sigue aquí)

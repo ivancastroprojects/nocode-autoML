@@ -1,0 +1,38 @@
+Iniciando la aplicación...
+Autenticación simulada completada.
+Autenticación exitosa. Simulando inicio del cliente MQTT...
+Simulando inicio del cliente MQTT...
+Tipo de problema determinado: Clasificación Binaria
+Enviando mensaje de entrenamiento: {
+  "command": "train",
+  "data": {
+    "dataset": "titanic",
+    "target": "Survived",
+    "features": [
+      "Pclass",
+      "Name",
+      "Sex",
+      "Age",
+      "Siblings/Spouses Aboard",
+      "Parents/Children Aboard",
+      "Fare"
+    ],
+    "crossvalidation": 80,
+    "recommendations": false,
+    "optimization_strategy": "random",
+    "n_iter_random": 20,
+    "n_trials_optuna": 30,
+    "model": [
+      "RandomForestClassifier"
+    ],
+    "params": {}
+  }
+}
+[MQTT train_model] Target column set to: Survived
+[MQTT train_model] Dataset name set to: titanic
+[MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+[MQTT train_model] Crossvalidation set to: 80
+[MQTT train_model] Recommendations set to: False
+Intentando cargar dataset desde (referencia original): program\almacen\datasets\titanic\titanic.csv
+[MQTT train_model] Using dataset object: global_data.dataset (name: titanic)
+No hay dataset cargado para procesar.

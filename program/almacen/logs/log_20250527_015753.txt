@@ -1,0 +1,80 @@
+Iniciando la aplicación...
+Autenticación simulada completada.
+Autenticación exitosa. Simulando inicio del cliente MQTT...
+Simulando inicio del cliente MQTT...
+Dataset cargado exitosamente desde el archivo: program\almacen\datasets\breast_cancer\breast_cancer.csv
+Tipo de problema determinado: Clasificación Binaria
+Usando hiperparámetros por defecto para los algoritmos.
+Estrategia de optimización seleccionada: random
+Número de iteraciones para Random Search: 20
+Tipo de problema determinado: Clasificación Binaria
+Tipo de problema determinado: Clasificación Binaria
+Conjuntos de entrenamiento y prueba guardados en program\almacen\datasets\breast_cancer\breast_cancer_train.csv y program\almacen\datasets\breast_cancer\breast_cancer_test.csv
+Tamaño del conjunto de entrenamiento: 455, Tamaño del conjunto de prueba: 114
+Preparando para entrenar modelos con dataset: program\almacen\datasets\breast_cancer\breast_cancer.csv
+Características: ['mean radius', 'mean texture', 'mean perimeter', 'mean area', 'mean smoothness', 'mean compactness', 'mean concavity', 'mean concave points', 'mean symmetry', 'mean fractal dimension', 'radius error', 'texture error', 'perimeter error', 'area error', 'smoothness error', 'compactness error', 'concavity error', 'concave points error', 'symmetry error', 'fractal dimension error', 'worst radius', 'worst texture', 'worst perimeter', 'worst area', 'worst smoothness', 'worst compactness', 'worst concavity', 'worst concave points', 'worst symmetry', 'worst fractal dimension']
+Tipo de problema: Clasificación Binaria
+Algoritmos seleccionados: [{'name': 'RandomForestClassifier', 'params': {}}]
+Algoritmos a procesar en _train_models: [{'name': 'RandomForestClassifier', 'params': {}}]
+Iniciando selección de características para RandomForestClassifier antes de la optimización de hiperparámetros...
+Características seleccionadas por select_best_features: ['mean perimeter', 'worst perimeter', 'worst area', 'mean concavity', 'mean area', 'worst concavity', 'worst concave points', 'mean concave points', 'mean radius', 'worst radius']
+Características seleccionadas para RandomForestClassifier (pre-optimización): ['mean perimeter', 'worst perimeter', 'worst area', 'mean concavity', 'mean area', 'worst concavity', 'worst concave points', 'mean concave points', 'mean radius', 'worst radius']
+Ajustando grid para RandomForestClassifier: eliminando 'oob_score' debido a posible conflicto con 'bootstrap=False'.
+Generated param grid for RandomForestClassifier: {'n_estimators': [50, 100, 200, 300], 'max_depth': [None, 5, 10, 15, 20], 'min_samples_split': [2, 5, 10, 15], 'min_samples_leaf': [1, 2, 5, 10], 'max_features': ['sqrt', 'log2', None, 0.5, 0.7, 1.0], 'bootstrap': [True, False], 'criterion': ['gini', 'entropy'], 'warm_start': [True, False]}
+Optimizando modelo RandomForestClassifier con estrategia: random
+Guardando modelo: RandomForestClassifier_Base para el dataset breast_cancer
+Modelo guardado en: program\almacen\models\breast_cancer\RandomForestClassifier_Base.pkl con feature_names: True
+Modelo RandomForestClassifier_Base guardado exitosamente.
+Guardando modelo: RandomForestClassifier_Optimized para el dataset breast_cancer
+Modelo guardado en: program\almacen\models\breast_cancer\RandomForestClassifier_Optimized.pkl con feature_names: True
+Modelo RandomForestClassifier_Optimized guardado exitosamente.
+Comparing models for RandomForestClassifier: Base (accuracy=0.9649) vs Optimized (accuracy=0.9561)
+Base model is better or equal for RandomForestClassifier. Selecting base.
+
+Iniciando recomendación del mejor modelo...
+Iniciando recomendación del mejor modelo...
+Seleccionando las mejores características (llamada a select_best_features)...
+Características seleccionadas por select_best_features: ['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points']
+Características finalmente usadas para el entrenamiento post-selección: ['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points']
+Procesando candidato para mejor modelo global: RandomForestClassifier con características seleccionadas (['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points'])...
+Ajustando grid para RandomForestClassifier: eliminando 'oob_score' debido a posible conflicto con 'bootstrap=False'.
+Generated param grid for RandomForestClassifier: {'n_estimators': [50, 100, 200, 300], 'max_depth': [None, 5, 10, 15, 20], 'min_samples_split': [2, 5, 10, 15], 'min_samples_leaf': [1, 2, 5, 10], 'max_features': ['sqrt', 'log2', None, 0.5, 0.7, 1.0], 'bootstrap': [True, False], 'criterion': ['gini', 'entropy'], 'warm_start': [True, False]}
+Optimizando modelo RandomForestClassifier con estrategia: random
+Evaluando RandomForestClassifier con características seleccionadas (['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points'])...
+Puntuación para RandomForestClassifier (post-selección y optimización final): 0.9561
+Procesando candidato para mejor modelo global: GradientBoostingClassifier con características seleccionadas (['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points'])...
+Generated param grid for GradientBoostingClassifier: {'n_estimators': [50, 100, 200, 300], 'learning_rate': [0.01, 0.05, 0.1, 0.2], 'subsample': [0.7, 0.8, 0.9, 1.0], 'max_depth': [None, 5, 10, 15, 20], 'min_samples_split': [2, 5, 10, 15], 'min_samples_leaf': [1, 2, 5, 10], 'max_features': ['sqrt', 'log2', None, 0.5, 0.7, 1.0], 'criterion': ['friedman_mse', 'squared_error'], 'warm_start': [True, False]}
+Optimizando modelo GradientBoostingClassifier con estrategia: random
+Evaluando GradientBoostingClassifier con características seleccionadas (['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points'])...
+Puntuación para GradientBoostingClassifier (post-selección y optimización final): 0.9561
+Procesando candidato para mejor modelo global: LogisticRegression con características seleccionadas (['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points'])...
+Generated param grid for LogisticRegression: {'C': [0.01, 0.1, 1, 10, 100], 'penalty': ['l1', 'l2', 'elasticnet', None], 'solver': ['saga', 'liblinear'], 'l1_ratio': [0.1, 0.3, 0.5, 0.7, 0.9], 'fit_intercept': [True, False], 'warm_start': [True, False]}
+Optimizando modelo LogisticRegression con estrategia: random
+Evaluando LogisticRegression con características seleccionadas (['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points'])...
+Puntuación para LogisticRegression (post-selección y optimización final): 0.9737
+Procesando candidato para mejor modelo global: SVC con características seleccionadas (['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points'])...
+Generated param grid for SVC: {'C': [0.1, 1, 10, 100], 'kernel': ['linear', 'rbf', 'poly', 'sigmoid'], 'gamma': ['scale', 'auto', 0.001, 0.01, 0.1, 1], 'degree': [2, 3, 4], 'break_ties': [True, False], 'probability': [True, False], 'shrinking': [True, False], 'verbose': [True, False]}
+Optimizando modelo SVC con estrategia: random
+Evaluando SVC con características seleccionadas (['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points'])...
+Puntuación para SVC (post-selección y optimización final): 0.9649
+Procesando candidato para mejor modelo global: DecisionTreeClassifier con características seleccionadas (['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points'])...
+Generated param grid for DecisionTreeClassifier: {'max_depth': [None, 5, 10, 15, 20], 'min_samples_split': [2, 5, 10, 15], 'min_samples_leaf': [1, 2, 5, 10], 'max_features': ['sqrt', 'log2', None], 'criterion': ['gini', 'entropy']}
+Optimizando modelo DecisionTreeClassifier con estrategia: random
+Evaluando DecisionTreeClassifier con características seleccionadas (['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points'])...
+Puntuación para DecisionTreeClassifier (post-selección y optimización final): 0.9474
+Procesando candidato para mejor modelo global: KNeighborsClassifier con características seleccionadas (['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points'])...
+Generated param grid for KNeighborsClassifier: {'n_neighbors': [3, 5, 7, 10, 15], 'weights': ['uniform', 'distance'], 'metric': ['euclidean', 'manhattan', 'minkowski']}
+Optimizando modelo KNeighborsClassifier con estrategia: random
+Evaluando KNeighborsClassifier con características seleccionadas (['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points'])...
+Puntuación para KNeighborsClassifier (post-selección y optimización final): 0.9561
+Mejor modelo recomendado: LogisticRegression
+Mejor puntuación (post-selección): 0.9737
+Características seleccionadas finales: ['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points']
+Tiempo total de ejecución de recommend_best_model: 9.38 segundos
+Mejor modelo recomendado globalmente: LogisticRegression
+Características usadas por el mejor modelo recomendado: ['mean concave points', 'worst radius', 'worst perimeter', 'worst area', 'worst concave points']
+Guardando modelo: GlobalBest_LogisticRegression para el dataset breast_cancer
+Modelo guardado en: program\almacen\models\breast_cancer\GlobalBest_LogisticRegression.pkl con feature_names: True
+Modelo GlobalBest_LogisticRegression guardado exitosamente.
+Cargando modelo desde: program/almacen/models\breast_cancer\GlobalBest_LogisticRegression.pkl
+Modelo y metadatos cargados exitosamente desde: program/almacen/models\breast_cancer\GlobalBest_LogisticRegression.pkl

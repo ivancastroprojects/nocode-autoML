@@ -35,6 +35,13 @@ def get_model_options():
 @app.route('/start_training', methods=['POST'])
 def start_training():
     data = request.json
+
+    # Set the target column on the global training object
+    if 'target' in data and hasattr(global_data, 'training') and global_data.training:
+        global_data.training.target = data['target']
+        # Optionally, log this action
+        # print(f"Target column set to: {data['target']}")
+
     # Configura los parámetros de entrenamiento
     global_data.training.set_params(data['model'], data['params'])
     

@@ -91,6 +91,7 @@ def EDA_processed_info(self):
     Imprime información una vez procesado el dataset.
     Generamos visualizaciones personalizadas y agrupadas automáticamente según categorías similares
     """
+    logger.info(f"[EDA_processed_info] Entry: self ID = {id(self)}, self.df.shape = {self.df.shape}") # Log de entrada
     
     print("Dataset despues de procesar:")
     print(self.df.head())
@@ -100,9 +101,51 @@ def EDA_processed_info(self):
     print(f"Valores faltantes por columna después de procesar:")
     print(missing_data[missing_data > 0])
     
-    # Separar columnas numéricas y categóricas
+    # Definir columnas numéricas y categóricas una vez, basadas en self.df
     numeric_cols = self.df.select_dtypes(include=['int64', 'float64']).columns
-    categorical_cols = self.df.select_dtypes(include=['object', 'category']).columns
+    
+    # Intento de identificar categóricas "originales" o significativas para bar plots
+    MAX_CATEGORICAL_BAR_PLOTS = 15 # Hard limit for how many bar plots to generate in total
+    
+    candidate_categorical_cols = []
+    for col_name in self.df.columns:
+        # Prioritize columns that are object/category and NOT clearly from transformers/passthrough
+        if self.df[col_name].dtype in ['object', 'category'] and not col_name.startswith('num__') and not col_name.startswith('remainder__'):
+            if self.df[col_name].nunique() < 50: # Only if not excessively high unique values
+                candidate_categorical_cols.append(col_name)
+        # For remainder columns, be very selective (potential for passthrough text)
+        elif col_name.startswith('remainder__'):
+            if self.df[col_name].nunique() < 10: # Very few unique values might be okay
+                candidate_categorical_cols.append(col_name)
+    
+    # Sort by nunique to prioritize less cardinal columns if we have to truncate
+    candidate_categorical_cols.sort(key=lambda col: self.df[col].nunique())
+    
+    # Apply hard limit
+    selected_categorical_for_plot = pd.Index(candidate_categorical_cols[:MAX_CATEGORICAL_BAR_PLOTS])
+
+    # Protección contra demasiadas columnas para visualizaciones intensivas
+    MAX_COLS_FOR_FULL_EDA_PLOTS = 100 # Umbral ajustable
+    if self.df.shape[1] > MAX_COLS_FOR_FULL_EDA_PLOTS:
+        logger.warning(f"El dataset procesado tiene {self.df.shape[1]} columnas, lo cual excede el umbral de {MAX_COLS_FOR_FULL_EDA_PLOTS} para algunas visualizaciones EDA intensivas (ej. histogramas agrupados, matriz de correlación completa). Estas se omitirán o simplificarán.")
+        # Podríamos optar por mostrar solo un subconjunto o un tipo de gráfico diferente aquí.
+        # Por ahora, simplemente omitiremos las más pesadas.
+        
+        visualizer = Visualizer()
+        visualizer.set_model_name("EDA_processed_limited") 
+        visualizer.set_dataset_name(self.dataset_name)
+
+        if not selected_categorical_for_plot.empty:
+            logger.info(f"Generando gráficos de barras para (hasta) {len(selected_categorical_for_plot)} columnas categóricas (modo limitado)...")
+            visualizer.create_bar_plots(self.df, selected_categorical_for_plot) # Already limited by MAX_CATEGORICAL_BAR_PLOTS
+        else:
+            print("No hay columnas categóricas para crear gráficos de barras.")
+        
+        logger.info("EDA intensiva omitida debido al alto número de columnas.")
+        return # Salir temprano de la función para evitar colgar
+
+    # Si el número de columnas es manejable, proceder con la EDA completa:
+    # numeric_cols y categorical_cols ya están definidas arriba.
     
     # Crear instancia de Visualizer
     visualizer = Visualizer()
@@ -119,12 +162,14 @@ def EDA_processed_info(self):
     visualizer.create_grouped_histograms(self.df, groups, target_column)
     
     # Gráficos de barras para variables categóricas
-    if not categorical_cols.empty:
-        visualizer.create_bar_plots(self.df, categorical_cols)
+    if not selected_categorical_for_plot.empty:
+        logger.info(f"Generando gráficos de barras para {len(selected_categorical_for_plot)} columnas categóricas seleccionadas (máx. 20 categorías por plot)...")
+        visualizer.create_bar_plots(self.df, selected_categorical_for_plot)
     else:
         print("No hay columnas categóricas para crear gráficos de barras.")
     
     # Matriz de correlación
+    logger.info(f"[EDA_processed_info] Numeric columns for correlation matrix: {numeric_cols.tolist()}")
     visualizer.create_correlation_matrix(self.df, numeric_cols, "Dataset procesado")
 
 def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeric_features=None, 
@@ -137,14 +182,14 @@ def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeri
     Args:
     df (pd.DataFrame): El DataFrame original a preprocesar.
     target_column (str): Nombre de la columna objetivo.
-    categorical_features (list): Lista de columnas categ\u00f3ricas.
-    numeric_features (list): Lista de columnas num\u00e9ricas.
+    categorical_features (list): Lista de columnas categóricas.
+    numeric_features (list): Lista de columnas numéricas.
     datetime_features (list): Lista de columnas de fecha/hora.
     text_features (list): Lista de columnas de texto.
     outlier_columns (list): Lista de columnas para detectar outliers.
-    imputation_strategy (str): Estrategia de imputaci\u00f3n ('simple', 'knn', 'iterative').
+    imputation_strategy (str): Estrategia de imputación ('simple', 'knn', 'iterative').
     scaling_strategy (str): Estrategia de escalado ('standard', 'robust', 'minmax').
-    encoding_strategy (str): Estrategia de codificaci\u00f3n para categ\u00f3ricas ('onehot', 'ordinal').
+    encoding_strategy (str): Estrategia de codificación para categóricas ('onehot', 'ordinal').
     handle_outliers_strategy (str): Estrategia para manejar outliers ('clip', 'remove', 'impute').
     
     Returns:
@@ -153,47 +198,89 @@ def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeri
     print("\nIniciando procesado básico del dataset:")
     
     # Verificar si los datos ya están normalizados
-    if is_data_normalized(df):
-        print("Los datos parecen estar ya normalizados. Se omitirá la normalización adicional.")
-        return df, None
+    # --- INICIO MODIFICACIÓN TEMPORAL ---
+    # if is_data_normalized(df):
+    #     print("Los datos parecen estar ya normalizados. Se omitirá la normalización adicional.")
+    #     return df, None
+    # --- FIN MODIFICACIÓN TEMPORAL ---
     
     # Crear una copia del DataFrame para no modificar el original
-    df = df.copy()
+    df_copy = df.copy()
     
     # Convertir nombres de columnas problemáticos a strings
-    df.columns = [str(col) for col in df.columns]
+    df_copy.columns = [str(col) for col in df_copy.columns]
     
     # Separar la variable objetivo
-    if target_column:
-        y = df[target_column]
-        X = df.drop(columns=[target_column])
+    if target_column and target_column in df_copy.columns: # Asegurarse que target_column existe
+        y = df_copy[target_column]
+        X = df_copy.drop(columns=[target_column])
     else:
-        X = df
+        X = df_copy.copy() # Usar una copia si no hay target_column o no existe
         y = None
 
+    # Eliminar columnas de texto libre/alta cardinalidad no deseadas antes de la identificación de tipos
+    cols_to_drop_explicitly = ['Name', 'Ticket', 'Cabin', 'PassengerId'] 
+    # Verificar si las columnas existen en X antes de intentar eliminarlas
+    existing_cols_to_drop = [col for col in cols_to_drop_explicitly if col in X.columns]
+    if existing_cols_to_drop:
+        X = X.drop(columns=existing_cols_to_drop)
+        logger.info(f"Columnas eliminadas explícitamente: {existing_cols_to_drop}")
+    logger.info(f"Columnas en X después de eliminación explícita: {X.columns.tolist()}")
+
     # Identificar tipos de columnas
-    if categorical_features is None:
-        categorical_features = X.select_dtypes(include=['object', 'category']).columns.tolist()
+    auto_identified_numerics = X.select_dtypes(include=['int64', 'float64']).columns.tolist()
+    auto_identified_categoricals = X.select_dtypes(include=['object', 'category']).columns.tolist()
+
     if numeric_features is None:
-        numeric_features = X.select_dtypes(include=['int64', 'float64']).columns.tolist()
+        numeric_features = auto_identified_numerics
+    if categorical_features is None:
+        # Filter high-cardinality categoricals before assigning to categorical_features
+        true_categorical_features = []
+        potential_high_card_cols = []
+        for col in auto_identified_categoricals:
+            # Heuristics for high cardinality:
+            # - More than 50 unique values
+            # - Or, more than 30% of rows are unique values for that column
+            # - And ensure the column is not numeric-like (though dtypes should handle this)
+            unique_count = X[col].nunique()
+            if unique_count > 50 or (unique_count / len(X) > 0.3 and unique_count > 5): # Min 5 unique to avoid penalizing very small categoricals
+                logger.warning(f"Columna '{col}' tiene alta cardinalidad ({unique_count} valores únicos). Se excluirá de la codificación categórica estándar y se tratará como 'passthrough'.")
+                potential_high_card_cols.append(col)
+            else:
+                true_categorical_features.append(col)
+        categorical_features = true_categorical_features
+        # Ensure numeric_features and categorical_features are disjoint
+        numeric_features = [col for col in numeric_features if col not in categorical_features and col not in potential_high_card_cols]
+        
     if datetime_features is None:
         datetime_features = X.select_dtypes(include=['datetime64']).columns.tolist()
-    if text_features is None:
+        # Ensure datetime_features are not in numeric or categorical
+        numeric_features = [col for col in numeric_features if col not in datetime_features]
+        categorical_features = [col for col in categorical_features if col not in datetime_features]
+
+    if text_features is None: # Placeholder for future text feature specific processing
         text_features = []
+        # Ensure text_features are not in numeric, categorical, or datetime
+        numeric_features = [col for col in numeric_features if col not in text_features]
+        categorical_features = [col for col in categorical_features if col not in text_features]
+        datetime_features = [col for col in datetime_features if col not in text_features]
         
-    print(f"Identified {len(numeric_features)} numeric features, {len(categorical_features)} categorical features, and {len(datetime_features)} datetime features.")
+    logger.info(f"Características numéricas finales para transformador: {numeric_features}")
+    logger.info(f"Características categóricas finales para transformador: {categorical_features}")
+    logger.info(f"Características de fecha/hora finales para transformador: {datetime_features}")
+    # Columns in potential_high_card_cols will be handled by 'remainder=passthrough' if not in other lists.
     
     # Manejar datos duplicados
-    initial_rows = df.shape[0]
-    df = df.drop_duplicates()
-    rows_dropped = initial_rows - df.shape[0]
+    initial_rows = df_copy.shape[0]
+    df_copy = df_copy.drop_duplicates()
+    rows_dropped = initial_rows - df_copy.shape[0]
     if rows_dropped > 0:
         print(f"Removed {rows_dropped} duplicate rows.")
         
     # Manejar outliers
     if outlier_columns:
-        outliers = detect_outliers(df, outlier_columns)
-        df = handle_outliers(df, outliers, strategy=handle_outliers_strategy)
+        outliers = detect_outliers(df_copy, outlier_columns)
+        df_copy = handle_outliers(df_copy, outliers, strategy=handle_outliers_strategy)
     
     # Procesamiento de caracteristicas numericas
     if imputation_strategy == 'simple':
@@ -227,15 +314,15 @@ def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeri
     ])
 
     # Procesamiento de caracteristicas de fecha
-    def extract_date_features(df):
+    def extract_date_features(df_param):
         for col in datetime_features:
-            df[col + '_year'] = df[col].dt.year
-            df[col + '_month'] = df[col].dt.month
-            df[col + '_day'] = df[col].dt.day
-            df[col + '_dayofweek'] = df[col].dt.dayofweek
-        return df
+            df_param[col + '_year'] = df_param[col].dt.year
+            df_param[col + '_month'] = df_param[col].dt.month
+            df_param[col + '_day'] = df_param[col].dt.day
+            df_param[col + '_dayofweek'] = df_param[col].dt.dayofweek
+        return df_param
 
-    df = extract_date_features(df)
+    X = extract_date_features(X)
 
     # Crear el preprocesador de columnas
     preprocessor = ColumnTransformer(
@@ -250,25 +337,45 @@ def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeri
     X_processed = preprocessor.fit_transform(X)
     
     # Obtener los nombres de las características después del preprocesamiento
-    feature_names = numeric_features.copy()
-    if len(categorical_features) > 0 and encoding_strategy is not None:
-        cat_encoder = preprocessor.named_transformers_['cat'].named_steps['encoder']
-        if encoding_strategy == 'onehot':
-            cat_feature_names = cat_encoder.get_feature_names_out(categorical_features)
-        else:  # ordinal
-            cat_feature_names = categorical_features
-        feature_names.extend(cat_feature_names)
-    
+    # Usar get_feature_names_out() del preprocesador es más robusto para incluir passthrough columns
+    try:
+        processed_feature_names = preprocessor.get_feature_names_out()
+    except Exception as e:
+        logger.error(f"Error al obtener nombres de características del preprocesador: {e}")
+        # Fallback manual (menos ideal, pero mejor que nada si get_feature_names_out falla por alguna razón)
+        logger.info("Intentando fallback manual para nombres de características...")
+        processed_feature_names = numeric_features.copy()
+        if len(categorical_features) > 0 and encoding_strategy == 'onehot':
+            try:
+                cat_encoder = preprocessor.named_transformers_['cat'].named_steps['encoder']
+                cat_feature_names = cat_encoder.get_feature_names_out(categorical_features)
+                processed_feature_names.extend(cat_feature_names)
+            except Exception as cat_e:
+                logger.error(f"Error obteniendo nombres de cat encoder (fallback): {cat_e}")
+                processed_feature_names.extend(categorical_features) # Como último recurso
+        else:
+            processed_feature_names.extend(categorical_features) # Para ordinal o si no hay one-hot
+        
+        # Añadir columnas passthrough (esto es la parte más delicada del fallback manual)
+        # Necesitamos identificar qué columnas de X original NO estaban en numeric_features ni en las auto_identified_categoricals (antes del filtro de cardinalidad)
+        # Esto es propenso a errores si las listas originales no se guardaron bien.
+        # Esta es una aproximación:
+        original_X_cols = X.columns.tolist()
+        processed_in_transformers = set(numeric_features + auto_identified_categoricals) # Usar la lista ANTES del filtro de cardinalidad
+        passthrough_cols_approx = [col for col in original_X_cols if col not in processed_in_transformers]
+        processed_feature_names.extend(passthrough_cols_approx)
+        logger.info(f"Nombres de características (fallback manual): {processed_feature_names[:15]}...") # Loguear solo una parte
+
     # Convertir el resultado de nuevo a DataFrame
     df_processed = pd.DataFrame(X_processed.toarray() if scipy.sparse.issparse(X_processed) else X_processed, 
-                                columns=feature_names, index=X.index)
+                                columns=processed_feature_names, index=X.index)
     
     # Añadir la variable objetivo de vuelta
     if y is not None:
-        df_processed[str(target_column)] = y
+        df_processed[str(target_column)] = y.loc[df_processed.index] # Asegurar alineación de índices
     
     print("\nDataset después de procesar:")
-    print(df_processed)
+    print(df_processed.head()) # Imprimir head para verificar
     return df_processed, preprocessor
 
 def optimized_dfpreprocess(df, target_column, n_features_to_select=15, apply_pca=True, feature_selection_method='f_classif'):
@@ -325,7 +432,7 @@ def detect_outliers(df, columns=None, method='zscore', threshold=3):
     Args:
     df (pd.DataFrame): El DataFrame a analizar.
     columns (list): Lista de columnas para detectar outliers.
-    method (str): M\u00e9todo para detectar outliers ('zscore' o 'iqr').
+    method (str): Método para detectar outliers ('zscore' o 'iqr').
     threshold (float): Umbral para considerar un valor como outlier.
     
     Returns:
@@ -414,7 +521,7 @@ def select_best_features(X, y, problem_type, feature_names, *, search_level='bas
     time_limit (int): Tiempo límite en segundos para la ejecución. Por defecto 5.
     
     Returns:
-    tuple: (X_new, selected_feature_names)
+    tuple: (selected_features, X_new)
     """
     n_samples, n_features = X.shape
     start_time = time.time()
@@ -446,13 +553,18 @@ def select_best_features(X, y, problem_type, feature_names, *, search_level='bas
         X_new = X[selected_features]
     else:
         # Usar una comprensión de lista con un try-except para manejar características no encontradas
-        feature_indices = [i for i, feature in enumerate(feature_names) if feature in selected_features]
+        # Asegurarse que feature_names sea una lista para poder usar .index()
+        if not isinstance(feature_names, list):
+            feature_names_list = list(feature_names)
+        else:
+            feature_names_list = feature_names
+        
+        feature_indices = [feature_names_list.index(feature) for feature in selected_features if feature in feature_names_list]
         X_new = X[:, feature_indices]
-        # Actualizar selected_features para que solo incluya las características que realmente están en X
-        selected_features = [feature_names[i] for i in feature_indices]
+        # selected_features ya debería ser la lista correcta de nombres de las características en X_new
 
-    print(f"Características seleccionadas: {selected_features}")
-    return X_new, selected_features
+    logger.info(f"Características seleccionadas por select_best_features: {selected_features}")
+    return selected_features, X_new
 
 def is_data_normalized(df):
     """
@@ -479,9 +591,9 @@ def select_features_basic(X, y, problem_type, feature_names, k):
     Método básico y rápido de selección de características.
     """
     if problem_type == 'classification':
-        selector = SelectFromModel(RandomForestClassifier(n_estimators=100, random_state=42), max_features=k)
+        selector = SelectFromModel(RandomForestClassifier(n_estimators=100, random_state=42, verbose=0), max_features=k)
     else:
-        selector = SelectFromModel(RandomForestRegressor(n_estimators=100, random_state=42), max_features=k)
+        selector = SelectFromModel(RandomForestRegressor(n_estimators=100, random_state=42, verbose=0), max_features=k)
     
     selector.fit(X, y)
     selected_mask = selector.get_support()
@@ -516,10 +628,10 @@ def select_features_advanced(X, y, problem_type, feature_names, k, time_limit):
     Método avanzado de selección de características usando algoritmo genético optimizado.
     """
     if problem_type == 'classification':
-        estimator = RandomForestClassifier(n_estimators=50, random_state=42)
+        estimator = RandomForestClassifier(n_estimators=50, random_state=42, verbose=0)
         scoring = make_scorer(accuracy_score)
     else:
-        estimator = RandomForestRegressor(n_estimators=50, random_state=42)
+        estimator = RandomForestRegressor(n_estimators=50, random_state=42, verbose=0)
         scoring = make_scorer(r2_score)
 
     ga_selector = GAFeatureSelectionCV(
@@ -529,7 +641,7 @@ def select_features_advanced(X, y, problem_type, feature_names, k, time_limit):
         population_size=20,
         generations=5,
         n_jobs=-1,
-        verbose=True,
+        verbose=0,
         max_features=k,
         elitism=2,
         crossover_probability=0.8,

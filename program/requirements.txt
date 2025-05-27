@@ -5,11 +5,12 @@ paho-mqtt==1.5.1
 requests==2.31.0
 
 numpy
-pandas==2.2.2
-matplotlib==3.8.4
+pandas
+matplotlib
 seaborn==0.13.2
 
-scikit-learn==1.4.2
+scikit-learn
 scikit-optimize
 sklearn-genetic-opt
 sklearn-genetic
+optuna==3.6.1

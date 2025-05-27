@@ -1,0 +1,10 @@
+Iniciando la aplicación...
+Autenticación simulada completada.
+Autenticación exitosa. Simulando inicio del cliente MQTT...
+Simulando inicio del cliente MQTT...
+Dataset cargado exitosamente desde el archivo: program\almacen\datasets\titanic\titanic.csv
+Tipo de problema determinado: Clasificación Binaria
+Usando hiperparámetros por defecto para los algoritmos.
+Estrategia de optimización seleccionada: random
+Número de iteraciones para Random Search: 20
+[MQTT train_model] 'target' not found in MQTT data for train_model. Cannot proceed.
