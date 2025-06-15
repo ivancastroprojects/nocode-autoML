@@ -1,6 +1,6 @@
 # TokiiAI ML - Plataforma de Aprendizaje Automático Accesible
 
-![Captura de pantalla de la aplicación TokiiAI](web/static/img/screenshot.png)
+![Captura de pantalla de la aplicación TokiiAI](https://raw.githubusercontent.com/ivancastroprojects/nocode-autoML/desarrollo/web/static/img/screenshot.png)
 
 ## Descripción General
 
