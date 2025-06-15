@@ -1,0 +1,184 @@
+{% extends "layout.html" %}
+
+{% block title %}Configurar Entrenamiento - Tokiiai ML{% endblock %}
+
+{% block content %}
+<section class="training-configuration">
+    <h2>Configurar Entrenamiento del Modelo</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {% if active_dataset_name %}
+        <div class="active-dataset-summary">
+            <p>Dataset Activo: <strong>{{ active_dataset_name }}</strong></p>
+            {% if df_columns %}
+                <p><em>Asegúrate de que este es el dataset correcto antes de continuar. Puedes cambiarlo en la <a href="{{ url_for('datasets_page') }}">página de Datasets</a>.</em></p>
+            {% else %}
+                <p class="alert alert-warning">El dataset activo parece estar vacío o no se pudo cargar correctamente. Por favor, verifica en la <a href="{{ url_for('datasets_page') }}">página de Datasets</a>.</p>
+            {% endif %}
+        </div>
+
+        {% if df_columns %}
+            <form action="{{ url_for('start_training_web') }}" method="POST" id="training-config-form">
+                
+                <h4>1. Selección de Target y Features</h4>
+                <div class="form-group">
+                    <label for="target_column">Columna Objetivo (Target):</label>
+                    <select name="target_column" id="target_column" class="form-control" required>
+                        <option value="">Selecciona una columna...</option>
+                        {% for column in df_columns %}
+                            <option value="{{ column }}" {% if pre_selected_target == column %}selected{% endif %}>{{ column }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Características (Features):</label>
+                    <div id="features-checkboxes" class="checkbox-group">
+                        {% for column in df_columns %}
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="feature_columns" value="{{ column }}" id="feature_{{ column }}" checked>
+                                <label for="feature_{{ column }}">{{ column }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <h4>2. Selección de Algoritmos</h4>
+                <div class="form-group">
+                    <label>Algoritmos a Entrenar (selecciona uno o más):</label>
+                    <div class="checkbox-group">
+                        {% for algo_name, algo_display in available_algorithms.items() %}
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="selected_algorithms" value="{{ algo_name }}" id="algo_{{ algo_name }}">
+                                <label for="algo_{{ algo_name }}">{{ algo_display }}</label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <p class="text-muted"><small>Nota: Los hiperparámetros por defecto se usarán para los algoritmos seleccionados.</small></p>
+
+                <h4>3. Opciones de Entrenamiento</h4>
+                <div class="form-group">
+                    <label for="cross_validation_split">División para Cross-Validation (Entrenamiento %):</label>
+                    <input type="number" name="cross_validation_split" id="cross_validation_split" class="form-control" value="80" min="10" max="95" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="optimization_strategy">Estrategia de Optimización de Hiperparámetros:</label>
+                    <select name="optimization_strategy" id="optimization_strategy" class="form-control">
+                        <option value="none">Ninguna (usar parámetros por defecto)</option>
+                        <option value="random" selected>Random Search (Rápida)</option>
+                        <option value="grid">Grid Search (Media)</option>
+                        <option value="optuna">Optuna (Avanzada)</option>
+                    </select>
+                </div>
+                 <div class="form-group" id="n_iter_random_group">
+                    <label for="n_iter_random">Número de Iteraciones (Random Search):</label>
+                    <input type="number" name="n_iter_random" id="n_iter_random" class="form-control" value="10" min="1">
+                </div>
+                <div class="form-group" id="n_trials_optuna_group" style="display: none;">
+                    <label for="n_trials_optuna">Número de Trials (Optuna):</label>
+                    <input type="number" name="n_trials_optuna" id="n_trials_optuna" class="form-control" value="30" min="1">
+                </div>
+
+                <div class="form-group">
+                    <input type="checkbox" name="recommendations" id="recommendations" value="true" checked>
+                    <label for="recommendations" style="display: inline-block; margin-left: 5px;">Recomendar mejor modelo global al final</label>
+                </div>
+
+                <h4>4. Logs de Entrenamiento</h4>
+                <div class="form-group">
+                    <label for="log-container">Progreso del Entrenamiento:</label>
+                    <pre id="log-container" style="height: 200px; overflow-y: scroll; background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 10px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word;">Esperando inicio del entrenamiento...</pre>
+                </div>
+                
+                <hr>
+                <button type="submit" class="btn btn-primary btn-lg">Iniciar Entrenamiento</button>
+            </form>
+        {% else %}
+            <p class="alert alert-info">
+                Por favor, primero <a href="{{ url_for('datasets_page') }}">carga y activa un dataset</a> para poder configurar el entrenamiento.
+            </p>
+        {% endif %}
+    {% else %}
+        <p class="alert alert-info">
+            No hay ningún dataset activo. Por favor, <a href="{{ url_for('datasets_page') }}">carga o selecciona un dataset</a> para continuar.
+        </p>
+    {% endif %}
+</section>
+
+<style>
+.active-dataset-summary {
+    background-color: #e9f5e9;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    border: 1px solid #c8e6c9;
+}
+.training-configuration h2, .training-configuration h3, .training-configuration h4 {
+    color: #333;
+}
+.training-configuration h4 {
+    margin-top: 30px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+.form-group {
+    margin-bottom: 20px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+select.form-control {
+    height: 40px;
+}
+.checkbox-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 5px;
+    border: 1px solid #eee;
+}
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    min-width: 200px; /* Adjust as needed */
+}
+.checkbox-item input[type="checkbox"] {
+    margin-right: 8px;
+}
+.checkbox-item label {
+    font-weight: normal;
+    margin-bottom: 0;
+}
+.btn-lg {
+    padding: 12px 25px;
+    font-size: 1.1rem;
+}
+.text-muted {
+    color: #6c757d;
+}
+</style>
+
+{% endblock %} 

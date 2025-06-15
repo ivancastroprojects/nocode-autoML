@@ -8,6 +8,8 @@ from typing import Dict, Type, Protocol
 import pandas as pd
 import numpy as np
 import traceback
+from datetime import datetime
+import joblib
 
 from sklearn.svm import SVC, SVR
 from sklearn import svm, discriminant_analysis, dummy
@@ -27,9 +29,9 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.gaussian_process import GaussianProcessClassifier, GaussianProcessRegressor
 
-from utils.logger import logger
-import training.scikitdb.classification as clf
-import training.scikitdb.regression as reg
+from program.utils.logger import logger
+from program.training.scikitdb import classification as clf
+from program.training.scikitdb import regression as reg
 
 class ModellNotSupported(Exception):
     pass
@@ -205,10 +207,8 @@ def deserialize_model(model_dict):
     
     
 def clean_filename(filename):
-    """
-    Reemplaza caracteres no permitidos en nombres de archivo con guiones bajos.
-    """
-    return re.sub(r'[\\/*?:"<>|]', "_", filename)
+    """Limpia un string para que sea un nombre de archivo válido."""
+    return re.sub(r'[^a-zA-Z0-9_\-.]', '_', filename)
 
 def ensure_directory_exists(directory):
     """
@@ -296,7 +296,7 @@ def to_pickle(model, model_name, dataset_path, accuracy=None, X_train=None, actu
                     logger.warning(f"X_train para {full_model_name_stem} no contiene columnas numéricas para calcular min/max/mean.")
             except Exception as e:
                  logger.warning(f"Error calculando min/max/mean para {full_model_name_stem} desde X_train: {e}")
-
+        
         # Preparar la información del modelo
         model_info = {
             'model': model,
@@ -341,7 +341,7 @@ def from_pickle(model_path):
     try:
         with open(model_path, 'rb') as model_file:
             loaded_content = pickle.load(model_file)
-
+        
         final_model_dict = {}
         model_obj = None
 
@@ -383,7 +383,7 @@ def from_pickle(model_path):
                 'feature_maxs': None, # No disponible en formato antiguo
                 'preprocessor': None  # No disponible en formato antiguo
             }
-        else: 
+        else:
             raise ValueError(f"Formato de diccionario inesperado o clave 'model' faltante en el archivo pickle: {model_path}")
 
         if not model_obj: 
@@ -411,48 +411,52 @@ def from_pickle(model_path):
         raise
 
 
-def load_model(model_name):
-    """
-    Carga un modelo entrenado desde el disco.
-    """
+def load_model(model_path):
+    """Carga un modelo desde un archivo pickle."""
     try:
-        model_path = find_model_path(model_name)
-        with open(model_path, 'rb') as file:
-            model = pickle.load(file)
-        return model
+        with open(model_path, 'rb') as f:
+            return pickle.load(f)
     except FileNotFoundError:
-        print(f"No se pudo encontrar el modelo: {model_name}")
+        logger.error(f"El archivo del modelo no se encontró en: {model_path}")
+        return None
+    except Exception as e:
+        logger.error(f"Error al cargar el modelo desde {model_path}: {e}")
         return None
 
-def find_model_path(model_name):
-    """
-    Busca la ruta de un modelo guardado.
-    """
-    # Extraer el nombre del dataset del nombre del modelo
-    dataset_name = Path(model_name).stem
-    dataset_name = '_'.join(dataset_name.split('_')[dataset_name.split('_').index(next(s for s in dataset_name.split('_') if s.isdigit())) + 2:])
+def get_model_path(dataset_name, model_name):
+    """Busca y devuelve la ruta completa a un archivo de modelo .pkl."""
+    dataset_dir = get_safe_path(Config.DATASET_DIR, dataset_name)
+    model_filename = f"{clean_filename(model_name)}.pkl"
+    expected_path = os.path.join(dataset_dir, model_filename)
     
-    # Construir la ruta del directorio específico del dataset
-    dataset_dir = os.path.join('program', 'almacen', 'models', dataset_name)
+    if os.path.exists(expected_path):
+        return expected_path
     
-    # Buscar el archivo del modelo en el directorio específico del dataset
-    for file in os.listdir(dataset_dir):
-        if model_name in file:
-            return os.path.join(dataset_dir, file)
-    
+    # Fallback por si hay subdirectorios o nombres ligeramente diferentes
+    if os.path.isdir(dataset_dir):
+        for root, _, files in os.walk(dataset_dir):
+            if model_filename in files:
+                return os.path.join(root, model_filename)
     return None
 
+def get_model_details(model_path):
+    """
+    Carga los detalles de un modelo desde su archivo .pkl.
+    """
+    model_data = load_model(model_path)
+    if model_data and isinstance(model_data, dict) and 'details' in model_data:
+        return model_data['details']
+    return {}
+
 def list_stored_models():
-    """
-    Lista todos los modelos almacenados.
-    """
+    """Lista todos los modelos .pkl almacenados en el directorio de datasets."""
+    all_models = {}
     models_dir = 'program/almacen/models'
-    stored_models = []
     for model_name in os.listdir(models_dir):
         model_path = os.path.join(models_dir, model_name)
         if os.path.isdir(model_path):
-            stored_models.append((model_name, model_path))
-    return stored_models
+            all_models[model_name] = model_path
+    return all_models
 
 def list_stored_datasets():
     """
@@ -610,9 +614,43 @@ def load_model_from_group(dataset_group_name, model_filename_pkl):
 
 # --- Fin de funciones nuevas ---
 
+def save_model(model, dataset_name, model_name, metrics, feature_names, preprocessor):
+    """
+    Guarda el modelo, el preprocesador y los metadatos (incluyendo métricas) en archivos.
+    """
+    base_model_name = clean_filename(model_name)
+    models_dir = Path('program/almacen/models') / dataset_name
+    models_dir.mkdir(parents=True, exist_ok=True)
+    
+    model_path = models_dir / f"{base_model_name}.pkl"
+    preprocessor_path = models_dir / "preprocessor.joblib"
+    metadata_path = models_dir / f"{base_model_name}.json"
 
-# TODO: Revisar y posiblemente deprecar la vieja función load_model si no se usa
-# o si causa ambigüedad con la nueva estructura de carga para predicción.
-# Por ahora, la dejamos pero el nuevo flujo de predicción debería usar load_model_from_group.
+    try:
+        # Guardar el modelo .pkl
+        joblib.dump(model, model_path)
+        print(f"Modelo guardado exitosamente en: {model_path}")
 
-# (Código existente de load_model, find_model_path, etc. sigue aquí)
+        # Guardar el preprocesador
+        if preprocessor:
+            joblib.dump(preprocessor, preprocessor_path)
+            print(f"Preprocesador guardado en: {preprocessor_path}")
+
+        # Crear y guardar el archivo de metadatos .json
+        metadata = {
+            'model_name': base_model_name,
+            'dataset_name': dataset_name,
+            'training_timestamp': datetime.now().isoformat(),
+            'metrics': metrics,
+            'feature_names_on_save': feature_names if feature_names is not None else []
+        }
+        
+        with open(metadata_path, 'w', encoding='utf-8') as f:
+            json.dump(metadata, f, indent=4)
+        print(f"Metadatos del modelo guardados en: {metadata_path}")
+        
+        return str(model_path)
+
+    except Exception as e:
+        print(f"Error al guardar el modelo {base_model_name}: {e}")
+        return None

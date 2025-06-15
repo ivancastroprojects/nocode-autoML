@@ -13,7 +13,7 @@ from sklearn.model_selection import learning_curve
 
 from itertools import cycle
 from scipy import stats
-from training.scikitdb.serializer import clean_filename, ensure_directory_exists, get_safe_path
+from program.training.scikitdb.serializer import clean_filename, ensure_directory_exists, get_safe_path
 from io import StringIO
 import logging
 
@@ -86,11 +86,28 @@ class Visualizer:
         
         return groups
     
-    def generate_visualizations(self, model, X_test, y_test, y_pred):
-        self.plot_confusion_matrix(y_test, y_pred)
+    def generate_visualizations(self, model, X_test, y_test, y_pred, problem_type):
+        """
+        Genera visualizaciones apropiadas según el tipo de problema (clasificación o regresión).
+        """
+        logger.info(f"Generando visualizaciones para un problema de: {problem_type}")
+        problem_type = problem_type.lower()
+
+        # Gráficos comunes para ambos tipos de problema
         self.plot_feature_importance(model, X_test.columns)
-        self.plot_roc_curve(y_test, model.predict_proba(X_test))
         self.plot_learning_curve(model, X_test, y_test)
+
+        # Gráficos específicos del tipo de problema
+        if 'clasificación' in problem_type or 'clasificacion' in problem_type:
+            self.plot_confusion_matrix(y_test, y_pred)
+            self.plot_precision_recall_curve(y_test, model.predict_proba(X_test) if hasattr(model, 'predict_proba') else y_pred)
+            if hasattr(model, 'predict_proba'):
+                self.plot_roc_curve(y_test, model.predict_proba(X_test))
+
+        elif 'regresión' in problem_type or 'regresion' in problem_type:
+            self.plot_residuals(y_test, y_pred)
+        else:
+            logger.warning(f"Tipo de problema '{problem_type}' no reconocido para generar visualizaciones específicas.")
 
     def plot_confusion_matrix(self, y_true, y_pred, class_names=None):
         cm = confusion_matrix(y_true, y_pred)

@@ -1,0 +1,830 @@
+2025-06-15 17:54:07,842 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 17:54:07,843 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 17:54:08,900 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 17:54:08,901 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 17:54:08,901 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 17:54:08,926 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 17:54:08,933 - AppLogger - INFO - Características numéricas finales para transformador: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary']
+2025-06-15 17:54:08,933 - AppLogger - INFO - Características categóricas finales para transformador: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 17:54:08,933 - AppLogger - INFO - Características de fecha/hora finales para transformador: []
+2025-06-15 17:54:09,001 - AppLogger - ERROR - Error in ensure_dataset_processed_and_saved for artist_popularity: name 'datetime_transformer' is not defined
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\data\datasetprocessing.py", line 750, in ensure_dataset_processed_and_saved
+    df_processed, preprocessor = basic_dfpreprocess(
+                                 ~~~~~~~~~~~~~~~~~~^
+        df_original.copy(), # Use a copy to avoid modifying the original df in memory
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<4 lines>...
+        text_features=text_features
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\data\datasetprocessing.py", line 340, in basic_dfpreprocess
+    ('datetime', datetime_transformer, datetime_features),
+                 ^^^^^^^^^^^^^^^^^^^^
+NameError: name 'datetime_transformer' is not defined. Did you mean: 'numeric_transformer'?
+2025-06-15 17:54:09,017 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 17:57:01,190 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 17:57:01,191 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 17:57:02,232 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 17:57:02,233 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 17:57:02,233 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 17:57:02,254 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 17:57:02,261 - AppLogger - INFO - Características numéricas finales para transformador: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary']
+2025-06-15 17:57:02,261 - AppLogger - INFO - Características categóricas finales para transformador: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 17:57:02,262 - AppLogger - INFO - Características de fecha/hora finales para transformador: []
+2025-06-15 17:57:35,450 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 109808)
+2025-06-15 17:57:35,452 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 17:59:07,019 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 17:59:07,020 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 17:59:08,095 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 17:59:08,095 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 17:59:08,095 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 17:59:08,122 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 17:59:08,128 - AppLogger - INFO - Características numéricas finales para transformador: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary']
+2025-06-15 17:59:08,129 - AppLogger - INFO - Características categóricas finales para transformador: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 17:59:08,129 - AppLogger - INFO - Características de fecha/hora finales para transformador: []
+2025-06-15 17:59:37,666 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 109808)
+2025-06-15 17:59:37,669 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:02:36,279 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 18:02:36,280 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:02:37,206 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 18:02:37,206 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 18:02:37,207 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 18:02:37,235 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:02:37,266 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:02:37,405 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 18:02:37,405 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:02:38,181 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 18:02:38,196 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:03:11,104 - AppLogger - INFO - [MQTT train_model] Target column set to: num__track_popularity
+2025-06-15 18:03:11,104 - AppLogger - INFO - [MQTT train_model] Dataset name set to: artist_popularity
+2025-06-15 18:03:11,104 - AppLogger - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-06-15 18:03:11,104 - AppLogger - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-06-15 18:03:11,104 - AppLogger - INFO - [MQTT train_model] Recommendations set to: True
+2025-06-15 18:03:11,105 - AppLogger - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'artist_popularity'. Attempting to load it.
+2025-06-15 18:03:11,231 - AppLogger - INFO - [MQTT train_model] Successfully loaded processed dataset: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:03:11,231 - AppLogger - INFO - [MQTT train_model] Dataset 'artist_popularity' loaded and set in global_data and training_instance.
+2025-06-15 18:03:11,231 - AppLogger - INFO - Ruta de referencia del dataset original: program\almacen\datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:03:11,231 - AppLogger - INFO - [MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:03:11,232 - AppLogger - INFO - [MQTT train_model] Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:03:11,232 - AppLogger - ERROR - [MQTT train_model] Error durante training_instance.start_training(): Training.start_training() missing 2 required positional arguments: 'dataset' and 'dataset_name'
+2025-06-15 18:03:11,233 - AppLogger - ERROR - Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\api\mqtt.py", line 282, in train_model
+    best_model_details = training_instance.start_training() # Modified call
+TypeError: Training.start_training() missing 2 required positional arguments: 'dataset' and 'dataset_name'
+
+2025-06-15 18:03:11,241 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:03:20,533 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:03:28,514 - AppLogger - INFO - [MQTT train_model] Target column set to: num__track_popularity
+2025-06-15 18:03:28,514 - AppLogger - INFO - [MQTT train_model] Dataset name set to: artist_popularity
+2025-06-15 18:03:28,514 - AppLogger - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-06-15 18:03:28,514 - AppLogger - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-06-15 18:03:28,515 - AppLogger - INFO - [MQTT train_model] Recommendations set to: True
+2025-06-15 18:03:28,515 - AppLogger - INFO - Ruta de referencia del dataset original: program\almacen\datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:03:28,515 - AppLogger - INFO - [MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:03:28,515 - AppLogger - INFO - [MQTT train_model] Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:03:28,515 - AppLogger - ERROR - [MQTT train_model] Error durante training_instance.start_training(): Training.start_training() missing 2 required positional arguments: 'dataset' and 'dataset_name'
+2025-06-15 18:03:28,516 - AppLogger - ERROR - Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\api\mqtt.py", line 282, in train_model
+    best_model_details = training_instance.start_training() # Modified call
+TypeError: Training.start_training() missing 2 required positional arguments: 'dataset' and 'dataset_name'
+
+2025-06-15 18:03:28,526 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:05:19,272 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 18:05:19,273 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:05:20,170 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 18:05:20,171 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 18:05:20,171 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 18:05:20,191 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:05:20,217 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:05:20,370 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 18:05:20,371 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:05:21,186 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 18:05:21,197 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:05:27,281 - AppLogger - INFO - [MQTT train_model] Target column set to: num__track_popularity
+2025-06-15 18:05:27,282 - AppLogger - INFO - [MQTT train_model] Dataset name set to: artist_popularity
+2025-06-15 18:05:27,282 - AppLogger - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-06-15 18:05:27,282 - AppLogger - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-06-15 18:05:27,282 - AppLogger - INFO - [MQTT train_model] Recommendations set to: True
+2025-06-15 18:05:27,282 - AppLogger - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'artist_popularity'. Attempting to load it.
+2025-06-15 18:05:27,432 - AppLogger - INFO - [MQTT train_model] Successfully loaded processed dataset: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:05:27,432 - AppLogger - INFO - [MQTT train_model] Dataset 'artist_popularity' loaded and set in global_data and training_instance.
+2025-06-15 18:05:27,432 - AppLogger - INFO - Ruta de referencia del dataset original: program\almacen\datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:05:27,433 - AppLogger - INFO - [MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:05:27,433 - AppLogger - INFO - [MQTT train_model] Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:05:27,433 - AppLogger - ERROR - [MQTT train_model] Error durante training_instance.start_training(): 'Dataset' object has no attribute 'file_path'
+2025-06-15 18:05:27,434 - AppLogger - ERROR - Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\api\mqtt.py", line 286, in train_model
+    logger.info(f"Ruta de referencia del dataset original: {training_instance.dataset.file_path}")
+                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Dataset' object has no attribute 'file_path'
+
+2025-06-15 18:05:27,443 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:06:52,379 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 18:06:52,380 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:06:53,262 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 18:06:53,262 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 18:06:53,262 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 18:06:53,283 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:06:53,310 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:06:53,460 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 18:06:53,460 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:06:54,250 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 18:06:54,260 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:06:59,881 - AppLogger - INFO - [MQTT train_model] Target column set to: num__track_popularity
+2025-06-15 18:06:59,881 - AppLogger - INFO - [MQTT train_model] Dataset name set to: artist_popularity
+2025-06-15 18:06:59,882 - AppLogger - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-06-15 18:06:59,883 - AppLogger - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-06-15 18:06:59,883 - AppLogger - INFO - [MQTT train_model] Recommendations set to: True
+2025-06-15 18:06:59,883 - AppLogger - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'artist_popularity'. Attempting to load it.
+2025-06-15 18:07:00,055 - AppLogger - INFO - [MQTT train_model] Successfully loaded processed dataset: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:07:00,056 - AppLogger - INFO - [MQTT train_model] Dataset 'artist_popularity' loaded and set in global_data and training_instance.
+2025-06-15 18:07:00,056 - AppLogger - INFO - Ruta de referencia del dataset original: program\almacen\datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:07:00,056 - AppLogger - INFO - [MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:07:00,056 - AppLogger - INFO - [MQTT train_model] Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:07:00,057 - AppLogger - INFO - training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:07:00,057 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:07:00,060 - AppLogger - INFO - Entrenamiento finalizado exitosamente.
+2025-06-15 18:07:00,069 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:09:01,405 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 18:09:01,406 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:09:02,232 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 18:09:02,233 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 18:09:02,233 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 18:09:02,251 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:09:02,274 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:09:02,400 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 18:09:02,400 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:09:03,136 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 18:09:03,146 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:09:06,801 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:09:35,909 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:09:59,551 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:10:21,085 - AppLogger - INFO - [MQTT train_model] Target column set to: num__track_popularity
+2025-06-15 18:10:21,085 - AppLogger - INFO - [MQTT train_model] Dataset name set to: artist_popularity
+2025-06-15 18:10:21,086 - AppLogger - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-06-15 18:10:21,086 - AppLogger - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-06-15 18:10:21,086 - AppLogger - INFO - [MQTT train_model] Recommendations set to: True
+2025-06-15 18:10:21,086 - AppLogger - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'artist_popularity'. Attempting to load it.
+2025-06-15 18:10:21,214 - AppLogger - INFO - [MQTT train_model] Successfully loaded processed dataset: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:10:21,215 - AppLogger - INFO - [MQTT train_model] Dataset 'artist_popularity' loaded and set in global_data and training_instance.
+2025-06-15 18:10:21,215 - AppLogger - INFO - Ruta de referencia del dataset original: program\almacen\datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:10:21,215 - AppLogger - INFO - [MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:10:21,215 - AppLogger - INFO - [MQTT train_model] Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:10:21,215 - AppLogger - INFO - training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:10:21,216 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:10:21,217 - AppLogger - INFO - Entrenamiento finalizado exitosamente.
+2025-06-15 18:10:21,225 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:13:05,204 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 18:13:05,205 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:13:06,139 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 18:13:06,140 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 18:13:06,140 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 18:13:06,158 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:13:06,186 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:13:06,323 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 18:13:06,323 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:13:07,065 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 18:13:07,077 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:13:13,305 - AppLogger - INFO - [MQTT train_model] Target column set to: num__track_popularity
+2025-06-15 18:13:13,305 - AppLogger - INFO - [MQTT train_model] Dataset name set to: artist_popularity
+2025-06-15 18:13:13,306 - AppLogger - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-06-15 18:13:13,306 - AppLogger - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-06-15 18:13:13,306 - AppLogger - INFO - [MQTT train_model] Recommendations set to: True
+2025-06-15 18:13:13,306 - AppLogger - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'artist_popularity'. Attempting to load it.
+2025-06-15 18:13:13,450 - AppLogger - INFO - [MQTT train_model] Successfully loaded processed dataset: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:13:13,450 - AppLogger - INFO - [MQTT train_model] Dataset 'artist_popularity' loaded and set in global_data and training_instance.
+2025-06-15 18:13:13,451 - AppLogger - INFO - Ruta de referencia del dataset original: program\almacen\datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:13:13,451 - AppLogger - INFO - [MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:13:13,451 - AppLogger - INFO - [MQTT train_model] Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:13:13,452 - AppLogger - INFO - training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:13:13,453 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:13:13,453 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 18:13:13,453 - AppLogger - ERROR - Error general durante el proceso de entrenamiento: name 'determine_problem_type' is not defined
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 787, in start_training
+    self.problem_type = determine_problem_type(df[self.target])
+                        ^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'determine_problem_type' is not defined. Did you mean: 'self.determine_problem_type'?
+2025-06-15 18:13:13,454 - AppLogger - WARNING - [MQTT train_model] Entrenamiento completado pero no se obtuvieron detalles del mejor modelo.
+2025-06-15 18:13:13,465 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:25:38,863 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 18:25:38,864 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:25:39,886 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 18:25:39,887 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 18:25:39,887 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 18:25:39,909 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:25:39,946 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:25:40,116 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 18:25:40,117 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:25:40,989 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 18:25:41,000 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:25:48,380 - AppLogger - INFO - [MQTT train_model] Target column set to: num__track_popularity
+2025-06-15 18:25:48,381 - AppLogger - INFO - [MQTT train_model] Dataset name set to: artist_popularity
+2025-06-15 18:25:48,381 - AppLogger - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-06-15 18:25:48,381 - AppLogger - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-06-15 18:25:48,381 - AppLogger - INFO - [MQTT train_model] Recommendations set to: True
+2025-06-15 18:25:48,381 - AppLogger - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'artist_popularity'. Attempting to load it.
+2025-06-15 18:25:48,510 - AppLogger - INFO - [MQTT train_model] Successfully loaded processed dataset: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:25:48,510 - AppLogger - INFO - [MQTT train_model] Dataset 'artist_popularity' loaded and set in global_data and training_instance.
+2025-06-15 18:25:48,511 - AppLogger - INFO - Ruta de referencia del dataset original: program\almacen\datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:25:48,511 - AppLogger - INFO - [MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:25:48,511 - AppLogger - INFO - [MQTT train_model] Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:25:48,511 - AppLogger - INFO - training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:25:48,511 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:25:48,511 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 18:25:48,519 - AppLogger - INFO - Tipo de problema determinado: Regresión
+2025-06-15 18:25:48,519 - AppLogger - INFO - Tipo de problema detectado: Regresión
+2025-06-15 18:25:48,522 - AppLogger - ERROR - Error general durante el proceso de entrenamiento: Training.split_and_train() takes 3 positional arguments but 4 were given
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 793, in start_training
+    self.trained_models, evaluation_results = self.split_and_train(X, y, dataset_name)
+                                              ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+TypeError: Training.split_and_train() takes 3 positional arguments but 4 were given
+2025-06-15 18:25:48,524 - AppLogger - WARNING - [MQTT train_model] Entrenamiento completado pero no se obtuvieron detalles del mejor modelo.
+2025-06-15 18:25:48,532 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:27:44,008 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 18:27:44,009 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:27:45,026 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 18:27:45,027 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 18:27:45,027 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 18:27:45,051 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:27:45,086 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:27:45,242 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 18:27:45,242 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:27:46,096 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 18:27:46,109 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:27:50,948 - AppLogger - INFO - [MQTT train_model] Target column set to: num__track_popularity
+2025-06-15 18:27:50,948 - AppLogger - INFO - [MQTT train_model] Dataset name set to: artist_popularity
+2025-06-15 18:27:50,949 - AppLogger - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-06-15 18:27:50,949 - AppLogger - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-06-15 18:27:50,949 - AppLogger - INFO - [MQTT train_model] Recommendations set to: True
+2025-06-15 18:27:50,951 - AppLogger - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'artist_popularity'. Attempting to load it.
+2025-06-15 18:27:51,109 - AppLogger - INFO - [MQTT train_model] Successfully loaded processed dataset: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:27:51,109 - AppLogger - INFO - [MQTT train_model] Dataset 'artist_popularity' loaded and set in global_data and training_instance.
+2025-06-15 18:27:51,110 - AppLogger - INFO - Ruta de referencia del dataset original: program\almacen\datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:27:51,110 - AppLogger - INFO - [MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:27:51,110 - AppLogger - INFO - [MQTT train_model] Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:27:51,110 - AppLogger - INFO - training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:27:51,111 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:27:51,111 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 18:27:51,112 - AppLogger - INFO - Tipo de problema determinado: Regresión
+2025-06-15 18:27:51,112 - AppLogger - INFO - Tipo de problema detectado: Regresión
+2025-06-15 18:27:51,140 - AppLogger - INFO - DataFrame original para preprocesar (primeras filas):
+   num__num__track_popularity  ...  remainder__playlist_id
+0                    0.552632  ...  37i9dQZF1DXcZDD7cfEKhW
+1                    0.578947  ...  37i9dQZF1DXcZDD7cfEKhW
+2                    0.657895  ...  37i9dQZF1DXcZDD7cfEKhW
+3                    0.394737  ...  37i9dQZF1DXcZDD7cfEKhW
+4                    0.631579  ...  37i9dQZF1DXcZDD7cfEKhW
+
+[5 rows x 44 columns]
+2025-06-15 18:27:51,140 - AppLogger - INFO - Columnas del DataFrame original: ['num__num__track_popularity', 'num__num__danceability', 'num__num__energy', 'num__num__key', 'num__num__loudness', 'num__num__mode', 'num__num__speechiness', 'num__num__acousticness', 'num__num__instrumentalness', 'num__num__liveness', 'num__num__valence', 'num__num__tempo', 'num__num__duration_ms', 'num__cat__playlist_genre_edm', 'num__cat__playlist_genre_latin', 'num__cat__playlist_genre_pop', 'num__cat__playlist_genre_r&b', 'num__cat__playlist_genre_rap', 'num__cat__playlist_genre_rock', 'num__cat__playlist_subgenre_album rock', 'num__cat__playlist_subgenre_big room', 'num__cat__playlist_subgenre_classic rock', 'num__cat__playlist_subgenre_dance pop', 'num__cat__playlist_subgenre_electro house', 'num__cat__playlist_subgenre_electropop', 'num__cat__playlist_subgenre_gangster rap', 'num__cat__playlist_subgenre_hard rock', 'num__cat__playlist_subgenre_hip hop', 'num__cat__playlist_subgenre_hip pop', 'num__cat__playlist_subgenre_indie poptimism', 'num__cat__playlist_subgenre_latin hip hop', 'num__cat__playlist_subgenre_latin pop', 'num__cat__playlist_subgenre_neo soul', 'num__cat__playlist_subgenre_new jack swing', 'num__cat__playlist_subgenre_permanent wave', 'num__cat__playlist_subgenre_pop edm', 'num__cat__playlist_subgenre_post-teen pop', 'num__cat__playlist_subgenre_progressive electro house', 'num__cat__playlist_subgenre_reggaeton', 'num__cat__playlist_subgenre_southern hip hop', 'num__cat__playlist_subgenre_trap', 'num__cat__playlist_subgenre_tropical', 'num__cat__playlist_subgenre_urban contemporary', 'remainder__playlist_id']
+2025-06-15 18:27:51,141 - AppLogger - INFO - Target column para basic_dfpreprocess: num__num__track_popularity
+2025-06-15 18:27:51,141 - AppLogger - INFO - Problem type determinado: Regresión
+2025-06-15 18:27:51,147 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__num__danceability', 'num__num__energy', 'num__num__key', 'num__num__loudness', 'num__num__mode', 'num__num__speechiness', 'num__num__acousticness', 'num__num__instrumentalness', 'num__num__liveness', 'num__num__valence', 'num__num__tempo', 'num__num__duration_ms', 'num__cat__playlist_genre_edm', 'num__cat__playlist_genre_latin', 'num__cat__playlist_genre_pop', 'num__cat__playlist_genre_r&b', 'num__cat__playlist_genre_rap', 'num__cat__playlist_genre_rock', 'num__cat__playlist_subgenre_album rock', 'num__cat__playlist_subgenre_big room', 'num__cat__playlist_subgenre_classic rock', 'num__cat__playlist_subgenre_dance pop', 'num__cat__playlist_subgenre_electro house', 'num__cat__playlist_subgenre_electropop', 'num__cat__playlist_subgenre_gangster rap', 'num__cat__playlist_subgenre_hard rock', 'num__cat__playlist_subgenre_hip hop', 'num__cat__playlist_subgenre_hip pop', 'num__cat__playlist_subgenre_indie poptimism', 'num__cat__playlist_subgenre_latin hip hop', 'num__cat__playlist_subgenre_latin pop', 'num__cat__playlist_subgenre_neo soul', 'num__cat__playlist_subgenre_new jack swing', 'num__cat__playlist_subgenre_permanent wave', 'num__cat__playlist_subgenre_pop edm', 'num__cat__playlist_subgenre_post-teen pop', 'num__cat__playlist_subgenre_progressive electro house', 'num__cat__playlist_subgenre_reggaeton', 'num__cat__playlist_subgenre_southern hip hop', 'num__cat__playlist_subgenre_trap', 'num__cat__playlist_subgenre_tropical', 'num__cat__playlist_subgenre_urban contemporary', 'remainder__playlist_id']
+2025-06-15 18:27:51,153 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__playlist_id']
+2025-06-15 18:27:51,316 - AppLogger - INFO - DataFrame después de basic_dfpreprocess (primeras filas):
+   num__num__num__danceability  ...  num__num__track_popularity
+0                     0.383838  ...                    0.552632
+1                     0.272727  ...                    0.578947
+2                     0.015152  ...                    0.657895
+3                     0.232323  ...                    0.394737
+4                    -0.111111  ...                    0.631579
+
+[5 rows x 43 columns]
+2025-06-15 18:27:51,317 - AppLogger - INFO - Columnas después de basic_dfpreprocess: ['num__num__num__danceability', 'num__num__num__energy', 'num__num__num__key', 'num__num__num__loudness', 'num__num__num__mode', 'num__num__num__speechiness', 'num__num__num__acousticness', 'num__num__num__instrumentalness', 'num__num__num__liveness', 'num__num__num__valence', 'num__num__num__tempo', 'num__num__num__duration_ms', 'num__num__cat__playlist_genre_edm', 'num__num__cat__playlist_genre_latin', 'num__num__cat__playlist_genre_pop', 'num__num__cat__playlist_genre_r&b', 'num__num__cat__playlist_genre_rap', 'num__num__cat__playlist_genre_rock', 'num__num__cat__playlist_subgenre_album rock', 'num__num__cat__playlist_subgenre_big room', 'num__num__cat__playlist_subgenre_classic rock', 'num__num__cat__playlist_subgenre_dance pop', 'num__num__cat__playlist_subgenre_electro house', 'num__num__cat__playlist_subgenre_electropop', 'num__num__cat__playlist_subgenre_gangster rap', 'num__num__cat__playlist_subgenre_hard rock', 'num__num__cat__playlist_subgenre_hip hop', 'num__num__cat__playlist_subgenre_hip pop', 'num__num__cat__playlist_subgenre_indie poptimism', 'num__num__cat__playlist_subgenre_latin hip hop', 'num__num__cat__playlist_subgenre_latin pop', 'num__num__cat__playlist_subgenre_neo soul', 'num__num__cat__playlist_subgenre_new jack swing', 'num__num__cat__playlist_subgenre_permanent wave', 'num__num__cat__playlist_subgenre_pop edm', 'num__num__cat__playlist_subgenre_post-teen pop', 'num__num__cat__playlist_subgenre_progressive electro house', 'num__num__cat__playlist_subgenre_reggaeton', 'num__num__cat__playlist_subgenre_southern hip hop', 'num__num__cat__playlist_subgenre_trap', 'num__num__cat__playlist_subgenre_tropical', 'num__num__cat__playlist_subgenre_urban contemporary', 'num__num__track_popularity']
+2025-06-15 18:27:51,321 - AppLogger - INFO - Características finales para entrenamiento (después de drop target): ['num__num__num__danceability', 'num__num__num__energy', 'num__num__num__key', 'num__num__num__loudness', 'num__num__num__mode', 'num__num__num__speechiness', 'num__num__num__acousticness', 'num__num__num__instrumentalness', 'num__num__num__liveness', 'num__num__num__valence', 'num__num__num__tempo', 'num__num__num__duration_ms', 'num__num__cat__playlist_genre_edm', 'num__num__cat__playlist_genre_latin', 'num__num__cat__playlist_genre_pop', 'num__num__cat__playlist_genre_r&b', 'num__num__cat__playlist_genre_rap', 'num__num__cat__playlist_genre_rock', 'num__num__cat__playlist_subgenre_album rock', 'num__num__cat__playlist_subgenre_big room', 'num__num__cat__playlist_subgenre_classic rock', 'num__num__cat__playlist_subgenre_dance pop', 'num__num__cat__playlist_subgenre_electro house', 'num__num__cat__playlist_subgenre_electropop', 'num__num__cat__playlist_subgenre_gangster rap', 'num__num__cat__playlist_subgenre_hard rock', 'num__num__cat__playlist_subgenre_hip hop', 'num__num__cat__playlist_subgenre_hip pop', 'num__num__cat__playlist_subgenre_indie poptimism', 'num__num__cat__playlist_subgenre_latin hip hop', 'num__num__cat__playlist_subgenre_latin pop', 'num__num__cat__playlist_subgenre_neo soul', 'num__num__cat__playlist_subgenre_new jack swing', 'num__num__cat__playlist_subgenre_permanent wave', 'num__num__cat__playlist_subgenre_pop edm', 'num__num__cat__playlist_subgenre_post-teen pop', 'num__num__cat__playlist_subgenre_progressive electro house', 'num__num__cat__playlist_subgenre_reggaeton', 'num__num__cat__playlist_subgenre_southern hip hop', 'num__num__cat__playlist_subgenre_trap', 'num__num__cat__playlist_subgenre_tropical', 'num__num__cat__playlist_subgenre_urban contemporary']
+2025-06-15 18:27:51,343 - AppLogger - INFO - Columnas de X_train_processed INMEDIATAMENTE después de split_and_train (antes de _train_models): ['num__num__num__danceability', 'num__num__num__energy', 'num__num__num__key', 'num__num__num__loudness', 'num__num__num__mode', 'num__num__num__speechiness', 'num__num__num__acousticness', 'num__num__num__instrumentalness', 'num__num__num__liveness', 'num__num__num__valence', 'num__num__num__tempo', 'num__num__num__duration_ms', 'num__num__cat__playlist_genre_edm', 'num__num__cat__playlist_genre_latin', 'num__num__cat__playlist_genre_pop', 'num__num__cat__playlist_genre_r&b', 'num__num__cat__playlist_genre_rap', 'num__num__cat__playlist_genre_rock', 'num__num__cat__playlist_subgenre_album rock', 'num__num__cat__playlist_subgenre_big room', 'num__num__cat__playlist_subgenre_classic rock', 'num__num__cat__playlist_subgenre_dance pop', 'num__num__cat__playlist_subgenre_electro house', 'num__num__cat__playlist_subgenre_electropop', 'num__num__cat__playlist_subgenre_gangster rap', 'num__num__cat__playlist_subgenre_hard rock', 'num__num__cat__playlist_subgenre_hip hop', 'num__num__cat__playlist_subgenre_hip pop', 'num__num__cat__playlist_subgenre_indie poptimism', 'num__num__cat__playlist_subgenre_latin hip hop', 'num__num__cat__playlist_subgenre_latin pop', 'num__num__cat__playlist_subgenre_neo soul', 'num__num__cat__playlist_subgenre_new jack swing', 'num__num__cat__playlist_subgenre_permanent wave', 'num__num__cat__playlist_subgenre_pop edm', 'num__num__cat__playlist_subgenre_post-teen pop', 'num__num__cat__playlist_subgenre_progressive electro house', 'num__num__cat__playlist_subgenre_reggaeton', 'num__num__cat__playlist_subgenre_southern hip hop', 'num__num__cat__playlist_subgenre_trap', 'num__num__cat__playlist_subgenre_tropical', 'num__num__cat__playlist_subgenre_urban contemporary']
+2025-06-15 18:27:51,375 - AppLogger - INFO - Primeras filas de X_train_processed:
+   num__num__num__danceability  ...  num__num__cat__playlist_subgenre_urban contemporary
+0                    -0.681818  ...                                                0.0  
+1                    -0.681818  ...                                                0.0  
+2                     0.237374  ...                                                0.0  
+3                     0.363636  ...                                                0.0  
+4                    -0.111111  ...                                                0.0  
+
+[5 rows x 42 columns]
+2025-06-15 18:27:51,376 - AppLogger - INFO - Columnas de X_test_processed INMEDIATAMENTE después de split_and_train: ['num__num__num__danceability', 'num__num__num__energy', 'num__num__num__key', 'num__num__num__loudness', 'num__num__num__mode', 'num__num__num__speechiness', 'num__num__num__acousticness', 'num__num__num__instrumentalness', 'num__num__num__liveness', 'num__num__num__valence', 'num__num__num__tempo', 'num__num__num__duration_ms', 'num__num__cat__playlist_genre_edm', 'num__num__cat__playlist_genre_latin', 'num__num__cat__playlist_genre_pop', 'num__num__cat__playlist_genre_r&b', 'num__num__cat__playlist_genre_rap', 'num__num__cat__playlist_genre_rock', 'num__num__cat__playlist_subgenre_album rock', 'num__num__cat__playlist_subgenre_big room', 'num__num__cat__playlist_subgenre_classic rock', 'num__num__cat__playlist_subgenre_dance pop', 'num__num__cat__playlist_subgenre_electro house', 'num__num__cat__playlist_subgenre_electropop', 'num__num__cat__playlist_subgenre_gangster rap', 'num__num__cat__playlist_subgenre_hard rock', 'num__num__cat__playlist_subgenre_hip hop', 'num__num__cat__playlist_subgenre_hip pop', 'num__num__cat__playlist_subgenre_indie poptimism', 'num__num__cat__playlist_subgenre_latin hip hop', 'num__num__cat__playlist_subgenre_latin pop', 'num__num__cat__playlist_subgenre_neo soul', 'num__num__cat__playlist_subgenre_new jack swing', 'num__num__cat__playlist_subgenre_permanent wave', 'num__num__cat__playlist_subgenre_pop edm', 'num__num__cat__playlist_subgenre_post-teen pop', 'num__num__cat__playlist_subgenre_progressive electro house', 'num__num__cat__playlist_subgenre_reggaeton', 'num__num__cat__playlist_subgenre_southern hip hop', 'num__num__cat__playlist_subgenre_trap', 'num__num__cat__playlist_subgenre_tropical', 'num__num__cat__playlist_subgenre_urban contemporary']
+2025-06-15 18:27:51,377 - AppLogger - ERROR - Error en split_and_train: expected string or bytes-like object, got 'Series'
+2025-06-15 18:27:51,381 - AppLogger - ERROR - Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 190, in split_and_train
+    trained_models_details, evaluation_results = self._train_models(
+                                                 ~~~~~~~~~~~~~~~~~~^
+        X_train_processed, y_train_series, X_test_processed, y_test_series, self.algorithms, self.features
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 235, in _train_models
+    evaluation = Evaluation(self.problem_type, self.dataset_name)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\evaluation.py", line 17, in __init__
+    self.visualizer.set_dataset_name(short_dataset_name)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\data\visualizer.py", line 47, in set_dataset_name
+    self.dataset_name = clean_filename(dataset_name)
+                        ~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\scikitdb\serializer.py", line 211, in clean_filename
+    return re.sub(r'[^a-zA-Z0-9_\-.]', '_', filename)
+           ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python313\Lib\re\__init__.py", line 208, in sub
+    return _compile(pattern, flags).sub(repl, string, count)
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+TypeError: expected string or bytes-like object, got 'Series'
+
+2025-06-15 18:27:51,383 - AppLogger - WARNING - El entrenamiento no produjo ningún modelo.
+2025-06-15 18:27:51,383 - AppLogger - WARNING - [MQTT train_model] Entrenamiento completado pero no se obtuvieron detalles del mejor modelo.
+2025-06-15 18:27:51,393 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:32:07,361 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 18:32:07,362 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:32:08,228 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 18:32:08,228 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 18:32:08,228 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 18:32:08,249 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:32:08,277 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:32:08,449 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 18:32:08,449 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:32:09,292 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 18:32:09,302 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:32:14,354 - AppLogger - INFO - [MQTT train_model] Target column set to: num__track_popularity
+2025-06-15 18:32:14,354 - AppLogger - INFO - [MQTT train_model] Dataset name set to: artist_popularity
+2025-06-15 18:32:14,354 - AppLogger - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-06-15 18:32:14,355 - AppLogger - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-06-15 18:32:14,355 - AppLogger - INFO - [MQTT train_model] Recommendations set to: True
+2025-06-15 18:32:14,355 - AppLogger - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'artist_popularity'. Attempting to load it.
+2025-06-15 18:32:14,484 - AppLogger - INFO - [MQTT train_model] Successfully loaded processed dataset: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:32:14,485 - AppLogger - INFO - [MQTT train_model] Dataset 'artist_popularity' loaded and set in global_data and training_instance.
+2025-06-15 18:32:14,485 - AppLogger - INFO - Ruta de referencia del dataset original: program\almacen\datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:32:14,485 - AppLogger - INFO - [MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:32:14,486 - AppLogger - INFO - [MQTT train_model] Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:32:14,486 - AppLogger - INFO - training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:32:14,486 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:32:14,486 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 18:32:14,487 - AppLogger - INFO - Tipo de problema determinado: Regresión
+2025-06-15 18:32:14,487 - AppLogger - INFO - Tipo de problema detectado: Regresión
+2025-06-15 18:32:14,490 - AppLogger - ERROR - Error general durante el proceso de entrenamiento: name 'X_processed' is not defined
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 591, in start_training
+    self.trained_models, evaluation_results = self.split_and_train(X, y, dataset_name)
+                                              ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 89, in split_and_train
+    X_processed, y_series, feature_names = self.preprocess_data_for_training(X, y)
+                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 83, in preprocess_data_for_training
+    return X_processed, y_processed, X_processed.columns.tolist()
+           ^^^^^^^^^^^
+NameError: name 'X_processed' is not defined
+2025-06-15 18:32:14,492 - AppLogger - WARNING - [MQTT train_model] Entrenamiento completado pero no se obtuvieron detalles del mejor modelo.
+2025-06-15 18:32:14,500 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:34:02,894 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 18:34:02,895 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:34:03,799 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 18:34:03,799 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 18:34:03,799 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 18:34:03,821 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:34:03,853 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:34:03,999 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 18:34:03,999 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:34:04,804 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 18:34:04,813 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:34:09,961 - AppLogger - INFO - [MQTT train_model] Target column set to: num__track_popularity
+2025-06-15 18:34:09,962 - AppLogger - INFO - [MQTT train_model] Dataset name set to: artist_popularity
+2025-06-15 18:34:09,962 - AppLogger - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-06-15 18:34:09,962 - AppLogger - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-06-15 18:34:09,963 - AppLogger - INFO - [MQTT train_model] Recommendations set to: True
+2025-06-15 18:34:09,963 - AppLogger - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'artist_popularity'. Attempting to load it.
+2025-06-15 18:34:10,098 - AppLogger - INFO - [MQTT train_model] Successfully loaded processed dataset: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:34:10,099 - AppLogger - INFO - [MQTT train_model] Dataset 'artist_popularity' loaded and set in global_data and training_instance.
+2025-06-15 18:34:10,099 - AppLogger - INFO - Ruta de referencia del dataset original: program\almacen\datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:34:10,099 - AppLogger - INFO - [MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:34:10,100 - AppLogger - INFO - [MQTT train_model] Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:34:10,100 - AppLogger - INFO - training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:34:10,100 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:34:10,100 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 18:34:10,101 - AppLogger - INFO - Tipo de problema determinado: Regresión
+2025-06-15 18:34:10,101 - AppLogger - INFO - Tipo de problema detectado: Regresión
+2025-06-15 18:34:10,104 - AppLogger - INFO - Iniciando preprocesamiento de datos para entrenamiento...
+2025-06-15 18:34:10,143 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__num__danceability', 'num__num__energy', 'num__num__key', 'num__num__loudness', 'num__num__mode', 'num__num__speechiness', 'num__num__acousticness', 'num__num__instrumentalness', 'num__num__liveness', 'num__num__valence', 'num__num__tempo', 'num__num__duration_ms', 'num__cat__playlist_genre_edm', 'num__cat__playlist_genre_latin', 'num__cat__playlist_genre_pop', 'num__cat__playlist_genre_r&b', 'num__cat__playlist_genre_rap', 'num__cat__playlist_genre_rock', 'num__cat__playlist_subgenre_album rock', 'num__cat__playlist_subgenre_big room', 'num__cat__playlist_subgenre_classic rock', 'num__cat__playlist_subgenre_dance pop', 'num__cat__playlist_subgenre_electro house', 'num__cat__playlist_subgenre_electropop', 'num__cat__playlist_subgenre_gangster rap', 'num__cat__playlist_subgenre_hard rock', 'num__cat__playlist_subgenre_hip hop', 'num__cat__playlist_subgenre_hip pop', 'num__cat__playlist_subgenre_indie poptimism', 'num__cat__playlist_subgenre_latin hip hop', 'num__cat__playlist_subgenre_latin pop', 'num__cat__playlist_subgenre_neo soul', 'num__cat__playlist_subgenre_new jack swing', 'num__cat__playlist_subgenre_permanent wave', 'num__cat__playlist_subgenre_pop edm', 'num__cat__playlist_subgenre_post-teen pop', 'num__cat__playlist_subgenre_progressive electro house', 'num__cat__playlist_subgenre_reggaeton', 'num__cat__playlist_subgenre_southern hip hop', 'num__cat__playlist_subgenre_trap', 'num__cat__playlist_subgenre_tropical', 'num__cat__playlist_subgenre_urban contemporary', 'remainder__playlist_id']
+2025-06-15 18:34:10,149 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__playlist_id']
+2025-06-15 18:34:10,270 - AppLogger - INFO - Preprocesamiento de datos para entrenamiento completado.
+2025-06-15 18:34:10,281 - AppLogger - INFO - Datos divididos. Entrenamiento: 26266 filas, Prueba: 6567 filas.
+2025-06-15 18:34:10,283 - AppLogger - INFO - Entrenando modelo: RandomForestClassifier
+2025-06-15 18:34:10,283 - AppLogger - ERROR - Fallo al entrenar el modelo RandomForestClassifier: 'Evaluation' object has no attribute 'train_and_evaluate_model'
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 148, in _train_models
+    model, train_score, test_score, metrics = evaluation.train_and_evaluate_model(
+                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Evaluation' object has no attribute 'train_and_evaluate_model'
+2025-06-15 18:34:10,285 - AppLogger - WARNING - El entrenamiento no produjo ningún modelo.
+2025-06-15 18:34:10,286 - AppLogger - WARNING - [MQTT train_model] Entrenamiento completado pero no se obtuvieron detalles del mejor modelo.
+2025-06-15 18:34:10,294 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:35:37,160 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 18:35:37,160 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:35:38,157 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 18:35:38,157 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 18:35:38,158 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 18:35:38,181 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:35:38,208 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:35:38,349 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 18:35:38,350 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:35:39,169 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 18:35:39,179 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:35:43,037 - AppLogger - INFO - [MQTT train_model] Target column set to: num__track_popularity
+2025-06-15 18:35:43,037 - AppLogger - INFO - [MQTT train_model] Dataset name set to: artist_popularity
+2025-06-15 18:35:43,038 - AppLogger - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-06-15 18:35:43,038 - AppLogger - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-06-15 18:35:43,038 - AppLogger - INFO - [MQTT train_model] Recommendations set to: True
+2025-06-15 18:35:43,038 - AppLogger - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'artist_popularity'. Attempting to load it.
+2025-06-15 18:35:43,173 - AppLogger - INFO - [MQTT train_model] Successfully loaded processed dataset: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:35:43,174 - AppLogger - INFO - [MQTT train_model] Dataset 'artist_popularity' loaded and set in global_data and training_instance.
+2025-06-15 18:35:43,174 - AppLogger - INFO - Ruta de referencia del dataset original: program\almacen\datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:35:43,174 - AppLogger - INFO - [MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:35:43,174 - AppLogger - INFO - [MQTT train_model] Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:35:43,175 - AppLogger - INFO - training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: artist_popularity
+2025-06-15 18:35:43,175 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:35:43,175 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 18:35:43,176 - AppLogger - INFO - Tipo de problema determinado: Regresión
+2025-06-15 18:35:43,176 - AppLogger - INFO - Tipo de problema detectado: Regresión
+2025-06-15 18:35:43,179 - AppLogger - INFO - Iniciando preprocesamiento de datos para entrenamiento...
+2025-06-15 18:35:43,191 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__num__danceability', 'num__num__energy', 'num__num__key', 'num__num__loudness', 'num__num__mode', 'num__num__speechiness', 'num__num__acousticness', 'num__num__instrumentalness', 'num__num__liveness', 'num__num__valence', 'num__num__tempo', 'num__num__duration_ms', 'num__cat__playlist_genre_edm', 'num__cat__playlist_genre_latin', 'num__cat__playlist_genre_pop', 'num__cat__playlist_genre_r&b', 'num__cat__playlist_genre_rap', 'num__cat__playlist_genre_rock', 'num__cat__playlist_subgenre_album rock', 'num__cat__playlist_subgenre_big room', 'num__cat__playlist_subgenre_classic rock', 'num__cat__playlist_subgenre_dance pop', 'num__cat__playlist_subgenre_electro house', 'num__cat__playlist_subgenre_electropop', 'num__cat__playlist_subgenre_gangster rap', 'num__cat__playlist_subgenre_hard rock', 'num__cat__playlist_subgenre_hip hop', 'num__cat__playlist_subgenre_hip pop', 'num__cat__playlist_subgenre_indie poptimism', 'num__cat__playlist_subgenre_latin hip hop', 'num__cat__playlist_subgenre_latin pop', 'num__cat__playlist_subgenre_neo soul', 'num__cat__playlist_subgenre_new jack swing', 'num__cat__playlist_subgenre_permanent wave', 'num__cat__playlist_subgenre_pop edm', 'num__cat__playlist_subgenre_post-teen pop', 'num__cat__playlist_subgenre_progressive electro house', 'num__cat__playlist_subgenre_reggaeton', 'num__cat__playlist_subgenre_southern hip hop', 'num__cat__playlist_subgenre_trap', 'num__cat__playlist_subgenre_tropical', 'num__cat__playlist_subgenre_urban contemporary', 'remainder__playlist_id']
+2025-06-15 18:35:43,197 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__playlist_id']
+2025-06-15 18:35:43,316 - AppLogger - INFO - Preprocesamiento de datos para entrenamiento completado.
+2025-06-15 18:35:43,333 - AppLogger - INFO - Datos divididos. Entrenamiento: 26266 filas, Prueba: 6567 filas.
+2025-06-15 18:35:43,335 - AppLogger - INFO - Entrenando modelo: RandomForestClassifier
+2025-06-15 18:35:43,335 - AppLogger - ERROR - Fallo al entrenar el modelo RandomForestClassifier: 'Training' object has no attribute 'params'
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 149, in _train_models
+    algorithm_name, X_train, y_train, X_test, y_test, features, self.params.get(algorithm_name, {})
+                                                                ^^^^^^^^^^^
+AttributeError: 'Training' object has no attribute 'params'
+2025-06-15 18:35:43,338 - AppLogger - WARNING - El entrenamiento no produjo ningún modelo.
+2025-06-15 18:35:43,338 - AppLogger - WARNING - [MQTT train_model] Entrenamiento completado pero no se obtuvieron detalles del mejor modelo.
+2025-06-15 18:35:43,348 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:48:39,630 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 18:48:39,631 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:48:40,578 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 18:48:40,578 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 18:48:40,579 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 18:48:40,601 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:48:40,631 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:48:40,782 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 18:48:40,782 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:48:41,711 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 18:48:41,720 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:48:47,592 - AppLogger - ERROR - [MQTT train_model] Error durante el proceso de entrenamiento: get_dataset_path() got an unexpected keyword argument 'processed'
+2025-06-15 18:48:47,593 - AppLogger - ERROR - Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\api\mqtt.py", line 207, in train_model
+    processed_path = get_dataset_path(training_instance.dataset_name, processed=True)
+TypeError: get_dataset_path() got an unexpected keyword argument 'processed'
+
+2025-06-15 18:48:47,604 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:50:24,770 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 18:50:24,771 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:50:25,820 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 18:50:25,821 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 18:50:25,821 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 18:50:25,844 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:50:25,879 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:50:26,090 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 18:50:26,090 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:50:27,046 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 18:50:27,057 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:50:32,246 - AppLogger - ERROR - [MQTT train_model] No se encontró el dataset procesado para 'artist_popularity' en program\almacen\datasets\artist_popularity\artist_popularity.csv\artist_popularity_processed.csv. El dataset debe ser procesado primero.
+2025-06-15 18:50:32,246 - AppLogger - ERROR - Simulando envío de error a la API: Dataset 'artist_popularity' no encontrado. Por favor, procese el dataset primero. | 
+2025-06-15 18:50:32,259 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:51:34,509 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 18:51:34,510 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 18:51:35,516 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 18:51:35,517 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 18:51:35,517 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 18:51:35,540 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:51:35,567 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 18:51:35,724 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 18:51:35,724 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:51:36,585 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 18:51:36,596 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 18:51:40,986 - AppLogger - INFO - [MQTT train_model] Cargando dataset pre-procesado: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 18:51:41,218 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 18:51:41,218 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 18:51:41,219 - AppLogger - INFO - Tipo de problema determinado: Regresión
+2025-06-15 18:51:41,219 - AppLogger - INFO - Tipo de problema detectado: Regresión
+2025-06-15 18:51:41,223 - AppLogger - INFO - Iniciando preprocesamiento de datos para entrenamiento...
+2025-06-15 18:51:41,240 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__num__danceability', 'num__num__energy', 'num__num__key', 'num__num__loudness', 'num__num__mode', 'num__num__speechiness', 'num__num__acousticness', 'num__num__instrumentalness', 'num__num__liveness', 'num__num__valence', 'num__num__tempo', 'num__num__duration_ms', 'num__cat__playlist_genre_edm', 'num__cat__playlist_genre_latin', 'num__cat__playlist_genre_pop', 'num__cat__playlist_genre_r&b', 'num__cat__playlist_genre_rap', 'num__cat__playlist_genre_rock', 'num__cat__playlist_subgenre_album rock', 'num__cat__playlist_subgenre_big room', 'num__cat__playlist_subgenre_classic rock', 'num__cat__playlist_subgenre_dance pop', 'num__cat__playlist_subgenre_electro house', 'num__cat__playlist_subgenre_electropop', 'num__cat__playlist_subgenre_gangster rap', 'num__cat__playlist_subgenre_hard rock', 'num__cat__playlist_subgenre_hip hop', 'num__cat__playlist_subgenre_hip pop', 'num__cat__playlist_subgenre_indie poptimism', 'num__cat__playlist_subgenre_latin hip hop', 'num__cat__playlist_subgenre_latin pop', 'num__cat__playlist_subgenre_neo soul', 'num__cat__playlist_subgenre_new jack swing', 'num__cat__playlist_subgenre_permanent wave', 'num__cat__playlist_subgenre_pop edm', 'num__cat__playlist_subgenre_post-teen pop', 'num__cat__playlist_subgenre_progressive electro house', 'num__cat__playlist_subgenre_reggaeton', 'num__cat__playlist_subgenre_southern hip hop', 'num__cat__playlist_subgenre_trap', 'num__cat__playlist_subgenre_tropical', 'num__cat__playlist_subgenre_urban contemporary', 'remainder__playlist_id']
+2025-06-15 18:51:41,246 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__playlist_id']
+2025-06-15 18:51:41,394 - AppLogger - INFO - Preprocesamiento de datos para entrenamiento completado.
+2025-06-15 18:51:41,412 - AppLogger - INFO - Datos divididos. Entrenamiento: 26266 filas, Prueba: 6567 filas.
+2025-06-15 18:51:41,414 - AppLogger - INFO - Entrenando modelo: RandomForestClassifier
+2025-06-15 18:51:41,414 - AppLogger - ERROR - Fallo al entrenar el modelo RandomForestClassifier: 'Evaluation' object has no attribute '_get_model_instance'
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 157, in _train_models
+    model, train_score, test_score, metrics = evaluation.train_and_evaluate_model(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        algorithm_name, X_train, y_train, X_test, y_test, features, self.params.get(algorithm_name, {})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\evaluation.py", line 236, in train_and_evaluate_model
+    model_instance = self._get_model_instance(model_name, params)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Evaluation' object has no attribute '_get_model_instance'
+2025-06-15 18:51:41,417 - AppLogger - WARNING - El entrenamiento no produjo ningún modelo.
+2025-06-15 18:51:41,418 - AppLogger - ERROR - [MQTT train_model] El entrenamiento no finalizó correctamente o no se guardó el mejor modelo.
+2025-06-15 18:51:41,419 - AppLogger - ERROR - Simulando envío de error a la API: Fallo en el entrenamiento para el dataset 'artist_popularity'. | 
+2025-06-15 18:51:41,430 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:00:18,012 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 19:00:18,013 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 19:00:19,170 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 19:00:19,170 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 19:00:19,171 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 19:00:19,196 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:00:19,232 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:00:19,401 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 19:00:19,402 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:00:20,413 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 19:00:20,424 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:00:25,159 - AppLogger - INFO - [MQTT train_model] Cargando dataset pre-procesado: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:00:25,354 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 19:00:25,355 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 19:00:25,356 - AppLogger - INFO - Tipo de problema determinado: Regresión
+2025-06-15 19:00:25,356 - AppLogger - INFO - Tipo de problema detectado: Regresión
+2025-06-15 19:00:25,359 - AppLogger - INFO - Iniciando preprocesamiento de datos para entrenamiento...
+2025-06-15 19:00:25,374 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__num__danceability', 'num__num__energy', 'num__num__key', 'num__num__loudness', 'num__num__mode', 'num__num__speechiness', 'num__num__acousticness', 'num__num__instrumentalness', 'num__num__liveness', 'num__num__valence', 'num__num__tempo', 'num__num__duration_ms', 'num__cat__playlist_genre_edm', 'num__cat__playlist_genre_latin', 'num__cat__playlist_genre_pop', 'num__cat__playlist_genre_r&b', 'num__cat__playlist_genre_rap', 'num__cat__playlist_genre_rock', 'num__cat__playlist_subgenre_album rock', 'num__cat__playlist_subgenre_big room', 'num__cat__playlist_subgenre_classic rock', 'num__cat__playlist_subgenre_dance pop', 'num__cat__playlist_subgenre_electro house', 'num__cat__playlist_subgenre_electropop', 'num__cat__playlist_subgenre_gangster rap', 'num__cat__playlist_subgenre_hard rock', 'num__cat__playlist_subgenre_hip hop', 'num__cat__playlist_subgenre_hip pop', 'num__cat__playlist_subgenre_indie poptimism', 'num__cat__playlist_subgenre_latin hip hop', 'num__cat__playlist_subgenre_latin pop', 'num__cat__playlist_subgenre_neo soul', 'num__cat__playlist_subgenre_new jack swing', 'num__cat__playlist_subgenre_permanent wave', 'num__cat__playlist_subgenre_pop edm', 'num__cat__playlist_subgenre_post-teen pop', 'num__cat__playlist_subgenre_progressive electro house', 'num__cat__playlist_subgenre_reggaeton', 'num__cat__playlist_subgenre_southern hip hop', 'num__cat__playlist_subgenre_trap', 'num__cat__playlist_subgenre_tropical', 'num__cat__playlist_subgenre_urban contemporary', 'remainder__playlist_id']
+2025-06-15 19:00:25,380 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__playlist_id']
+2025-06-15 19:00:25,547 - AppLogger - INFO - Preprocesamiento de datos para entrenamiento completado.
+2025-06-15 19:00:25,569 - AppLogger - INFO - Datos divididos. Entrenamiento: 26266 filas, Prueba: 6567 filas.
+2025-06-15 19:00:25,571 - AppLogger - INFO - Entrenando modelo: RandomForestClassifier
+2025-06-15 19:00:25,578 - AppLogger - ERROR - Fallo al entrenar el modelo RandomForestClassifier: Unknown label type: continuous. Maybe you are trying to fit a classifier, which expects discrete classes on a regression target with continuous values.
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 157, in _train_models
+    model, train_score, test_score, metrics = evaluation.train_and_evaluate_model(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        algorithm_name, X_train, y_train, X_test, y_test, features, self.params.get(algorithm_name, {})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\evaluation.py", line 264, in train_and_evaluate_model
+    model_instance.fit(X_train, y_train)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\base.py", line 1389, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\ensemble\_forest.py", line 419, in fit
+    y, expanded_class_weight = self._validate_y_class_weight(y)
+                               ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\ensemble\_forest.py", line 831, in _validate_y_class_weight
+    check_classification_targets(y)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\utils\multiclass.py", line 222, in check_classification_targets
+    raise ValueError(
+    ...<3 lines>...
+    )
+ValueError: Unknown label type: continuous. Maybe you are trying to fit a classifier, which expects discrete classes on a regression target with continuous values.
+2025-06-15 19:00:25,606 - AppLogger - WARNING - El entrenamiento no produjo ningún modelo.
+2025-06-15 19:00:25,607 - AppLogger - ERROR - [MQTT train_model] El entrenamiento no finalizó correctamente o no se guardó el mejor modelo.
+2025-06-15 19:00:25,608 - AppLogger - ERROR - Simulando envío de error a la API: Fallo en el entrenamiento para el dataset 'artist_popularity'. | 
+2025-06-15 19:00:25,619 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:02:57,434 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 19:02:57,435 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 19:02:58,597 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 19:02:58,598 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 19:02:58,598 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 19:02:58,620 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:02:58,662 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:02:58,822 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 19:02:58,822 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:02:59,781 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 19:02:59,794 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:03:05,147 - AppLogger - INFO - [MQTT train_model] Cargando dataset pre-procesado: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:03:05,321 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 19:03:05,321 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 19:03:05,322 - AppLogger - INFO - Tipo de problema determinado: Regresión
+2025-06-15 19:03:05,323 - AppLogger - INFO - Tipo de problema detectado: Regresión
+2025-06-15 19:03:05,325 - AppLogger - INFO - Iniciando preprocesamiento de datos para entrenamiento...
+2025-06-15 19:03:05,340 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__num__danceability', 'num__num__energy', 'num__num__key', 'num__num__loudness', 'num__num__mode', 'num__num__speechiness', 'num__num__acousticness', 'num__num__instrumentalness', 'num__num__liveness', 'num__num__valence', 'num__num__tempo', 'num__num__duration_ms', 'num__cat__playlist_genre_edm', 'num__cat__playlist_genre_latin', 'num__cat__playlist_genre_pop', 'num__cat__playlist_genre_r&b', 'num__cat__playlist_genre_rap', 'num__cat__playlist_genre_rock', 'num__cat__playlist_subgenre_album rock', 'num__cat__playlist_subgenre_big room', 'num__cat__playlist_subgenre_classic rock', 'num__cat__playlist_subgenre_dance pop', 'num__cat__playlist_subgenre_electro house', 'num__cat__playlist_subgenre_electropop', 'num__cat__playlist_subgenre_gangster rap', 'num__cat__playlist_subgenre_hard rock', 'num__cat__playlist_subgenre_hip hop', 'num__cat__playlist_subgenre_hip pop', 'num__cat__playlist_subgenre_indie poptimism', 'num__cat__playlist_subgenre_latin hip hop', 'num__cat__playlist_subgenre_latin pop', 'num__cat__playlist_subgenre_neo soul', 'num__cat__playlist_subgenre_new jack swing', 'num__cat__playlist_subgenre_permanent wave', 'num__cat__playlist_subgenre_pop edm', 'num__cat__playlist_subgenre_post-teen pop', 'num__cat__playlist_subgenre_progressive electro house', 'num__cat__playlist_subgenre_reggaeton', 'num__cat__playlist_subgenre_southern hip hop', 'num__cat__playlist_subgenre_trap', 'num__cat__playlist_subgenre_tropical', 'num__cat__playlist_subgenre_urban contemporary', 'remainder__playlist_id']
+2025-06-15 19:03:05,346 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__playlist_id']
+2025-06-15 19:03:05,467 - AppLogger - INFO - Preprocesamiento de datos para entrenamiento completado.
+2025-06-15 19:03:05,488 - AppLogger - INFO - Datos divididos. Entrenamiento: 26266 filas, Prueba: 6567 filas.
+2025-06-15 19:03:05,491 - AppLogger - WARNING - El modelo 'RandomForestClassifier' no es apropiado para un problema de 'Regresión'.
+2025-06-15 19:03:05,491 - AppLogger - WARNING - Se cambiará automáticamente a su homólogo: 'RandomForestRegressor'.
+2025-06-15 19:03:05,491 - AppLogger - INFO - Entrenando modelo: RandomForestRegressor
+2025-06-15 19:03:39,378 - AppLogger - ERROR - Fallo al entrenar el modelo RandomForestClassifier: cannot unpack non-iterable NoneType object
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 165, in _train_models
+    model, train_score, test_score, metrics = evaluation.train_and_evaluate_model(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        corrected_algorithm_name, X_train, y_train, X_test, y_test, features, self.params.get(original_algorithm_name, {})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\evaluation.py", line 271, in train_and_evaluate_model
+    train_score, test_score, metrics = self.evaluate_model(
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: cannot unpack non-iterable NoneType object
+2025-06-15 19:03:39,387 - AppLogger - WARNING - El entrenamiento no produjo ningún modelo.
+2025-06-15 19:03:39,388 - AppLogger - ERROR - [MQTT train_model] El entrenamiento no finalizó correctamente o no se guardó el mejor modelo.
+2025-06-15 19:03:39,388 - AppLogger - ERROR - Simulando envío de error a la API: Fallo en el entrenamiento para el dataset 'artist_popularity'. | 
+2025-06-15 19:03:39,404 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:06:47,806 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 19:06:47,807 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 19:06:48,988 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 19:06:48,989 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 19:06:48,989 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 19:06:49,014 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:06:49,042 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:06:49,231 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 19:06:49,231 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:06:50,293 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 19:06:50,307 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:06:55,703 - AppLogger - INFO - [MQTT train_model] Cargando dataset pre-procesado: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:06:55,856 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 19:06:55,857 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 19:06:55,857 - AppLogger - INFO - Tipo de problema determinado: Regresión
+2025-06-15 19:06:55,858 - AppLogger - INFO - Tipo de problema detectado: Regresión
+2025-06-15 19:06:55,861 - AppLogger - INFO - Iniciando preprocesamiento de datos para entrenamiento...
+2025-06-15 19:06:55,873 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__num__danceability', 'num__num__energy', 'num__num__key', 'num__num__loudness', 'num__num__mode', 'num__num__speechiness', 'num__num__acousticness', 'num__num__instrumentalness', 'num__num__liveness', 'num__num__valence', 'num__num__tempo', 'num__num__duration_ms', 'num__cat__playlist_genre_edm', 'num__cat__playlist_genre_latin', 'num__cat__playlist_genre_pop', 'num__cat__playlist_genre_r&b', 'num__cat__playlist_genre_rap', 'num__cat__playlist_genre_rock', 'num__cat__playlist_subgenre_album rock', 'num__cat__playlist_subgenre_big room', 'num__cat__playlist_subgenre_classic rock', 'num__cat__playlist_subgenre_dance pop', 'num__cat__playlist_subgenre_electro house', 'num__cat__playlist_subgenre_electropop', 'num__cat__playlist_subgenre_gangster rap', 'num__cat__playlist_subgenre_hard rock', 'num__cat__playlist_subgenre_hip hop', 'num__cat__playlist_subgenre_hip pop', 'num__cat__playlist_subgenre_indie poptimism', 'num__cat__playlist_subgenre_latin hip hop', 'num__cat__playlist_subgenre_latin pop', 'num__cat__playlist_subgenre_neo soul', 'num__cat__playlist_subgenre_new jack swing', 'num__cat__playlist_subgenre_permanent wave', 'num__cat__playlist_subgenre_pop edm', 'num__cat__playlist_subgenre_post-teen pop', 'num__cat__playlist_subgenre_progressive electro house', 'num__cat__playlist_subgenre_reggaeton', 'num__cat__playlist_subgenre_southern hip hop', 'num__cat__playlist_subgenre_trap', 'num__cat__playlist_subgenre_tropical', 'num__cat__playlist_subgenre_urban contemporary', 'remainder__playlist_id']
+2025-06-15 19:06:55,880 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__playlist_id']
+2025-06-15 19:06:55,996 - AppLogger - INFO - Preprocesamiento de datos para entrenamiento completado.
+2025-06-15 19:06:56,010 - AppLogger - INFO - Datos divididos. Entrenamiento: 26266 filas, Prueba: 6567 filas.
+2025-06-15 19:06:56,011 - AppLogger - WARNING - El modelo 'RandomForestClassifier' no es apropiado para un problema de 'Regresión'.
+2025-06-15 19:06:56,012 - AppLogger - WARNING - Se cambiará automáticamente a su homólogo: 'RandomForestRegressor'.
+2025-06-15 19:06:56,012 - AppLogger - INFO - Entrenando modelo: RandomForestRegressor
+2025-06-15 19:07:29,154 - AppLogger - ERROR - Fallo al entrenar el modelo RandomForestClassifier: 'Visualizer' object has no attribute 'create_all_visualizations'
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 165, in _train_models
+    model, train_score, test_score, metrics = evaluation.train_and_evaluate_model(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        corrected_algorithm_name, X_train, y_train, X_test, y_test, features, self.params.get(original_algorithm_name, {})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\evaluation.py", line 277, in train_and_evaluate_model
+    self.visualizer.create_all_visualizations(
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Visualizer' object has no attribute 'create_all_visualizations'. Did you mean: 'generate_visualizations'?
+2025-06-15 19:07:29,164 - AppLogger - WARNING - El entrenamiento no produjo ningún modelo.
+2025-06-15 19:07:29,165 - AppLogger - ERROR - [MQTT train_model] El entrenamiento no finalizó correctamente o no se guardó el mejor modelo.
+2025-06-15 19:07:29,165 - AppLogger - ERROR - Simulando envío de error a la API: Fallo en el entrenamiento para el dataset 'artist_popularity'. | 
+2025-06-15 19:07:29,177 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:11:08,844 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 19:11:08,845 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 19:11:09,903 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 19:11:09,903 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 19:11:09,904 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 19:11:09,927 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:11:09,955 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:11:10,107 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 19:11:10,107 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:11:10,952 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 19:11:10,965 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:11:16,769 - AppLogger - INFO - [MQTT train_model] Cargando dataset pre-procesado: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:11:16,958 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 19:11:16,958 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 19:11:16,959 - AppLogger - INFO - Tipo de problema determinado: Regresión
+2025-06-15 19:11:16,960 - AppLogger - INFO - Tipo de problema detectado: Regresión
+2025-06-15 19:11:16,963 - AppLogger - INFO - Iniciando preprocesamiento de datos para entrenamiento...
+2025-06-15 19:11:16,983 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__num__danceability', 'num__num__energy', 'num__num__key', 'num__num__loudness', 'num__num__mode', 'num__num__speechiness', 'num__num__acousticness', 'num__num__instrumentalness', 'num__num__liveness', 'num__num__valence', 'num__num__tempo', 'num__num__duration_ms', 'num__cat__playlist_genre_edm', 'num__cat__playlist_genre_latin', 'num__cat__playlist_genre_pop', 'num__cat__playlist_genre_r&b', 'num__cat__playlist_genre_rap', 'num__cat__playlist_genre_rock', 'num__cat__playlist_subgenre_album rock', 'num__cat__playlist_subgenre_big room', 'num__cat__playlist_subgenre_classic rock', 'num__cat__playlist_subgenre_dance pop', 'num__cat__playlist_subgenre_electro house', 'num__cat__playlist_subgenre_electropop', 'num__cat__playlist_subgenre_gangster rap', 'num__cat__playlist_subgenre_hard rock', 'num__cat__playlist_subgenre_hip hop', 'num__cat__playlist_subgenre_hip pop', 'num__cat__playlist_subgenre_indie poptimism', 'num__cat__playlist_subgenre_latin hip hop', 'num__cat__playlist_subgenre_latin pop', 'num__cat__playlist_subgenre_neo soul', 'num__cat__playlist_subgenre_new jack swing', 'num__cat__playlist_subgenre_permanent wave', 'num__cat__playlist_subgenre_pop edm', 'num__cat__playlist_subgenre_post-teen pop', 'num__cat__playlist_subgenre_progressive electro house', 'num__cat__playlist_subgenre_reggaeton', 'num__cat__playlist_subgenre_southern hip hop', 'num__cat__playlist_subgenre_trap', 'num__cat__playlist_subgenre_tropical', 'num__cat__playlist_subgenre_urban contemporary', 'remainder__playlist_id']
+2025-06-15 19:11:16,990 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__playlist_id']
+2025-06-15 19:11:17,121 - AppLogger - INFO - Preprocesamiento de datos para entrenamiento completado.
+2025-06-15 19:11:17,134 - AppLogger - INFO - Datos divididos. Entrenamiento: 26266 filas, Prueba: 6567 filas.
+2025-06-15 19:11:17,136 - AppLogger - WARNING - El modelo 'RandomForestClassifier' no es apropiado para un problema de 'Regresión'.
+2025-06-15 19:11:17,137 - AppLogger - WARNING - Se cambiará automáticamente a su homólogo: 'RandomForestRegressor'.
+2025-06-15 19:11:17,137 - AppLogger - INFO - Entrenando modelo: RandomForestRegressor
+2025-06-15 19:11:52,167 - AppLogger - ERROR - Fallo al entrenar el modelo RandomForestClassifier: 'Visualizer' object has no attribute 'create_all_visualizations'
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 165, in _train_models
+    model, train_score, test_score, metrics = evaluation.train_and_evaluate_model(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        corrected_algorithm_name, X_train, y_train, X_test, y_test, features, self.params.get(original_algorithm_name, {})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\evaluation.py", line 277, in train_and_evaluate_model
+    self.visualizer.create_all_visualizations(
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Visualizer' object has no attribute 'create_all_visualizations'. Did you mean: 'generate_visualizations'?
+2025-06-15 19:11:52,176 - AppLogger - WARNING - El entrenamiento no produjo ningún modelo.
+2025-06-15 19:11:52,177 - AppLogger - ERROR - [MQTT train_model] El entrenamiento no finalizó correctamente o no se guardó el mejor modelo.
+2025-06-15 19:11:52,177 - AppLogger - ERROR - Simulando envío de error a la API: Fallo en el entrenamiento para el dataset 'artist_popularity'. | 
+2025-06-15 19:11:52,194 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:15:06,641 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 19:15:06,642 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 19:15:07,594 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 19:15:07,595 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 19:15:07,595 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 19:15:07,619 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:15:07,654 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:15:07,816 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 19:15:07,816 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:15:08,771 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 19:15:08,789 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:15:13,817 - AppLogger - INFO - [MQTT train_model] Cargando dataset pre-procesado: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:15:13,955 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 19:15:13,956 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 19:15:13,957 - AppLogger - INFO - Tipo de problema determinado: Regresión
+2025-06-15 19:15:13,957 - AppLogger - INFO - Tipo de problema detectado: Regresión
+2025-06-15 19:15:13,960 - AppLogger - INFO - Iniciando preprocesamiento de datos para entrenamiento...
+2025-06-15 19:15:13,973 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__num__danceability', 'num__num__energy', 'num__num__key', 'num__num__loudness', 'num__num__mode', 'num__num__speechiness', 'num__num__acousticness', 'num__num__instrumentalness', 'num__num__liveness', 'num__num__valence', 'num__num__tempo', 'num__num__duration_ms', 'num__cat__playlist_genre_edm', 'num__cat__playlist_genre_latin', 'num__cat__playlist_genre_pop', 'num__cat__playlist_genre_r&b', 'num__cat__playlist_genre_rap', 'num__cat__playlist_genre_rock', 'num__cat__playlist_subgenre_album rock', 'num__cat__playlist_subgenre_big room', 'num__cat__playlist_subgenre_classic rock', 'num__cat__playlist_subgenre_dance pop', 'num__cat__playlist_subgenre_electro house', 'num__cat__playlist_subgenre_electropop', 'num__cat__playlist_subgenre_gangster rap', 'num__cat__playlist_subgenre_hard rock', 'num__cat__playlist_subgenre_hip hop', 'num__cat__playlist_subgenre_hip pop', 'num__cat__playlist_subgenre_indie poptimism', 'num__cat__playlist_subgenre_latin hip hop', 'num__cat__playlist_subgenre_latin pop', 'num__cat__playlist_subgenre_neo soul', 'num__cat__playlist_subgenre_new jack swing', 'num__cat__playlist_subgenre_permanent wave', 'num__cat__playlist_subgenre_pop edm', 'num__cat__playlist_subgenre_post-teen pop', 'num__cat__playlist_subgenre_progressive electro house', 'num__cat__playlist_subgenre_reggaeton', 'num__cat__playlist_subgenre_southern hip hop', 'num__cat__playlist_subgenre_trap', 'num__cat__playlist_subgenre_tropical', 'num__cat__playlist_subgenre_urban contemporary', 'remainder__playlist_id']
+2025-06-15 19:15:13,979 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__playlist_id']
+2025-06-15 19:15:14,093 - AppLogger - INFO - Preprocesamiento de datos para entrenamiento completado.
+2025-06-15 19:15:14,108 - AppLogger - INFO - Datos divididos. Entrenamiento: 26266 filas, Prueba: 6567 filas.
+2025-06-15 19:15:14,109 - AppLogger - WARNING - El modelo 'RandomForestClassifier' no es apropiado para un problema de 'Regresión'.
+2025-06-15 19:15:14,110 - AppLogger - WARNING - Se cambiará automáticamente a su homólogo: 'RandomForestRegressor'.
+2025-06-15 19:15:14,110 - AppLogger - INFO - Entrenando modelo: RandomForestRegressor
+2025-06-15 19:15:47,375 - AppLogger - ERROR - Fallo al entrenar el modelo RandomForestClassifier: Visualizer.generate_visualizations() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 165, in _train_models
+    model, train_score, test_score, metrics = evaluation.train_and_evaluate_model(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        corrected_algorithm_name, X_train, y_train, X_test, y_test, features, self.params.get(original_algorithm_name, {})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\evaluation.py", line 276, in train_and_evaluate_model
+    self.visualizer.generate_visualizations(model_instance, X_test, y_test, y_test_pred, features)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Visualizer.generate_visualizations() takes 5 positional arguments but 6 were given
+2025-06-15 19:15:47,386 - AppLogger - WARNING - El entrenamiento no produjo ningún modelo.
+2025-06-15 19:15:47,387 - AppLogger - ERROR - [MQTT train_model] El entrenamiento no finalizó correctamente o no se guardó el mejor modelo.
+2025-06-15 19:15:47,387 - AppLogger - ERROR - Simulando envío de error a la API: Fallo en el entrenamiento para el dataset 'artist_popularity'. | 
+2025-06-15 19:15:47,408 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:19:09,873 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 19:19:09,875 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 19:19:11,045 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 19:19:11,046 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 19:19:11,046 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 19:19:11,069 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:19:11,110 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:19:11,306 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 19:19:11,307 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:19:12,447 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 19:19:17,970 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:19:22,705 - AppLogger - INFO - [MQTT train_model] Cargando dataset pre-procesado: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:19:22,864 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 19:19:22,864 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 19:19:22,865 - AppLogger - INFO - Tipo de problema determinado: Regresión
+2025-06-15 19:19:22,865 - AppLogger - INFO - Tipo de problema detectado: Regresión
+2025-06-15 19:19:22,868 - AppLogger - INFO - Iniciando preprocesamiento de datos para entrenamiento...
+2025-06-15 19:19:22,882 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__num__danceability', 'num__num__energy', 'num__num__key', 'num__num__loudness', 'num__num__mode', 'num__num__speechiness', 'num__num__acousticness', 'num__num__instrumentalness', 'num__num__liveness', 'num__num__valence', 'num__num__tempo', 'num__num__duration_ms', 'num__cat__playlist_genre_edm', 'num__cat__playlist_genre_latin', 'num__cat__playlist_genre_pop', 'num__cat__playlist_genre_r&b', 'num__cat__playlist_genre_rap', 'num__cat__playlist_genre_rock', 'num__cat__playlist_subgenre_album rock', 'num__cat__playlist_subgenre_big room', 'num__cat__playlist_subgenre_classic rock', 'num__cat__playlist_subgenre_dance pop', 'num__cat__playlist_subgenre_electro house', 'num__cat__playlist_subgenre_electropop', 'num__cat__playlist_subgenre_gangster rap', 'num__cat__playlist_subgenre_hard rock', 'num__cat__playlist_subgenre_hip hop', 'num__cat__playlist_subgenre_hip pop', 'num__cat__playlist_subgenre_indie poptimism', 'num__cat__playlist_subgenre_latin hip hop', 'num__cat__playlist_subgenre_latin pop', 'num__cat__playlist_subgenre_neo soul', 'num__cat__playlist_subgenre_new jack swing', 'num__cat__playlist_subgenre_permanent wave', 'num__cat__playlist_subgenre_pop edm', 'num__cat__playlist_subgenre_post-teen pop', 'num__cat__playlist_subgenre_progressive electro house', 'num__cat__playlist_subgenre_reggaeton', 'num__cat__playlist_subgenre_southern hip hop', 'num__cat__playlist_subgenre_trap', 'num__cat__playlist_subgenre_tropical', 'num__cat__playlist_subgenre_urban contemporary', 'remainder__playlist_id']
+2025-06-15 19:19:22,888 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__playlist_id']
+2025-06-15 19:19:23,010 - AppLogger - INFO - Preprocesamiento de datos para entrenamiento completado.
+2025-06-15 19:19:23,024 - AppLogger - INFO - Datos divididos. Entrenamiento: 26266 filas, Prueba: 6567 filas.
+2025-06-15 19:19:23,026 - AppLogger - WARNING - El modelo 'RandomForestClassifier' no es apropiado para un problema de 'Regresión'.
+2025-06-15 19:19:23,026 - AppLogger - WARNING - Se cambiará automáticamente a su homólogo: 'RandomForestRegressor'.
+2025-06-15 19:19:23,026 - AppLogger - INFO - Entrenando modelo: RandomForestRegressor
+2025-06-15 19:19:58,865 - AppLogger - ERROR - Fallo al entrenar el modelo RandomForestClassifier: Visualizer.generate_visualizations() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 165, in _train_models
+    model, train_score, test_score, metrics = evaluation.train_and_evaluate_model(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        corrected_algorithm_name, X_train, y_train, X_test, y_test, features, self.params.get(original_algorithm_name, {})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\evaluation.py", line 285, in train_and_evaluate_model
+    self.visualizer.generate_visualizations(model_instance, X_test, y_test, y_test_pred, features)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Visualizer.generate_visualizations() takes 5 positional arguments but 6 were given
+2025-06-15 19:19:58,879 - AppLogger - WARNING - El entrenamiento no produjo ningún modelo.
+2025-06-15 19:19:58,880 - AppLogger - ERROR - [MQTT train_model] El entrenamiento no finalizó correctamente o no se guardó el mejor modelo.
+2025-06-15 19:19:58,880 - AppLogger - ERROR - Simulando envío de error a la API: Fallo en el entrenamiento para el dataset 'artist_popularity'. | 
+2025-06-15 19:19:58,890 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:26:16,803 - AppLogger - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-06-15 19:26:16,804 - AppLogger - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-06-15 19:26:17,641 - AppLogger - INFO - Original dataset saved successfully.
+2025-06-15 19:26:17,641 - AppLogger - INFO - Determined target column: remainder__playlist_id
+2025-06-15 19:26:17,642 - AppLogger - INFO - Starting basic preprocessing for artist_popularity...
+2025-06-15 19:26:17,664 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:26:17,695 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-06-15 19:26:17,840 - AppLogger - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+2025-06-15 19:26:17,840 - AppLogger - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:26:18,638 - AppLogger - INFO - Processed dataset saved successfully.
+2025-06-15 19:26:24,902 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-06-15 19:26:30,383 - AppLogger - INFO - [MQTT train_model] Cargando dataset pre-procesado: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+2025-06-15 19:26:30,519 - AppLogger - INFO - Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+2025-06-15 19:26:30,519 - AppLogger - INFO - Target actualizado a su versión procesada: num__num__track_popularity
+2025-06-15 19:26:30,520 - AppLogger - INFO - Tipo de problema determinado: Regresión
+2025-06-15 19:26:30,520 - AppLogger - INFO - Tipo de problema detectado: Regresión
+2025-06-15 19:26:30,523 - AppLogger - INFO - Iniciando preprocesamiento de datos para entrenamiento...
+2025-06-15 19:26:30,536 - AppLogger - INFO - Columnas en X después de eliminación explícita: ['num__num__danceability', 'num__num__energy', 'num__num__key', 'num__num__loudness', 'num__num__mode', 'num__num__speechiness', 'num__num__acousticness', 'num__num__instrumentalness', 'num__num__liveness', 'num__num__valence', 'num__num__tempo', 'num__num__duration_ms', 'num__cat__playlist_genre_edm', 'num__cat__playlist_genre_latin', 'num__cat__playlist_genre_pop', 'num__cat__playlist_genre_r&b', 'num__cat__playlist_genre_rap', 'num__cat__playlist_genre_rock', 'num__cat__playlist_subgenre_album rock', 'num__cat__playlist_subgenre_big room', 'num__cat__playlist_subgenre_classic rock', 'num__cat__playlist_subgenre_dance pop', 'num__cat__playlist_subgenre_electro house', 'num__cat__playlist_subgenre_electropop', 'num__cat__playlist_subgenre_gangster rap', 'num__cat__playlist_subgenre_hard rock', 'num__cat__playlist_subgenre_hip hop', 'num__cat__playlist_subgenre_hip pop', 'num__cat__playlist_subgenre_indie poptimism', 'num__cat__playlist_subgenre_latin hip hop', 'num__cat__playlist_subgenre_latin pop', 'num__cat__playlist_subgenre_neo soul', 'num__cat__playlist_subgenre_new jack swing', 'num__cat__playlist_subgenre_permanent wave', 'num__cat__playlist_subgenre_pop edm', 'num__cat__playlist_subgenre_post-teen pop', 'num__cat__playlist_subgenre_progressive electro house', 'num__cat__playlist_subgenre_reggaeton', 'num__cat__playlist_subgenre_southern hip hop', 'num__cat__playlist_subgenre_trap', 'num__cat__playlist_subgenre_tropical', 'num__cat__playlist_subgenre_urban contemporary', 'remainder__playlist_id']
+2025-06-15 19:26:30,541 - AppLogger - WARNING - Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__playlist_id']
+2025-06-15 19:26:30,649 - AppLogger - INFO - Preprocesamiento de datos para entrenamiento completado.
+2025-06-15 19:26:30,661 - AppLogger - INFO - Datos divididos. Entrenamiento: 26266 filas, Prueba: 6567 filas.
+2025-06-15 19:26:30,663 - AppLogger - WARNING - El modelo 'RandomForestClassifier' no es apropiado para un problema de 'Regresión'.
+2025-06-15 19:26:30,663 - AppLogger - WARNING - Se cambiará automáticamente a su homólogo: 'RandomForestRegressor'.
+2025-06-15 19:26:30,663 - AppLogger - INFO - Entrenando modelo: RandomForestRegressor
+2025-06-15 19:27:02,254 - AppLogger - ERROR - Fallo al entrenar el modelo RandomForestClassifier: Visualizer.generate_visualizations() takes 5 positional arguments but 6 were given
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 165, in _train_models
+    model, train_score, test_score, metrics = evaluation.train_and_evaluate_model(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        corrected_algorithm_name, X_train, y_train, X_test, y_test, features, self.params.get(original_algorithm_name, {})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\evaluation.py", line 285, in train_and_evaluate_model
+    self.visualizer.generate_visualizations(model_instance, X_test, y_test, y_test_pred, features)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Visualizer.generate_visualizations() takes 5 positional arguments but 6 were given
+2025-06-15 19:27:02,269 - AppLogger - WARNING - El entrenamiento no produjo ningún modelo.
+2025-06-15 19:27:02,270 - AppLogger - ERROR - [MQTT train_model] El entrenamiento no finalizó correctamente o no se guardó el mejor modelo.
+2025-06-15 19:27:02,270 - AppLogger - ERROR - Simulando envío de error a la API: Fallo en el entrenamiento para el dataset 'artist_popularity'. | 
+2025-06-15 19:27:02,282 - AppLogger - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.

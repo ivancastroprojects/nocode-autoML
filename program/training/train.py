@@ -2,14 +2,14 @@
 
 import numpy as np
 import pandas as pd
-import training.scikitdb.serializer as serializer
+from program.training.scikitdb import serializer
 from sklearn.base import BaseEstimator
 import inspect
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV, cross_val_score
-from utils.logger import logger
+from program.utils.logger import logger
 import optuna
 from sklearn.base import clone
-from data.datasetprocessing import select_best_features
+from program.data.datasetprocessing import select_best_features
 
 def train_simple_model(X, y, model_name, params=None):
     """
@@ -41,9 +41,9 @@ def train_simple_model(X, y, model_name, params=None):
     for param, value in model_kwargs.items():
         if param in model_init_params:
             valid_params[param] = value
-        else:
-            # Mantener la advertencia original si es útil
+        else:                
             print(f"Advertencia: El parámetro '{param}' no es válido para {model_name}. Se ignorará.")
+
         
         model = model_class(**valid_params)
     

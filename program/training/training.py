@@ -1,18 +1,20 @@
 # training.py
 import pandas as pd
 import os
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, r2_score, mean_squared_error, roc_auc_score
-from training.train import train_custom_models
-import training.scikitdb.serializer as serializer
-from data.datasetprocessing import determine_problem_type_from_dataset, basic_dfpreprocess
-from data.dataset import Dataset
-from training.evaluation import Evaluation
-from utils.logger import logger
-from data.visualizer import Visualizer
-from training.modeloptimization import recommend_best_model
+from sklearn.model_selection import train_test_split, cross_val_score, KFold, StratifiedKFold
+from sklearn.metrics import accuracy_score, r2_score, mean_squared_error, roc_auc_score, confusion_matrix, classification_report
+from program.training.train import train_custom_models
+import program.training.scikitdb.serializer as serializer
+from program.data.datasetprocessing import determine_problem_type, basic_dfpreprocess
+from program.data.dataset import Dataset
+from program.training.evaluation import Evaluation
+from program.utils.logger import logger
+from program.data.visualizer import Visualizer
+from program.training.modeloptimization import recommend_best_model
 import numpy as np
 import traceback
+import logging
+from program.utils.mqtt_handler import MQTTLogHandler
 
 class Training:
     """
@@ -32,27 +34,39 @@ class Training:
         self.crossvalidation = 80  # Porcentaje de datos para entrenamiento
         self.recommendations = False  # Si se deben hacer recomendaciones de modelos
         self.preprocessing = False  # Si se debe aplicar preprocesamiento a los datos
-        self.trained_models = []  # Lista para almacenar los modelos entrenados
+        self.trained_models = {}  # DE LISTA A DICCIONARIO: para almacenar los modelos entrenados
         self.poly_transform = None
         self.selected_features = None
         self.optimization_strategy = 'random'  # Default optimization strategy
         self.n_iter_random = 20  # Default iterations for RandomSearch
         self.n_trials_optuna = 30  # Default trials for Optuna
         self.preprocessor = None  # Added for the new predict method
+        self.best_model_details = None # To store info about the best saved model
+        self.params = {}
 
-    def determine_problem_type(self, dataset):
+    def set_training_parameters(self, target_column, algorithms, cross_validation_split, recommendations, params):
+        """Asigna los parámetros de entrenamiento a la instancia."""
+        self.target = target_column
+        self.algorithms = algorithms
+        self.cross_validation_split = cross_validation_split
+        self.recommendations = recommendations
+        self.params = params
+
+    def determine_problem_type(self, df, target_column=None):
         """
         Determina el tipo de problema basado en el dataset.
 
         Args:
-        dataset (Dataset): Objeto Dataset con los datos cargados.
+        df (DataFrame): Objeto DataFrame con los datos cargados.
+        target_column (str): Nombre de la columna objetivo.
         """
         try:
-            df = dataset.get_dataframe()
-            if self.target not in df.columns:
-                raise ValueError(f"La columna objetivo '{self.target}' no está presente en el dataset.")
+            if target_column is None:
+                if self.target not in df.columns:
+                    raise ValueError(f"La columna objetivo '{self.target}' no está presente en el dataset.")
+                target_column = self.target
             
-            self.problem_type = determine_problem_type_from_dataset(df, self.target)
+            self.problem_type = determine_problem_type(df, target_column)
             logger.info(f"Tipo de problema determinado: {self.problem_type}")
         except Exception as e:
             logger.error(f"Error al determinar el tipo de problema: {str(e)}")
@@ -77,222 +91,123 @@ class Training:
         
         logger.info(f"Tipo de problema seleccionado manualmente: {self.problem_type}")
 
-    def split_and_train(self, dataset, dataset_path):
+    def preprocess_data_for_training(self, X, y):
         """
-        Divide el dataset, entrena los modelos y evalúa su rendimiento.
-
-        Args:
-        dataset (Dataset): Objeto Dataset con los datos cargados.
-        dataset_path (str): Ruta del dataset.
-
-        Returns:
-        tuple: (X_test, y_test, trained_models, evaluation_results)
+        Toma X e y, los combina, aplica el preprocesamiento básico y los vuelve a separar.
         """
-        try:
-            # Cargar y preprocesar el dataset si es necesario
-            if self.dataset is None:
-                logger.error("No hay dataset cargado para procesar.")
-                return None, None, [], {}
-
-            df = self.dataset.get_dataframe()
-            if df is None or df.empty:
-                logger.error("El DataFrame obtenido del dataset está vacío o es None.")
-                return None, None, [], {}
-
-            logger.info(f"DataFrame original para preprocesar (primeras filas):\n{df.head()}")
-            logger.info(f"Columnas del DataFrame original: {df.columns.tolist()}")
-            logger.info(f"Target column para basic_dfpreprocess: {self.target}")
-
-            # Aplicar preprocesamiento básico
-            # Asegúrate de que 'target' sea el nombre correcto de la columna objetivo.
-            df_processed, preprocessor = basic_dfpreprocess(df, target_column=self.target)
+        logger.info("Iniciando preprocesamiento de datos para entrenamiento...")
+        
+        # Combinar X e y en un solo DataFrame para el preprocesador
+        # self.target ya contiene el nombre de la columna y
+        temp_df = pd.concat([X, y], axis=1)
+        
+        # Llamar a la función de preprocesamiento global
+        df_processed, preprocessor = basic_dfpreprocess(temp_df, target_column=self.target)
+        
+        # Guardar el preprocesador para uso futuro (ej. en predicciones)
+        self.preprocessor = preprocessor
+        
+        # Volver a separar X e y del dataframe procesado
+        if self.target not in df_processed.columns:
+            logger.error(f"La columna objetivo '{self.target}' se perdió durante el preprocesamiento.")
+            raise ValueError(f"Target column '{self.target}' not found in processed data.")
             
-            if df_processed is None:
-                logger.error("basic_dfpreprocess devolvió None. No se puede continuar.")
-                return None, None, [], {}
+        y_processed = df_processed[self.target]
+        X_processed = df_processed.drop(columns=[self.target])
+        
+        logger.info("Preprocesamiento de datos para entrenamiento completado.")
+        return X_processed, y_processed, X_processed.columns.tolist()
 
-            logger.info(f"DataFrame después de basic_dfpreprocess (primeras filas):\n{df_processed.head()}")
-            logger.info(f"Columnas después de basic_dfpreprocess: {df_processed.columns.tolist()}")
-
-
-            # Separar características (X) y objetivo (y) del DF procesado
-            if self.target not in df_processed.columns:
-                logger.error(f"La columna objetivo '{self.target}' no se encontró en el DataFrame procesado.")
-                # Intentar recuperarse si solo es un problema de capitalización o espacios
-                target_candidates = [col for col in df_processed.columns if col.lower().strip() == self.target.lower().strip()]
-                if target_candidates:
-                    self.target = target_candidates[0]
-                    logger.warning(f"Se encontró una columna similar: '{self.target}'. Usando esta como objetivo.")
-                else:
-                    logger.error(f"No se pudo encontrar una columna objetivo válida. Columnas disponibles: {df_processed.columns.tolist()}")
-                    return None, None, [], {}
-            
-            y = df_processed[self.target]
-            X = df_processed.drop(columns=[self.target])
-            
-            # Guardar las características utilizadas para el entrenamiento
-            self.features = X.columns.tolist()
-            logger.info(f"Características finales para entrenamiento (después de drop target): {self.features}")
-
-
-            # Dividir los datos en conjuntos de entrenamiento y prueba
-            # Convertir X e y a NumPy arrays antes de pasarlos a train_test_split
-            # ya que esto es lo que esperan muchos modelos de scikit-learn y evita problemas de índice.
-            X_np = X.values
-            y_np = y.values
-            
-            test_size_float = self.crossvalidation / 100.0
-            X_train_np, X_test_np, y_train_np, y_test_np = train_test_split(
-                X_np, y_np, test_size=test_size_float, random_state=42
-            )
-
-            # Convertir de nuevo a DataFrames de Pandas con los nombres de columna correctos
-            # Esto es crucial para que las funciones posteriores (como train_custom_models)
-            # puedan trabajar con nombres de columnas y para la interpretabilidad.
-            X_train_processed = pd.DataFrame(X_train_np, columns=self.features)
-            X_test_processed = pd.DataFrame(X_test_np, columns=self.features)
-            y_train_series = pd.Series(y_train_np, name=self.target)
-            y_test_series = pd.Series(y_test_np, name=self.target)
-
-            logger.info(f"Columnas de X_train_processed INMEDIATAMENTE después de split_and_train (antes de _train_models): {X_train_processed.columns.tolist()}")
-            logger.info(f"Primeras filas de X_train_processed:\n{X_train_processed.head()}")
-            logger.info(f"Columnas de X_test_processed INMEDIATAMENTE después de split_and_train: {X_test_processed.columns.tolist()}")
-
-
-            # Guardar los conjuntos de datos divididos (opcional, para depuración o análisis posterior)
-            # Esto debería ocurrir después de asegurar que df_processed y self.target son válidos
-            self.preprocessor = preprocessor
-            self.dataset_name = dataset_path
-            trained_models, evaluation_results = self._train_models(X_train_processed, y_train_series, X_test_processed, y_test_series, dataset_path, self.features, self.preprocessor)
-
-            return X_test_processed, y_test_series, trained_models, evaluation_results
-
-        except Exception as e:
-            logger.error(f"Error en split_and_train: {str(e)}")
-            logger.error(traceback.format_exc())
-            # Devolver valores por defecto en caso de error
-            return None, None, [], {}
-
-    def _train_models(self, X_train, y_train, X_test, y_test, dataset_path, feature_names, fitted_preprocessor):
+    def split_and_train(self, X, y, dataset_name):
         """
-        Entrena los modelos seleccionados por el usuario y los optimiza si se solicita.
-
-        Args:
-        X_train (DataFrame): Características de entrenamiento.
-        y_train (Series): Variable objetivo de entrenamiento.
-        X_test (DataFrame): Características de prueba.
-        y_test (Series): Variable objetivo de prueba.
-        dataset_path (str): Ruta del dataset.
-        feature_names (list): Nombres de las características.
-        fitted_preprocessor (object): El preprocesador ajustado en el X_train original (puede ser None).
-
-        Returns:
-        tuple: (trained_models, evaluation_results)
+        Preprocesa, divide los datos y entrena los modelos.
         """
-        trained_models = []
+        X_processed, y_series, feature_names = self.preprocess_data_for_training(X, y)
+        
+        test_split = 1 - (self.cross_validation_split / 100)
+        
+        if self.problem_type in ['Clasificación Binaria', 'Clasificación Multiclase']:
+            # Usar StratifiedShuffleSplit para mantener la proporción de clases
+            from sklearn.model_selection import StratifiedShuffleSplit
+            sss = StratifiedShuffleSplit(n_splits=1, test_size=test_split, random_state=42)
+            train_index, test_index = next(sss.split(X_processed, y_series))
+            X_train, X_test = X_processed.iloc[train_index], X_processed.iloc[test_index]
+            y_train, y_test = y_series.iloc[train_index], y_series.iloc[test_index]
+        else: # Regresión
+            X_train, X_test, y_train, y_test = train_test_split(X_processed, y_series, test_size=test_split, random_state=42)
+        
+        logger.info(f"Datos divididos. Entrenamiento: {len(X_train)} filas, Prueba: {len(X_test)} filas.")
+
+        trained_models_details, evaluation_results = self._train_models(
+            X_train, y_train, X_test, y_test, self.algorithms, feature_names, dataset_name
+        )
+        return trained_models_details, evaluation_results
+
+    def _train_models(self, X_train, y_train, X_test, y_test, algorithms, features, dataset_name):
+        """
+        Entrena una lista de modelos y devuelve los resultados.
+        """
+        trained_models_details = {}
         evaluation_results = {}
-        evaluation = Evaluation(self.problem_type, self.dataset_name)
-        visualizer = Visualizer()
-        visualizer.set_dataset_name(self.dataset_name)
+        evaluation = Evaluation(self.problem_type, dataset_name)
 
-        logger.info(f"Algoritmos a procesar en _train_models: {self.algorithms}")
-
-        for algorithm in self.algorithms:
+        for model_name in algorithms:
             try:
-                algorithm_name = algorithm if isinstance(algorithm, str) else algorithm.get('name')
-                algorithm_params = {} if isinstance(algorithm, str) else algorithm.get('params', {})
-
-                if not self._is_appropriate_model(algorithm_name, self.problem_type):
-                    logger.warning(f"{algorithm_name} no es apropiado para problemas de {self.problem_type}. Saltando...")
-                    continue
+                original_algorithm_name = model_name if isinstance(model_name, str) else model_name.get('name')
                 
-                base_model_instance, optimized_model_instance, selected_features_for_optimized = train_custom_models(
-                    X_train, y_train, {'name': algorithm_name, 'params': algorithm_params}, 
-                    self.problem_type, dataset_path, feature_names,
-                    True, 
-                    optimization_strategy=self.optimization_strategy,
-                    n_iter_random=self.n_iter_random,
-                    n_trials_optuna=self.n_trials_optuna
+                # Corregir el nombre del modelo si no es apropiado
+                corrected_algorithm_name = self._find_and_correct_model_name(original_algorithm_name)
+
+                if not corrected_algorithm_name:
+                    continue # Saltar al siguiente modelo
+
+                logger.info(f"Entrenando modelo: {corrected_algorithm_name}")
+                
+                # Usar el nombre original para obtener los params, pero el corregido para entrenar
+                model, train_score, test_score, metrics = evaluation.train_and_evaluate_model(
+                    corrected_algorithm_name, X_train, y_train, X_test, y_test, features, self.params.get(original_algorithm_name, {})
                 )
                 
-                current_model_eval_results = {}
-                final_model_dict_to_store = None
-
-                if base_model_instance is not None:
-                    base_model_dict = {'model': base_model_instance, 'features': feature_names, 'name': f"{algorithm_name}_Base"}
-                    base_results = self._evaluate_and_visualize_model(
-                        model_to_eval=base_model_instance,
-                        X_test_data=X_test,
-                        y_test_data=y_test,
-                        features_used_for_this_model=feature_names,
-                        evaluation_obj=evaluation,
-                        visualizer_obj=visualizer,
-                        dataset_name_str=self.dataset_name,
-                        model_unique_name=f"{algorithm_name}_Base",
-                        X_train_original_for_stats=X_train,
-                        fitted_preprocessor=fitted_preprocessor
-                    )
-                    current_model_eval_results['base'] = base_results
-                    final_model_dict_to_store = base_model_dict
-
-                if optimized_model_instance is not None and optimized_model_instance != base_model_instance:
-                    optimized_model_dict = {'model': optimized_model_instance, 'features': selected_features_for_optimized, 'name': f"{algorithm_name}_Optimized"}
-                    optimized_results = self._evaluate_and_visualize_model(
-                        model_to_eval=optimized_model_instance,
-                        X_test_data=X_test,
-                        y_test_data=y_test,
-                        features_used_for_this_model=selected_features_for_optimized,
-                        evaluation_obj=evaluation,
-                        visualizer_obj=visualizer,
-                        dataset_name_str=self.dataset_name,
-                        model_unique_name=f"{algorithm_name}_Optimized",
-                        X_train_original_for_stats=X_train,
-                        fitted_preprocessor=fitted_preprocessor
-                    )
-                    current_model_eval_results['optimized'] = optimized_results
-
-                if base_results and optimized_results:
-                    is_classification = 'classification' in self.problem_type.lower() or 'clasificación' in self.problem_type.lower()
-                    primary_metric = 'accuracy' if is_classification else 'r2_score'
-                    default_value_if_missing = -float('inf')
-                    base_score = base_results.get(primary_metric, default_value_if_missing)
-                    optimized_score = optimized_results.get(primary_metric, default_value_if_missing)
-                    
-                    logger.info(f"Comparing models for {algorithm_name}: Base ({primary_metric}={base_score:.4f}) vs Optimized ({primary_metric}={optimized_score:.4f})")
-                    if optimized_score > base_score:
-                        logger.info(f"Optimized model is better for {algorithm_name}. Selecting optimized.")
-                        final_model_dict_to_store = optimized_model_dict
-                        evaluation_results[algorithm_name] = {'selected_optimized': optimized_results, 'base_raw': base_results} 
-                    else:
-                        logger.info(f"Base model is better or equal for {algorithm_name}. Selecting base.")
-                        evaluation_results[algorithm_name] = {'selected_base': base_results, 'optimized_raw': optimized_results}
-                elif optimized_results:
-                    logger.info(f"Only optimized model has results for {algorithm_name}. Selecting optimized.")
-                    final_model_dict_to_store = optimized_model_dict
-                    evaluation_results[algorithm_name] = {'selected_optimized': optimized_results}
-                
-                if final_model_dict_to_store:
-                    self.trained_models.append(final_model_dict_to_store)
-
-                if algorithm_name not in evaluation_results and current_model_eval_results:
-                    if 'optimized' in current_model_eval_results and 'base' in current_model_eval_results:
-                         evaluation_results[algorithm_name] = {'selected_base_default': current_model_eval_results['base'], 'optimized_raw': current_model_eval_results['optimized']}
-                    elif 'base' in current_model_eval_results:
-                        evaluation_results[algorithm_name] = {'selected_base_default': current_model_eval_results['base']}
-                    elif 'optimized' in current_model_eval_results:
-                        evaluation_results[algorithm_name] = {'selected_optimized_default': current_model_eval_results['optimized']}
-                elif not current_model_eval_results:
-                    logger.warning(f"No evaluation results generated for {algorithm_name}. Omitiendo de self.trained_models y evaluation_results.")
-
+                trained_models_details[corrected_algorithm_name] = model
+                evaluation_results[corrected_algorithm_name] = {
+                    'Train Score': train_score,
+                    'Test Score': test_score,
+                    'Metrics': metrics
+                }
             except Exception as e:
-                logger.error(f"Error al procesar el algoritmo {algorithm_name} en _train_models: {str(e)}")
-                logger.error(traceback.format_exc())
+                logger.error(f"Fallo al entrenar el modelo {original_algorithm_name}: {e}", exc_info=True)
+        
+        return trained_models_details, evaluation_results
 
-        if self.recommendations:
-            self._find_and_evaluate_best_model(X_train, y_train, X_test, y_test, feature_names, 
-                                            self.dataset_name, self.trained_models, evaluation, visualizer, fitted_preprocessor)
+    def _find_and_correct_model_name(self, model_name):
+        """
+        Verifica si el modelo es apropiado para el problema y, si no, intenta encontrar su homólogo.
+        """
+        if self._is_appropriate_model(model_name, self.problem_type):
+            return model_name  # El modelo es correcto
 
-        return self.trained_models, evaluation_results
+        logger.warning(f"El modelo '{model_name}' no es apropiado para un problema de '{self.problem_type}'.")
+        
+        counterpart = None
+        problem_type_lower = self.problem_type.lower()
+
+        # Intentar encontrar el homólogo
+        if "Classifier" in model_name and ('regresion' in problem_type_lower or 'regresión' in problem_type_lower):
+            counterpart = model_name.replace("Classifier", "Regressor")
+        elif "Regressor" in model_name and ('clasificacion' in problem_type_lower or 'clasificación' in problem_type_lower):
+            counterpart = model_name.replace("Regressor", "Classifier")
+        elif model_name == 'SVC' and ('regresion' in problem_type_lower or 'regresión' in problem_type_lower):
+            counterpart = 'SVR'
+        elif model_name == 'SVR' and ('clasificacion' in problem_type_lower or 'clasificación' in problem_type_lower):
+            counterpart = 'SVC'
+        
+        # Verificar si el homólogo existe y es apropiado
+        if counterpart and self._is_appropriate_model(counterpart, self.problem_type):
+            logger.warning(f"Se cambiará automáticamente a su homólogo: '{counterpart}'.")
+            return counterpart
+        else:
+            logger.error(f"No se pudo encontrar un homólogo apropiado para '{model_name}'. Se saltará este modelo.")
+            return None
 
     def _is_appropriate_model(self, model_name, problem_type):
         """
@@ -357,7 +272,7 @@ class Training:
                 
                 problem_type_lower = evaluation_obj.problem_type.lower()
                 if problem_type_lower.startswith('regres'):
-                    visualizer_obj.plot_residuals(y_test_data, y_pred, X_test_subset.columns.tolist())
+                    visualizer_obj.plot_residuals(y_test_data, y_pred)
                 elif problem_type_lower.startswith('clasificacion') or problem_type_lower.startswith('clasificación'):
                     if "Error" not in current_metrics:
                         visualizer_obj.plot_confusion_matrix(y_test_data, y_pred, class_names=model_to_eval.classes_ if hasattr(model_to_eval, 'classes_') else np.unique(y_test_data))
@@ -383,7 +298,7 @@ class Training:
                     primary_metric_key = 'accuracy' if is_classification_prob else 'r2_score'
                     metric_for_filename = current_metrics.get(primary_metric_key, 0.0)
 
-                    serializer.to_pickle(
+                    saved_model_filename = serializer.to_pickle(
                         model=model_to_eval,
                         model_name=model_unique_name,
                         dataset_path=dataset_name_str, 
@@ -392,7 +307,17 @@ class Training:
                         actual_feature_names=features_used_for_this_model,
                         preprocessor=fitted_preprocessor
                     )
-                    logger.info(f"Modelo {model_unique_name} guardado exitosamente.")
+                    logger.info(f"Modelo {model_unique_name} guardado exitosamente como {saved_model_filename}.")
+
+                    if model_unique_name.startswith("GlobalBest_") and saved_model_filename:
+                        self.best_model_details = {
+                            "dataset_name": dataset_name_str,
+                            "model_filename": saved_model_filename,
+                            "model_unique_name": model_unique_name,
+                            "metric_value": metric_for_filename,
+                            "metric_name": primary_metric_key
+                        }
+                        logger.info(f"Detalles del mejor modelo global guardados: {self.best_model_details}")
 
         except Exception as e:
             logger.error(f"Error en _evaluate_and_visualize_model para {model_unique_name}: {str(e)}")
@@ -403,7 +328,7 @@ class Training:
 
     def _evaluate_model(self, model, X_test_subset, y_test, evaluation):
         """
-        Evalúa un modelo utilizando la clase Evaluation. 
+        Evalúa un modelo utilizando la clase Evaluation.
         X_test_subset YA DEBE TENER las características correctas para el modelo.
         """
         results = {}
@@ -447,50 +372,40 @@ class Training:
 
         return results
 
-    def _find_and_evaluate_best_model(self, X_train, y_train, X_test, y_test, feature_names, 
-                                      dataset_name, current_trained_model_dicts, 
-                                      evaluation, visualizer, fitted_preprocessor):
-        """
-        Encuentra, evalúa y visualiza el mejor modelo para el problema actual.
-        current_trained_model_dicts es una lista de diccionarios: {'model': model_instance, 'features': feature_list, 'name': str_name}
-        fitted_preprocessor es el preprocesador ajustado en el X_train original.
-        """
-        logger.info("\nIniciando recomendación del mejor modelo...")
+    def _find_and_evaluate_best_model(self, X_train, y_train, X_test, y_test, problem_type, current_trained_models_list, feature_names):
+        print("Seleccionando las mejores características (llamada a select_best_features)... ")
         
-        model_instances_for_recommendation = [d['model'] for d in current_trained_model_dicts]
+        best_model, best_selected_features, _, _, _, _ = recommend_best_model(
+            X_train, y_train, X_test, y_test, problem_type, current_trained_models_list, feature_names
+        )
+        
+        if best_model is None:
+            print("No se pudo recomendar un mejor modelo global.")
+            return None
 
-        try:
-            recommended_model_instance, recommended_features_list, \
-            X_train_recommended_df, X_test_recommended_df, \
-            _poly_transform_placeholder, _poly_feature_names_placeholder = self._recommend_best_model(
-                X_train, y_train, X_test, y_test, 
-                self.problem_type, 
-                feature_names,    
-                model_instances_for_recommendation 
-            )
+        # Si se encuentra un modelo, se evalúa y guarda, pero la lógica principal está en recommend_best_model
+        # Esta función principalmente orquesta y devuelve los detalles para ser añadidos
+        
+        # Crear un nombre único para el modelo global
+        model_name = f"GlobalBest_{type(best_model).__name__}"
+        
+        # Evaluar el modelo
+        evaluation = Evaluation(self.problem_type, self.dataset_name)
+        metrics = evaluation.evaluate_model(best_model, X_test, y_test, best_selected_features)
 
-            if recommended_model_instance is not None and recommended_features_list and not X_test_recommended_df.empty:
-                logger.info(f"Mejor modelo recomendado globalmente: {recommended_model_instance.__class__.__name__}")
-                logger.info(f"Características usadas por el mejor modelo recomendado: {recommended_features_list}")
-                
-                unique_recommended_name = f"GlobalBest_{recommended_model_instance.__class__.__name__}"
-                self._evaluate_and_visualize_model(
-                    model_to_eval=recommended_model_instance,
-                    X_test_data=X_test_recommended_df, 
-                    y_test_data=y_test, 
-                    features_used_for_this_model=recommended_features_list, 
-                    evaluation_obj=evaluation, 
-                    visualizer_obj=visualizer, 
-                    dataset_name_str=dataset_name,
-                    model_unique_name=unique_recommended_name,
-                    X_train_original_for_stats=X_train,
-                    fitted_preprocessor=fitted_preprocessor
-                )
-            else:
-                logger.warning("No se pudo obtener un modelo recomendado globalmente o faltan datos/características.")
-        except Exception as e:
-            logger.error(f"Error durante la búsqueda del mejor modelo global: {str(e)}")
-            logger.error(traceback.format_exc())
+        # Guardar el modelo
+        model_path = serializer.save_model(best_model, self.dataset_name, model_name, metrics, feature_names, self.preprocessor)
+        
+        print(f"Mejor modelo global ({model_name}) guardado en {model_path}.")
+
+        # Devolver los detalles del modelo para que se puedan añadir a la lista general
+        return {
+            'model': best_model,
+            'name': model_name,
+            'metrics': metrics,
+            'features': best_selected_features,
+            'path': model_path
+        }
 
     def _print_evaluation_results(self, results):
         """
@@ -522,11 +437,12 @@ class Training:
         )
         return best_model, best_selected_features, X_train_selected, X_test_selected, poly, poly_feature_names
 
-    def predict(self, model_name_selected, dataset_group_name):
+    def predict(self, model_name_selected: str, dataset_group_name: str, features_input: dict):
         """
-        Realiza una predicción usando un modelo entrenado.
-        model_name_selected es el nombre del archivo .pkl (e.g., GlobalBest_LogisticRegression.pkl)
-        dataset_group_name es el nombre del directorio del dataset (e.g., breast_cancer)
+        Realiza una predicción usando un modelo entrenado y un conjunto de características de entrada.
+        model_name_selected: El nombre del archivo .pkl del modelo (ej. GlobalBest_LogisticRegression.pkl)
+        dataset_group_name: El nombre del grupo del dataset (ej. breast_cancer)
+        features_input: Un diccionario con los nombres de las características y sus valores.
         """
         try:
             # Cargar el diccionario del modelo usando la función de carga de serializer que devuelve el dict
@@ -538,71 +454,29 @@ class Training:
 
             model = model_data_dict['model']
             model_features = model_data_dict.get('feature_names') # Estas son las features que el MODELO espera
-            feature_mins = model_data_dict.get('feature_mins')
-            feature_maxs = model_data_dict.get('feature_maxs')
             loaded_preprocessor = model_data_dict.get('preprocessor')
 
             if not model_features:
                 logger.error(f"No se encontraron nombres de características para el modelo {model_name_selected}.")
-                # Tratar de obtener de model.feature_names_in_ si existe como fallback
                 if hasattr(model, 'feature_names_in_'):
                     model_features = list(model.feature_names_in_)
                     logger.info(f"Fallback: Usando feature_names_in_ del modelo: {model_features}")
-                else:
+                if not model_features:
                     logger.error("No se pueden determinar las características esperadas por el modelo.")
                     return None
-            
+
             logger.info(f"\nPredicción con: {dataset_group_name}/{model_name_selected}")
             logger.info(f"Características esperadas por el modelo (en orden): {model_features}")
+            logger.info(f"Características recibidas para la predicción: {features_input}")
 
-            features_predict_input = {}
-            for feature in model_features:
-                prompt_text = f"Ingrese el valor para '{feature}'"
-                min_val_str = ""
-                max_val_str = ""
-                # Mostrar min/max si están disponibles para esta característica específica
-                if feature_mins and feature in feature_mins and feature_maxs and feature in feature_maxs:
-                    min_val = feature_mins[feature]
-                    max_val = feature_maxs[feature]
-                    # Formatear solo si no son None
-                    min_val_str = f"{min_val:.2f}" if min_val is not None else "N/A"
-                    max_val_str = f"{max_val:.2f}" if max_val is not None else "N/A"
-                    prompt_text += f" (min: {min_val_str}, max: {max_val_str})"
-                
-                prompt_text += ": "
-                
-                while True:
-                    try:
-                        value_str = input(prompt_text)
-                        value_float = float(value_str)
-                        features_predict_input[feature] = value_float
-                        break
-                    except ValueError:
-                        logger.error("Entrada no válida. Por favor, ingrese un número.")
-            
             # Preparar las características usando el preprocesador cargado
-            # _prepare_features ahora necesitará el preprocesador y las features que el modelo espera
-            features_df = self._prepare_features(features_predict_input, loaded_preprocessor, model_features)
+            features_df = self._prepare_features(features_input, loaded_preprocessor, model_features)
             
             if features_df is None:
                 logger.error("No se pudieron preparar las características para la predicción.")
                 return None
 
             # Asegurarse de que las columnas estén en el orden correcto que el modelo espera
-            # Esto es crucial si el preprocesador cambia el orden o el número de columnas
-            # Si loaded_preprocessor es None, model_features son las columnas originales.
-            # Si loaded_preprocessor no es None, las columnas de features_df son las transformadas.
-            # El modelo fue entrenado con las columnas transformadas (si hubo preprocesador).
-            # Entonces, model_features debería ser las features *después* de la transformación si preprocessor no es None.
-            # Esto necesita ser consistente. El `model_features` guardado DEBE ser el que el modelo serializado espera.
-
-            # Si hay un preprocesador, las `model_features` guardadas deberían ser las post-transformación.
-            # Si no hay preprocesador, `model_features` son las originales.
-            
-            # El `serializer.to_pickle` guarda `actual_feature_names` que son las que el modelo usó.
-            # Si hubo preprocesador, estas `actual_feature_names` son las transformadas.
-            
-            # Reordenar `features_df` para que coincida con `model_features` (que son las que el modelo espera)
             try:
                 features_df_ordered = features_df[model_features]
             except KeyError as e:
@@ -611,14 +485,27 @@ class Training:
                 logger.error(f"Columnas esperadas por el modelo: {model_features}")
                 return None
 
+            prediction = model.predict(features_df_ordered)
+            
+            # Obtener probabilidad si está disponible
+            prediction_proba = None
+            if hasattr(model, "predict_proba"):
+                try:
+                    prediction_proba = model.predict_proba(features_df_ordered)
+                except Exception as e:
+                    logger.warning(f"No se pudo obtener la probabilidad de la predicción: {e}")
 
-            prediction = model.predict(features_df_ordered) # Usar .values podría no ser necesario si es DF
             class_label = self._get_class_label(prediction) # Asume que self.problem_type está seteado
             
             # Para _print_prediction, pasamos las features originales ingresadas por el usuario
-            self._print_prediction(features_predict_input, prediction, class_label, model_name_selected)
-            return prediction
-
+            self._print_prediction(features_input, prediction, class_label, model_name_selected)
+            
+            # Devolver un diccionario con más detalles
+            return {
+                "prediction": prediction.tolist()[0] if isinstance(prediction, np.ndarray) else prediction,
+                "class_label": class_label,
+                "prediction_probability": prediction_proba.tolist()[0] if prediction_proba is not None else None
+            }
         except FileNotFoundError:
             logger.error(f"No se pudo encontrar el archivo del modelo: {dataset_group_name}/{model_name_selected}")
             return None
@@ -709,13 +596,160 @@ class Training:
         return prediction[0]
 
     def _print_prediction(self, featuresPredict, prediction, class_label, model_name):
+        print(f"\n--- Prediction for {model_name} ---")
+        print(f"Features: {featuresPredict}")
+        print(f"Prediction: {prediction}")
+        if class_label:
+            print(f"Class Label: {class_label}")
+
+    def start_training(self):
         """
-        Imprime el resultado de una predicción.
+        Función principal que orquesta todo el proceso de entrenamiento.
         """
-        logger.info(f"\nPredicción realizada con el modelo: {model_name}")
-        logger.info(f"La {self.target} predicha para las características proporcionadas es {prediction[0]:.2f} ({class_label})")
-        logger.info("\nCaracterísticas utilizadas para la predicción:")
-        for feature, value in featuresPredict.items():
-            logger.info(f"  {feature}: {value:.4f}")
-        logger.info("\nNota: Si algunas características esperadas por el modelo no estaban presentes,")
-        logger.info("se utilizaron valores predeterminados (0 o la media del conjunto de entrenamiento).")
+        # CORRECCIÓN: Inicializar feature_names aquí para que esté disponible en todo el método.
+        feature_names = None
+        log_handler = MQTTLogHandler()
+        logger.addHandler(log_handler)
+        
+        try:
+            logger.info("Iniciando el proceso de entrenamiento...")
+            if self.dataset is None or self.dataset.df is None:
+                logger.error("El dataset no está cargado. Abortando el entrenamiento.")
+                return
+
+            df = self.dataset.df
+            dataset_name = self.dataset_name or "default_dataset"
+            
+            if self.target is None:
+                logger.error("La columna objetivo (target) no ha sido especificada. Abortando.")
+                return
+            
+            # Asegurarse de que 'algorithms' es una lista no vacía.
+            if not self.algorithms:
+                logger.error("No se han especificado algoritmos para el entrenamiento. Abortando.")
+                return
+
+            try:
+                if self.target not in df.columns:
+                    prefixed_target = f"num__{self.target}"
+                    if prefixed_target in df.columns:
+                        self.target = prefixed_target
+                        logger.info(f"Target actualizado a su versión procesada: {self.target}")
+                    else:
+                        logger.error(f"Columnas disponibles: {df.columns.tolist()}")
+                        raise ValueError(f"La columna objetivo '{self.target}' no se encontró.")
+
+                # Determina el tipo de problema basado en la columna objetivo del dataframe.
+                self.problem_type = determine_problem_type(df[self.target])
+                logger.info(f"Tipo de problema detectado: {self.problem_type}")
+
+                y = df[self.target]
+                X = df.drop(columns=[self.target])
+                
+                self.trained_models, evaluation_results = self.split_and_train(X, y, dataset_name)
+                
+                if not self.trained_models:
+                    logger.warning("El entrenamiento no produjo ningún modelo.")
+                    return None
+                
+                # Encontrar el mejor modelo entre los entrenados
+                best_model_name, best_score_metrics, best_model_params = self.find_best_model(evaluation_results)
+
+                # Obtenemos el objeto del modelo usando el nombre que encontramos.
+                best_model = self.trained_models.get(best_model_name)
+                
+                # Lógica para guardar el mejor modelo
+                if best_model and best_model_name:
+                    final_score_value = best_score_metrics.get('Test Score', 0.0) if isinstance(best_score_metrics, dict) else best_score_metrics
+                    logger.info(f"Mejor modelo seleccionado: {best_model_name} con score de {final_score_value:.4f}")
+                    
+                    try:
+                        metrics_for_saving = evaluation_results.get(best_model_name, {})
+
+                        # Ahora 'feature_names' está disponible aquí
+                        model_path = serializer.save_model(
+                            model=best_model,
+                            dataset_name=self.dataset_name,
+                            model_name=best_model_name,
+                            metrics=metrics_for_saving,
+                            feature_names=feature_names,
+                            preprocessor=self.preprocessor,
+                            model_params=best_model_params,
+                            target_encoder=self.target_encoder if hasattr(self, 'target_encoder') else None
+                        )
+                        self.best_model_details = model_path
+                        logger.info(f"Mejor modelo '{best_model_name}' guardado en: {model_path}")
+                    except Exception as e:
+                        logger.error(f"Error al guardar el mejor modelo '{best_model_name}': {e}", exc_info=True)
+                else:
+                    logger.warning("No se encontró un mejor modelo para guardar.")
+                    self.best_model_details = None
+
+                # FINALIZACIÓN
+                logger.info("Proceso de entrenamiento finalizado.")
+                return self.best_model_details
+
+            except ValueError as ve:
+                logger.error(f"Error de valor durante el entrenamiento: {ve}", exc_info=True)
+                # No relanzar para permitir que el bloque finally se ejecute limpiamente.
+            except Exception as e:
+                logger.error(f"Error general durante el proceso de entrenamiento: {e}", exc_info=True)
+                # No relanzar, el error ya ha sido logueado.
+        
+        finally:
+            logger.info("Iniciando fase final de guardado de modelo...")
+            
+            # Encontrar el mejor modelo entre los entrenados
+            if not evaluation_results:
+                logger.error("No hay resultados de evaluación para determinar el mejor modelo.")
+                self.best_model_details = None
+            else:
+                best_model_name, best_score_metrics, best_model_params = self.find_best_model(evaluation_results)
+
+                # Obtenemos el objeto del modelo usando el nombre que encontramos.
+                best_model = self.trained_models.get(best_model_name)
+                
+                # Lógica para guardar el mejor modelo
+                if best_model and best_model_name:
+                    final_score_value = best_score_metrics.get('Test Score', 0.0) if isinstance(best_score_metrics, dict) else best_score_metrics
+                    logger.info(f"Mejor modelo seleccionado: {best_model_name} con score de {final_score_value:.4f}")
+                    
+                    try:
+                        metrics_for_saving = evaluation_results.get(best_model_name, {})
+
+                        # Ahora 'feature_names' está disponible aquí
+                        model_path = serializer.save_model(
+                            model=best_model,
+                            dataset_name=self.dataset_name,
+                            model_name=best_model_name,
+                            metrics=metrics_for_saving,
+                            feature_names=feature_names,
+                            preprocessor=self.preprocessor,
+                            model_params=best_model_params,
+                            target_encoder=self.target_encoder if hasattr(self, 'target_encoder') else None
+                        )
+                        self.best_model_details = model_path
+                        logger.info(f"Mejor modelo '{best_model_name}' guardado en: {model_path}")
+                    except Exception as e:
+                        logger.error(f"Error al guardar el mejor modelo '{best_model_name}': {e}", exc_info=True)
+                else:
+                    logger.warning("No se encontró un mejor modelo para guardar.")
+                    self.best_model_details = None
+
+            logger.info("Proceso de entrenamiento finalizado.")
+            logger.removeHandler(log_handler)
+
+    def find_best_model(self, evaluation_results):
+        """
+        Encuentra el mejor modelo basado en los resultados de la evaluación.
+        """
+        best_model_name = None
+        best_score = float('-inf')
+
+        for model_name, results in evaluation_results.items():
+            score = results.get('Test Score', 0)
+            if score > best_score:
+                best_score = score
+                best_model_name = model_name
+
+        return best_model_name, evaluation_results[best_model_name], best_score

@@ -1,0 +1,227 @@
+{% extends "layout.html" %}
+
+{% block title %}Gestión de Datasets - Tokiiai ML{% endblock %}
+
+{% block content %}
+<section class="datasets-management">
+    <h2>Gestión de Datasets</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flash-messages">
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <div class="active-dataset-info">
+        <h3>Dataset Activo</h3>
+        {% if active_dataset_name %}
+            <p>Actualmente trabajando con: <strong>{{ active_dataset_name }}</strong></p>
+            {% if active_dataset_shape %}
+                <p>Dimensiones: {{ active_dataset_shape[0] }} filas, {{ active_dataset_shape[1] }} columnas.</p>
+            {% endif %}
+            {% if active_dataset_head %}
+                <h4>Primeras 5 filas:</h4>
+                <div class="table-responsive">
+                    {{ active_dataset_head|safe }}
+                </div>            
+            {% endif %}
+
+            {# NUEVA SECCIÓN INSERTADA AQUÍ #}
+            <hr> {# Un separador visual #}
+
+            {# Sección para Modelos Entrenados #}
+            <h4>Modelos Entrenados para "{{ active_dataset_name }}"</h4>
+            {% if trained_models %}
+                <ul class="list-group mb-3">
+                    {% for model_info in trained_models %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ model_info.filename }}
+                            {# Enlace actualizado para apuntar a model_details_page #}
+                            <div class="model-actions">
+                                <a href="{{ url_for('model_details_page', dataset_name=active_dataset_name, model_name=model_info.filename) }}" class="btn btn-sm btn-outline-primary">Ver Detalles / Predecir</a>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>No hay modelos entrenados para este dataset todavía.</p>
+            {% endif %}
+
+            {# Botón para Iniciar Nuevo Entrenamiento #}
+            <div class="mt-3 mb-3">
+                <a href="{{ url_for('training_configure_page') }}" class="btn btn-success">
+                    <i class="fas fa-cogs"></i> Iniciar Nuevo Entrenamiento para "{{ active_dataset_name }}"
+                </a>
+            </div>
+            {# FIN DE LA NUEVA SECCIÓN #}
+            
+        {% else %}
+            <p>No hay ningún dataset activo. Por favor, sube uno nuevo o selecciona uno de la lista.</p>
+        {% endif %}
+    </div>
+
+    <hr>
+
+    <div class="upload-dataset">
+        <h3>Subir Nuevo Dataset</h3>
+        <form action="{{ url_for('upload_file') }}" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="dataset_file">Selecciona un archivo CSV:</label>
+                <input type="file" name="file" id="dataset_file" accept=".csv" required>
+            </div>
+            <div class="form-group">
+                <label for="dataset_name">Nombre del Dataset (opcional, se derivará del nombre del archivo si se deja vacío):</label>
+                <input type="text" name="dataset_name" id="dataset_name" placeholder="Ej: titanic_entrenamiento">
+            </div>
+            <div class="form-group">
+                <label for="target_column_upload">Nombre de la Columna Objetivo (opcional, se intentará autodetectar):</label>
+                <input type="text" name="target_column" id="target_column_upload" placeholder="Ej: Survived">
+            </div>
+            <button type="submit" class="btn btn-primary">Subir y Procesar Dataset</button>
+        </form>
+    </div>
+
+    <hr>
+
+    <div class="existing-datasets">
+        <h3>Datasets Existentes</h3>
+        {% if existing_datasets %}
+            <ul class="dataset-list">
+                {% for ds_name, ds_info in existing_datasets.items() %}
+                    <li class="dataset-item">
+                        <h4>{{ ds_name }}</h4>
+                        <p>Archivos: {{ ds_info.files|join(', ') }}</p>
+                        <form action="{{ url_for('set_active_dataset') }}" method="POST" style="display: inline;">
+                            <input type="hidden" name="dataset_name" value="{{ ds_name }}">
+                            <button type="submit" class="btn btn-sm btn-info">Cargar y Establecer como Activo</button>
+                        </form>
+                        <form action="{{ url_for('delete_dataset_folder') }}" method="POST" style="display: inline; margin-left: 10px;" onsubmit="return confirm('¿Estás seguro de que quieres eliminar todos los archivos de este dataset? Esta acción no se puede deshacer.');">
+                            <input type="hidden" name="dataset_name" value="{{ ds_name }}">
+                            <button type="submit" class="btn btn-sm btn-danger">Eliminar Dataset</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No se encontraron datasets en <code>program/almacen/datasets/</code>.</p>
+        {% endif %}
+    </div>
+
+</section>
+
+<style>
+.active-dataset-info, .upload-dataset, .existing-datasets {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.active-dataset-info h3, .upload-dataset h3, .existing-datasets h3 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+.form-group {
+    margin-bottom: 15px;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+.form-group input[type="file"],
+.form-group input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+.dataset-list {
+    list-style: none;
+    padding: 0;
+}
+.dataset-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+.dataset-item h4 {
+    margin-top: 0;
+    margin-bottom: 5px;
+    color: #007bff;
+}
+.dataset-item p {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 10px;
+}
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 0.875rem;
+}
+.btn-info {
+    color: #fff;
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+.btn-info:hover {
+    background-color: #138496;
+}
+.btn-danger {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+.btn-danger:hover {
+    background-color: #c82333;
+}
+.table-responsive {
+    overflow-x: auto;
+    margin-top: 10px;
+}
+.table-responsive table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.table-responsive th, .table-responsive td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+.table-responsive th {
+    background-color: #f2f2f2;
+}
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+.alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
+}
+</style>
+
+{% endblock %} 

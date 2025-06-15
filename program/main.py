@@ -86,7 +86,7 @@ def load_dataset():
             print("\nNo hay datasets almacenados actualmente.")
     except Exception as e:
         logger.warning(f"No se pudieron listar los datasets almacenados para la vista previa: {e}")
-
+    
     # Preguntar si se quiere usar un dataset almacenado o cargar uno nuevo
     choice = input("\n¿Desea usar un dataset almacenado (1 o Enter) o cargar uno nuevo (2)? ").strip()
     
@@ -116,7 +116,7 @@ def load_dataset():
             print(f"Cargando la versión procesada del dataset: {path_to_actually_load}")
         else:
             print(f"Cargando la versión original del dataset: {path_to_actually_load}")
-
+        
         dataset_msg = {
             "command": "dataset",
             "data": {
@@ -304,7 +304,7 @@ def train_model():
         target_choice_idx = int(target_choice_idx) - 1
         if 0 <= target_choice_idx < len(available_columns):
             target_column_for_training = available_columns[target_choice_idx]
-            global_data.training.target = target_column_for_training # Actualizar el objeto training global también
+            global_data.training.target = target_column_for_training
             print(f"Variable objetivo seleccionada: {target_column_for_training}")
         else:
             print("Selección de característica objetivo no válida.")
@@ -317,7 +317,6 @@ def train_model():
     print("\nSeleccione el método de selección de características:")
     print("1 - Usar todas las características (excluyendo el target)")
     print("2 - Seleccionar características manualmente")
-    # Podríamos añadir "3 - Selección automática de características" si estuviera implementado
     feature_selection_choice = input("Ingrese su elección (1 o Enter para todas): ").strip()
     
     selected_features_for_training = []
@@ -380,7 +379,7 @@ def train_model():
         # Permitir continuar, pero el filtrado de algoritmos podría no ser preciso
         problem_type_for_algo_filtering = None
 
-
+    
     # Selección de algoritmos
     popular_classification_algos = [
         'RandomForestClassifier', 'LogisticRegression', 'SVC', 
@@ -438,10 +437,10 @@ def train_model():
                 filtered_objects = [algo for algo in all_algo_objects_for_type_check if hasattr(algo, "_estimator_type") and algo._estimator_type == "regressor"]
             else:
                 filtered_objects = all_algo_objects_for_type_check
-        else:
+    else:
             filtered_objects = all_algo_objects_for_type_check
         
-        algo_names_to_display = sorted([type(algo).__name__ for algo in filtered_objects])
+    algo_names_to_display = sorted([type(algo).__name__ for algo in filtered_objects])
 
     if not algo_names_to_display:
         print("No se encontraron algoritmos para mostrar. Verifique la configuración del tipo de problema.")
@@ -539,7 +538,7 @@ def train_model():
     train_msg = {
         "command": "train",
         # Usar "data" como clave para ser consistente con on_message en mqtt.py
-        "data": { 
+        "data": {
             "dataset": selected_dataset_name_for_training,
             "target": target_column_for_training, # ¡AQUÍ ESTÁ LA CLAVE!
             "features": selected_features_for_training, # Lista de features a usar
@@ -577,122 +576,152 @@ def train_model():
         # Aquí iría la lógica para publicar con un cliente MQTT real si no es simulación
         # mqtt_client.publish(Config.get_mqtt_config()["topic"], json.dumps(train_msg))
         print("Modo no simulación: Publicación MQTT no implementada en este punto del main.py. Enviando a on_message simulado.")
-        mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(train_msg)))
+    mqtt.on_message(client=None, userdata=None, msg=FakeMsg(json.dumps(train_msg)))
 
 
 def make_prediction():
     """
-    Permite al usuario seleccionar un modelo entrenado y realizar predicciones.
+    Realiza una predicción utilizando un modelo entrenado.
     """
     print("\n--- Realizar Predicción ---")
 
-    # Step 1: List dataset groups
-    dataset_groups = serializer.list_model_dataset_groups()
-    if not dataset_groups:
-        print("No hay grupos de modelos (datasets) con modelos entrenados disponibles.")
-        return
-
-    print("\nGrupos de Datasets con modelos disponibles:")
-    for i, group_name in enumerate(dataset_groups, 1):
-        print(f"{i}. {group_name}")
-    
     try:
-        group_choice_idx = int(input("Seleccione un grupo de dataset (número): ").strip()) - 1
-        if not (0 <= group_choice_idx < len(dataset_groups)):
-            print("Selección de grupo inválida.")
-            return
-        selected_dataset_group = dataset_groups[group_choice_idx]
-    except ValueError:
-        print("Entrada inválida para selección de grupo.")
-        return
-
-    # Step 2: List actual .pkl model files within the selected group
-    model_files = serializer.list_model_files_in_group(selected_dataset_group)
-    if not model_files:
-        print(f"No se encontraron archivos de modelo (.pkl) en el grupo '{selected_dataset_group}'.")
-        return
-
-    print(f"\nModelos .pkl disponibles en '{selected_dataset_group}':")
-    for i, model_file_name in enumerate(model_files, 1):
-        print(f"{i}. {model_file_name}")
-    
-    try:
-        model_file_choice_idx = int(input("Seleccione un modelo .pkl (número): ").strip()) - 1
-        if not (0 <= model_file_choice_idx < len(model_files)):
-            print("Selección de archivo de modelo inválida.")
-            return
-        selected_model_filename = model_files[model_file_choice_idx]
-    except ValueError:
-        print("Entrada inválida para selección de archivo de modelo.")
-        return
-
-    try:
-        # Cargar el modelo usando el grupo y el nombre de archivo
-        model_data = serializer.load_model_from_group(selected_dataset_group, selected_model_filename)
-
-        if not model_data or 'model' not in model_data:
-            print(f"No se pudo cargar el modelo: {selected_dataset_group}/{selected_model_filename}")
+        models_list = serializer.list_trained_models()
+        if not models_list:
+            print("No hay modelos entrenados disponibles. Por favor, entrene un modelo primero.")
             return
 
-        model_instance = model_data['model']
-        # Prioritize features saved with the model, then try to get from instance
-        model_features = model_data.get('feature_names')
-        if not model_features and hasattr(model_instance, 'feature_names_in_'):
-            model_features = list(model_instance.feature_names_in_)
-        elif not model_features and hasattr(model_instance, '_feature_names_in'): # some sklearn versions
-            model_features = list(model_instance._feature_names_in)
+        print("\nModelos entrenados disponibles:")
+        for i, model_info in enumerate(models_list, 1):
+            # model_info es una tupla: (nombre_modelo, timestamp, path_completo, metadata)
+            model_name = model_info[0]
+            timestamp = model_info[1]
+            metadata = model_info[3]
+            
+            # Asegurarse de que 'metric' y 'dataset_name' están en metadata
+            metric_display = "Métrica no disponible"
+            if 'metric' in metadata and metadata['metric']:
+                # 'metric' es un diccionario, ej: {'accuracy': 0.95}
+                metric_name, metric_value = list(metadata['metric'].items())[0]
+                metric_display = f"{metric_name.replace('_', ' ').capitalize()}: {metric_value:.4f}"
+
+            dataset_name_display = metadata.get('dataset_name', 'Dataset no especificado')
+            
+            print(f"{i}. {model_name} (Entrenado el: {timestamp})")
+            print(f"   - Dataset: {dataset_name_display}")
+            print(f"   - Rendimiento: {metric_display}")
+
+        model_choice = input("Seleccione el número del modelo a usar (Enter para el primero): ").strip()
+        model_choice = 0 if not model_choice else int(model_choice) - 1
         
-        if not model_features:
-            logger.warning("No se pudieron determinar las características del modelo desde el archivo .pkl ni desde el objeto del modelo.")
-            print("ADVERTENCIA: No se pudieron determinar las características esperadas por el modelo.")
-            # Aquí podría haber una lógica para pedir al usuario que ingrese el número de características
-            # o los nombres de las características si es absolutamente necesario, pero es propenso a errores.
-            # Por ahora, se dependerá de que el usuario ingrese los datos correctamente o la predicción podría fallar.
+        selected_model_info = models_list[model_choice]
+        model_path = selected_model_info[2]
+        
+        print(f"\nCargando el modelo desde: {model_path}...")
+        model, model_metadata, feature_names = serializer.from_pickle(model_path)
+        
+        if not feature_names:
+            print("Error: No se pudieron recuperar los nombres de las características del modelo.")
+            return
+            
+        # --- MEJORA: Cargar dataset original para obtener rangos de valores ---
+        original_df = None
+        dataset_name = model_metadata.get('dataset_name')
+        if dataset_name:
+            try:
+                # Buscar el path del dataset original usando el nombre del dataset
+                stored_datasets = serializer.list_stored_datasets()
+                original_dataset_path = None
+                for ds_name, ds_path, _ in stored_datasets:
+                    if ds_name == dataset_name:
+                        original_dataset_path = ds_path
+                        break
+                
+                if original_dataset_path:
+                    print(f"Cargando dataset original '{dataset_name}' para obtener información de rangos.")
+                    # Usar la clase Dataset para cargar solo el DF, sin procesarlo
+                    original_dataset = Dataset(path=original_dataset_path, dataset_name=dataset_name)
+                    original_df = original_dataset.get_dataframe() # Asumiendo que get_dataframe() devuelve el df
+                else:
+                    print(f"Advertencia: No se encontró el path para el dataset original '{dataset_name}'. No se mostrarán los rangos.")
+            except Exception as e:
+                logger.error(f"No se pudo cargar el dataset original para obtener los rangos: {e}")
+        # --- FIN MEJORA ---
 
-        print(f"\nPredicción con: {selected_dataset_group}/{selected_model_filename}")
-        if model_features:
-            print(f"Características esperadas por el modelo (en orden): {model_features}")
-        else:
-            print("No se especificaron características para el modelo. Asegúrese de ingresar los datos en el orden correcto.")
+        print(f"\nEl modelo '{selected_model_info[0]}' fue entrenado con las siguientes características.")
+        print("Por favor, ingrese un valor para cada una:")
 
-        # Recopilar características del usuario
-        features_for_prediction_input = {}
-        if model_features:
-            for feature_name in model_features:
-                val_str = input(f"Ingrese el valor para '{feature_name}': ").strip()
+        input_data = {}
+        for feature in feature_names:
+            # --- MEJORA: Mostrar rango de valores si está disponible ---
+            range_info = ""
+            if original_df is not None and feature in original_df.columns:
+                # Comprobar si la columna es numérica antes de calcular min/max
+                if pd.api.types.is_numeric_dtype(original_df[feature]):
+                    min_val = original_df[feature].min()
+                    max_val = original_df[feature].max()
+                    range_info = f" (rango original: {min_val} a {max_val})"
+            # --- FIN MEJORA ---
+            
+            while True:
                 try:
-                    features_for_prediction_input[feature_name] = float(val_str)
+                    # Se muestra el prompt con la información de rango (si existe)
+                    value_str = input(f"  - {feature}{range_info}: ")
+                    # Intentar convertir a número (float), ya que la mayoría de modelos esperan números.
+                    # Esto podría necesitar ajustes si el modelo maneja categóricas no numéricas en la entrada.
+                    input_data[feature] = float(value_str)
+                    break
                 except ValueError:
-                    print(f"Valor inválido para {feature_name}. Se usará NaN y el modelo podría fallar o interpretar de manera diferente.")
-                    features_for_prediction_input[feature_name] = np.nan # O manejar como string si el modelo lo espera
-            # Crear DataFrame con el orden de columnas correcto
-            input_df = pd.DataFrame([features_for_prediction_input])[model_features]
-        else:
-            # Si no hay nombres de características, pedir una lista de valores separados por comas
-            val_str = input("Ingrese los valores de las características separados por coma, en el orden que espera el modelo: ").strip()
-            try:
-                input_values = [float(v.strip()) for v in val_str.split(',')]
-                input_df = pd.DataFrame([input_values]) # Sin nombres de columna, el modelo debe ser robusto a esto o X_train no tenía nombres
-            except ValueError:
-                print("Valores de entrada inválidos. No se puede realizar la predicción.")
-                return
+                    print("Por favor, ingrese un valor numérico válido.")
         
-        # Realizar predicción
-        prediction = model_instance.predict(input_df)
-        proba = None
-        if hasattr(model_instance, "predict_proba"):
+        # Convertir los datos de entrada a un DataFrame de una fila
+        input_df = pd.DataFrame([input_data])
+        
+        # Asegurarse de que el orden de las columnas coincida con `feature_names`
+        input_df = input_df[feature_names]
+
+        print("\nRealizando predicción...")
+        
+        # Realizar la predicción
+        prediction = model.predict(input_df)
+        prediction_proba = None
+        if hasattr(model, "predict_proba"):
             try:
-                proba = model_instance.predict_proba(input_df)
-            except Exception as e_proba:
-                logger.warning(f"No se pudieron obtener las probabilidades: {e_proba}")
+                prediction_proba = model.predict_proba(input_df)
+            except Exception as e:
+                logger.warning(f"No se pudo calcular la probabilidad de la predicción: {e}")
 
-        print(f"\nResultado de la predicción: {prediction[0]}")
-        if proba is not None:
-            print(f"Probabilidades de la predicción: {proba[0]}")
+        # Decodificar la predicción si es necesario (ej., si el target fue codificado)
+        final_prediction = prediction[0]
+        target_encoder = model_metadata.get('target_encoder')
+        if target_encoder:
+            try:
+                # El decodificador espera un array, por eso [prediction[0]]
+                final_prediction = target_encoder.inverse_transform([prediction[0]])[0]
+            except Exception as e:
+                logger.error(f"Error al decodificar la predicción. Mostrando valor codificado. Error: {e}")
 
+        print("\n--- Resultado de la Predicción ---")
+        print(f"Predicción: {final_prediction}")
+        
+        if prediction_proba is not None:
+            # Si hay un codificador, usarlo para obtener las clases originales
+            if target_encoder and hasattr(target_encoder, 'classes_'):
+                classes = target_encoder.classes_
+                print("\nProbabilidades por clase:")
+                for i, class_name in enumerate(classes):
+                    print(f"  - Clase '{class_name}': {prediction_proba[0][i]:.2%}")
+            else:
+                # Si no hay codificador, simplemente mostrar las probabilidades
+                print(f"Probabilidades: {prediction_proba[0]}")
+
+
+    except (ValueError, IndexError):
+        print("Entrada no válida. Por favor, ingrese un número de la lista.")
     except Exception as e:
-        logger.error(f"Error durante la predicción: {str(e)}")
-        logger.error(traceback.format_exc())
+        logger.error(f"Ocurrió un error inesperado durante la predicción: {e}")
+        logger.debug(traceback.format_exc())
+
 
 if __name__ == "__main__":
     main_menu()

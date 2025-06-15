@@ -1,0 +1,267 @@
+2025-05-28 03:19:05,034 - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-05-28 03:19:22,157 - INFO - [MQTT train_model] Target column set to: target
+2025-05-28 03:19:22,157 - INFO - [MQTT train_model] Dataset name set to: iris
+2025-05-28 03:19:22,157 - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier', 'LinearRegression']
+2025-05-28 03:19:22,157 - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-05-28 03:19:22,157 - INFO - [MQTT train_model] Recommendations set to: True
+2025-05-28 03:19:22,158 - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'iris'. Attempting to load it.
+2025-05-28 03:19:22,159 - WARNING - [MQTT train_model] Original dataset file not found at program\almacen\datasets\iris\iris.csv
+2025-05-28 03:19:22,159 - ERROR - [MQTT train_model] Failed to load dataset 'iris'. Cannot proceed with training.
+2025-05-28 03:19:22,167 - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-05-28 03:29:11,805 - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-05-28 03:29:23,884 - INFO - [MQTT train_model] Target column set to: target
+2025-05-28 03:29:23,885 - INFO - [MQTT train_model] Dataset name set to: breast_cancer
+2025-05-28 03:29:23,885 - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier', 'GradientBoostingClassifier']
+2025-05-28 03:29:23,885 - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-05-28 03:29:23,885 - INFO - [MQTT train_model] Recommendations set to: True
+2025-05-28 03:29:23,885 - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'breast_cancer'. Attempting to load it.
+2025-05-28 03:29:23,887 - WARNING - [MQTT train_model] Original dataset file not found at program\almacen\datasets\breast_cancer\breast_cancer.csv
+2025-05-28 03:29:23,887 - ERROR - [MQTT train_model] Failed to load dataset 'breast_cancer'. Cannot proceed with training.
+2025-05-28 03:29:23,894 - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-05-29 00:29:53,284 - INFO - [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+2025-05-29 00:29:53,286 - INFO - Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+2025-05-29 00:29:54,566 - INFO - Original dataset saved successfully.
+2025-05-29 00:29:54,571 - INFO - Determined target column: remainder__playlist_id
+2025-05-29 00:29:54,572 - INFO - Starting basic preprocessing for artist_popularity...
+2025-05-29 00:29:54,603 - INFO - Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-05-29 00:29:54,610 - INFO - Características numéricas finales para transformador: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary']
+2025-05-29 00:29:54,610 - INFO - Características categóricas finales para transformador: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+2025-05-29 00:29:54,611 - INFO - Características de fecha/hora finales para transformador: []
+2025-05-29 00:29:55,830 - INFO - Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 109811)
+2025-05-29 00:29:55,830 - INFO - Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+2025-05-29 00:30:31,823 - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-05-29 00:30:42,609 - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-05-29 00:36:57,457 - INFO - [MQTT train_model] Target column set to: num__energy
+2025-05-29 00:36:57,488 - INFO - [MQTT train_model] Dataset name set to: artist_popularity
+2025-05-29 00:36:57,543 - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-05-29 00:36:57,564 - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-05-29 00:36:57,571 - INFO - [MQTT train_model] Recommendations set to: True
+2025-05-29 00:36:57,596 - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'artist_popularity'. Attempting to load it.
+2025-05-29 00:53:44,318 - INFO - [ensure_dataset_processed_and_saved] Processing dataset: breast_cancer
+2025-05-29 00:53:44,319 - INFO - Saving original dataset to: program/almacen/datasets\breast_cancer\breast_cancer.csv
+2025-05-29 00:53:44,337 - INFO - Original dataset saved successfully.
+2025-05-29 00:53:44,340 - INFO - Determined target column: target
+2025-05-29 00:53:44,341 - INFO - Starting basic preprocessing for breast_cancer...
+2025-05-29 00:53:44,360 - INFO - Columnas en X después de eliminación explícita: ['mean radius', 'mean texture', 'mean perimeter', 'mean area', 'mean smoothness', 'mean compactness', 'mean concavity', 'mean concave points', 'mean symmetry', 'mean fractal dimension', 'radius error', 'texture error', 'perimeter error', 'area error', 'smoothness error', 'compactness error', 'concavity error', 'concave points error', 'symmetry error', 'fractal dimension error', 'worst radius', 'worst texture', 'worst perimeter', 'worst area', 'worst smoothness', 'worst compactness', 'worst concavity', 'worst concave points', 'worst symmetry', 'worst fractal dimension']
+2025-05-29 00:53:44,361 - INFO - Características numéricas finales para transformador: ['mean radius', 'mean texture', 'mean perimeter', 'mean area', 'mean smoothness', 'mean compactness', 'mean concavity', 'mean concave points', 'mean symmetry', 'mean fractal dimension', 'radius error', 'texture error', 'perimeter error', 'area error', 'smoothness error', 'compactness error', 'concavity error', 'concave points error', 'symmetry error', 'fractal dimension error', 'worst radius', 'worst texture', 'worst perimeter', 'worst area', 'worst smoothness', 'worst compactness', 'worst concavity', 'worst concave points', 'worst symmetry', 'worst fractal dimension']
+2025-05-29 00:53:44,362 - INFO - Características categóricas finales para transformador: []
+2025-05-29 00:53:44,362 - INFO - Características de fecha/hora finales para transformador: []
+2025-05-29 00:53:44,409 - INFO - Basic preprocessing completed for breast_cancer. Processed df shape: (569, 31)
+2025-05-29 00:53:44,409 - INFO - Saving processed dataset to: program/almacen/datasets\breast_cancer\breast_cancer_processed.csv
+2025-05-29 00:53:44,431 - INFO - Processed dataset saved successfully.
+2025-05-29 00:53:46,556 - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-05-29 00:53:56,621 - INFO - [MQTT train_model] Target column set to: target
+2025-05-29 00:53:56,621 - INFO - [MQTT train_model] Dataset name set to: breast_cancer
+2025-05-29 00:53:56,621 - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-05-29 00:53:56,621 - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-05-29 00:53:56,622 - INFO - [MQTT train_model] Recommendations set to: True
+2025-05-29 00:53:56,622 - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'breast_cancer'. Attempting to load it.
+2025-05-29 00:53:56,628 - INFO - [MQTT train_model] Successfully loaded processed dataset: program\almacen\datasets\breast_cancer\breast_cancer_processed.csv
+2025-05-29 00:53:56,628 - INFO - [MQTT train_model] Dataset 'breast_cancer' loaded and set in global_data and training_instance.
+2025-05-29 00:53:56,628 - INFO - Ruta de referencia del dataset original: program\almacen\datasets\breast_cancer\breast_cancer.csv
+2025-05-29 00:53:56,628 - INFO - [MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: breast_cancer
+2025-05-29 00:53:56,648 - INFO - DataFrame original para preprocesar (primeras filas):
+   num__mean radius  num__mean texture  ...  num__worst fractal dimension  target
+0          1.132353          -1.502664  ...                      1.884578    -1.0
+1          1.764706          -0.190053  ...                      0.435500    -1.0
+2          1.549020           0.428064  ...                      0.365664    -1.0
+3         -0.477941           0.273535  ...                      4.508244    -1.0
+4          1.696078          -0.799290  ...                     -0.158099    -1.0
+
+[5 rows x 31 columns]
+2025-05-29 00:53:56,648 - INFO - Columnas del DataFrame original: ['num__mean radius', 'num__mean texture', 'num__mean perimeter', 'num__mean area', 'num__mean smoothness', 'num__mean compactness', 'num__mean concavity', 'num__mean concave points', 'num__mean symmetry', 'num__mean fractal dimension', 'num__radius error', 'num__texture error', 'num__perimeter error', 'num__area error', 'num__smoothness error', 'num__compactness error', 'num__concavity error', 'num__concave points error', 'num__symmetry error', 'num__fractal dimension error', 'num__worst radius', 'num__worst texture', 'num__worst perimeter', 'num__worst area', 'num__worst smoothness', 'num__worst compactness', 'num__worst concavity', 'num__worst concave points', 'num__worst symmetry', 'num__worst fractal dimension', 'target']
+2025-05-29 00:53:56,649 - INFO - Target column para basic_dfpreprocess: target
+2025-05-29 00:53:56,650 - INFO - Columnas en X después de eliminación explícita: ['num__mean radius', 'num__mean texture', 'num__mean perimeter', 'num__mean area', 'num__mean smoothness', 'num__mean compactness', 'num__mean concavity', 'num__mean concave points', 'num__mean symmetry', 'num__mean fractal dimension', 'num__radius error', 'num__texture error', 'num__perimeter error', 'num__area error', 'num__smoothness error', 'num__compactness error', 'num__concavity error', 'num__concave points error', 'num__symmetry error', 'num__fractal dimension error', 'num__worst radius', 'num__worst texture', 'num__worst perimeter', 'num__worst area', 'num__worst smoothness', 'num__worst compactness', 'num__worst concavity', 'num__worst concave points', 'num__worst symmetry', 'num__worst fractal dimension']
+2025-05-29 00:53:56,650 - INFO - Características numéricas finales para transformador: ['num__mean radius', 'num__mean texture', 'num__mean perimeter', 'num__mean area', 'num__mean smoothness', 'num__mean compactness', 'num__mean concavity', 'num__mean concave points', 'num__mean symmetry', 'num__mean fractal dimension', 'num__radius error', 'num__texture error', 'num__perimeter error', 'num__area error', 'num__smoothness error', 'num__compactness error', 'num__concavity error', 'num__concave points error', 'num__symmetry error', 'num__fractal dimension error', 'num__worst radius', 'num__worst texture', 'num__worst perimeter', 'num__worst area', 'num__worst smoothness', 'num__worst compactness', 'num__worst concavity', 'num__worst concave points', 'num__worst symmetry', 'num__worst fractal dimension']
+2025-05-29 00:53:56,651 - INFO - Características categóricas finales para transformador: []
+2025-05-29 00:53:56,651 - INFO - Características de fecha/hora finales para transformador: []
+2025-05-29 00:53:56,696 - INFO - DataFrame después de basic_dfpreprocess (primeras filas):
+   num__num__mean radius  ...  target
+0               1.132353  ...    -1.0
+1               1.764706  ...    -1.0
+2               1.549020  ...    -1.0
+3              -0.477941  ...    -1.0
+4               1.696078  ...    -1.0
+
+[5 rows x 31 columns]
+2025-05-29 00:53:56,696 - INFO - Columnas después de basic_dfpreprocess: ['num__num__mean radius', 'num__num__mean texture', 'num__num__mean perimeter', 'num__num__mean area', 'num__num__mean smoothness', 'num__num__mean compactness', 'num__num__mean concavity', 'num__num__mean concave points', 'num__num__mean symmetry', 'num__num__mean fractal dimension', 'num__num__radius error', 'num__num__texture error', 'num__num__perimeter error', 'num__num__area error', 'num__num__smoothness error', 'num__num__compactness error', 'num__num__concavity error', 'num__num__concave points error', 'num__num__symmetry error', 'num__num__fractal dimension error', 'num__num__worst radius', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst area', 'num__num__worst smoothness', 'num__num__worst compactness', 'num__num__worst concavity', 'num__num__worst concave points', 'num__num__worst symmetry', 'num__num__worst fractal dimension', 'target']
+2025-05-29 00:53:56,697 - INFO - Características finales para entrenamiento (después de drop target): ['num__num__mean radius', 'num__num__mean texture', 'num__num__mean perimeter', 'num__num__mean area', 'num__num__mean smoothness', 'num__num__mean compactness', 'num__num__mean concavity', 'num__num__mean concave points', 'num__num__mean symmetry', 'num__num__mean fractal dimension', 'num__num__radius error', 'num__num__texture error', 'num__num__perimeter error', 'num__num__area error', 'num__num__smoothness error', 'num__num__compactness error', 'num__num__concavity error', 'num__num__concave points error', 'num__num__symmetry error', 'num__num__fractal dimension error', 'num__num__worst radius', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst area', 'num__num__worst smoothness', 'num__num__worst compactness', 'num__num__worst concavity', 'num__num__worst concave points', 'num__num__worst symmetry', 'num__num__worst fractal dimension']
+2025-05-29 00:53:56,787 - INFO - Columnas de X_train_processed INMEDIATAMENTE después de split_and_train (antes de _train_models): ['num__num__mean radius', 'num__num__mean texture', 'num__num__mean perimeter', 'num__num__mean area', 'num__num__mean smoothness', 'num__num__mean compactness', 'num__num__mean concavity', 'num__num__mean concave points', 'num__num__mean symmetry', 'num__num__mean fractal dimension', 'num__num__radius error', 'num__num__texture error', 'num__num__perimeter error', 'num__num__area error', 'num__num__smoothness error', 'num__num__compactness error', 'num__num__concavity error', 'num__num__concave points error', 'num__num__symmetry error', 'num__num__fractal dimension error', 'num__num__worst radius', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst area', 'num__num__worst smoothness', 'num__num__worst compactness', 'num__num__worst concavity', 'num__num__worst concave points', 'num__num__worst symmetry', 'num__num__worst fractal dimension']
+2025-05-29 00:53:56,805 - INFO - Primeras filas de X_train_processed:
+   num__num__mean radius  ...  num__num__worst fractal dimension
+0               1.284314  ...                          -0.282735
+1              -0.460784  ...                           0.570320
+2               0.901961  ...                           0.512609
+3               1.700980  ...                          -0.002425
+4               0.071078  ...                           0.792435
+
+[5 rows x 30 columns]
+2025-05-29 00:53:56,805 - INFO - Columnas de X_test_processed INMEDIATAMENTE después de split_and_train: ['num__num__mean radius', 'num__num__mean texture', 'num__num__mean perimeter', 'num__num__mean area', 'num__num__mean smoothness', 'num__num__mean compactness', 'num__num__mean concavity', 'num__num__mean concave points', 'num__num__mean symmetry', 'num__num__mean fractal dimension', 'num__num__radius error', 'num__num__texture error', 'num__num__perimeter error', 'num__num__area error', 'num__num__smoothness error', 'num__num__compactness error', 'num__num__concavity error', 'num__num__concave points error', 'num__num__symmetry error', 'num__num__fractal dimension error', 'num__num__worst radius', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst area', 'num__num__worst smoothness', 'num__num__worst compactness', 'num__num__worst concavity', 'num__num__worst concave points', 'num__num__worst symmetry', 'num__num__worst fractal dimension']
+2025-05-29 00:53:56,809 - INFO - Algoritmos a procesar en _train_models: ['RandomForestClassifier']
+2025-05-29 00:53:56,809 - WARNING - El tipo de problema no ha sido determinado. No se puede verificar la idoneidad del modelo.
+2025-05-29 00:53:56,809 - WARNING - RandomForestClassifier no es apropiado para problemas de None. Saltando...
+2025-05-29 00:53:56,809 - INFO - 
+Iniciando recomendación del mejor modelo...
+2025-05-29 00:53:56,809 - INFO - Iniciando recomendación del mejor modelo...
+2025-05-29 00:53:56,809 - ERROR - Error durante la búsqueda del mejor modelo global: 'NoneType' object has no attribute 'lower'
+2025-05-29 00:53:56,813 - ERROR - Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 464, in _find_and_evaluate_best_model
+        _poly_transform_placeholder, _poly_feature_names_placeholder = self._recommend_best_model(
+                                                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~^
+            X_train, y_train, X_test, y_test,
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    ...<2 lines>...
+            model_instances_for_recommendation
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 519, in _recommend_best_model
+    best_model, best_selected_features, X_train_selected, X_test_selected, poly, poly_feature_names = recommend_best_model(
+                                                                                                      ~~~~~~~~~~~~~~~~~~~~^
+        X_train, y_train, X_test, y_test, problem_type, current_trained_models_list, feature_names
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\modeloptimization.py", line 40, in recommend_best_model
+    pt_lower = problem_type.lower()
+               ^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'lower'
+
+2025-05-29 00:53:56,821 - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-05-29 01:03:55,481 - INFO - [ensure_dataset_processed_and_saved] Processing dataset: breast_cancer
+2025-05-29 01:03:55,482 - INFO - Saving original dataset to: program/almacen/datasets\breast_cancer\breast_cancer.csv
+2025-05-29 01:03:55,505 - INFO - Original dataset saved successfully.
+2025-05-29 01:03:55,505 - INFO - Determined target column: target
+2025-05-29 01:03:55,505 - INFO - Starting basic preprocessing for breast_cancer...
+2025-05-29 01:03:55,508 - INFO - Columnas en X después de eliminación explícita: ['mean radius', 'mean texture', 'mean perimeter', 'mean area', 'mean smoothness', 'mean compactness', 'mean concavity', 'mean concave points', 'mean symmetry', 'mean fractal dimension', 'radius error', 'texture error', 'perimeter error', 'area error', 'smoothness error', 'compactness error', 'concavity error', 'concave points error', 'symmetry error', 'fractal dimension error', 'worst radius', 'worst texture', 'worst perimeter', 'worst area', 'worst smoothness', 'worst compactness', 'worst concavity', 'worst concave points', 'worst symmetry', 'worst fractal dimension']
+2025-05-29 01:03:55,508 - INFO - Características numéricas finales para transformador: ['mean radius', 'mean texture', 'mean perimeter', 'mean area', 'mean smoothness', 'mean compactness', 'mean concavity', 'mean concave points', 'mean symmetry', 'mean fractal dimension', 'radius error', 'texture error', 'perimeter error', 'area error', 'smoothness error', 'compactness error', 'concavity error', 'concave points error', 'symmetry error', 'fractal dimension error', 'worst radius', 'worst texture', 'worst perimeter', 'worst area', 'worst smoothness', 'worst compactness', 'worst concavity', 'worst concave points', 'worst symmetry', 'worst fractal dimension']
+2025-05-29 01:03:55,509 - INFO - Características categóricas finales para transformador: []
+2025-05-29 01:03:55,509 - INFO - Características de fecha/hora finales para transformador: []
+2025-05-29 01:03:55,546 - INFO - Basic preprocessing completed for breast_cancer. Processed df shape: (569, 31)
+2025-05-29 01:03:55,546 - INFO - Saving processed dataset to: program/almacen/datasets\breast_cancer\breast_cancer_processed.csv
+2025-05-29 01:03:55,569 - INFO - Processed dataset saved successfully.
+2025-05-29 01:04:01,556 - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+2025-05-29 01:04:11,161 - INFO - [MQTT train_model] Target column set to: target
+2025-05-29 01:04:11,161 - INFO - [MQTT train_model] Dataset name set to: breast_cancer
+2025-05-29 01:04:11,162 - INFO - [MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+2025-05-29 01:04:11,162 - INFO - [MQTT train_model] Crossvalidation set to: 80
+2025-05-29 01:04:11,162 - INFO - [MQTT train_model] Recommendations set to: True
+2025-05-29 01:04:11,162 - WARNING - [MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'breast_cancer'. Attempting to load it.
+2025-05-29 01:04:11,168 - INFO - [MQTT train_model] Successfully loaded processed dataset: program\almacen\datasets\breast_cancer\breast_cancer_processed.csv
+2025-05-29 01:04:11,169 - INFO - [MQTT train_model] Dataset 'breast_cancer' loaded and set in global_data and training_instance.
+2025-05-29 01:04:11,169 - INFO - Ruta de referencia del dataset original: program\almacen\datasets\breast_cancer\breast_cancer.csv
+2025-05-29 01:04:11,169 - INFO - [MQTT train_model] training_instance.dataset asignado desde global_data.dataset. Nombre del dataset en instancia: breast_cancer
+2025-05-29 01:04:11,187 - INFO - DataFrame original para preprocesar (primeras filas):
+   num__mean radius  num__mean texture  ...  num__worst fractal dimension  target
+0          1.132353          -1.502664  ...                      1.884578    -1.0
+1          1.764706          -0.190053  ...                      0.435500    -1.0
+2          1.549020           0.428064  ...                      0.365664    -1.0
+3         -0.477941           0.273535  ...                      4.508244    -1.0
+4          1.696078          -0.799290  ...                     -0.158099    -1.0
+
+[5 rows x 31 columns]
+2025-05-29 01:04:11,188 - INFO - Columnas del DataFrame original: ['num__mean radius', 'num__mean texture', 'num__mean perimeter', 'num__mean area', 'num__mean smoothness', 'num__mean compactness', 'num__mean concavity', 'num__mean concave points', 'num__mean symmetry', 'num__mean fractal dimension', 'num__radius error', 'num__texture error', 'num__perimeter error', 'num__area error', 'num__smoothness error', 'num__compactness error', 'num__concavity error', 'num__concave points error', 'num__symmetry error', 'num__fractal dimension error', 'num__worst radius', 'num__worst texture', 'num__worst perimeter', 'num__worst area', 'num__worst smoothness', 'num__worst compactness', 'num__worst concavity', 'num__worst concave points', 'num__worst symmetry', 'num__worst fractal dimension', 'target']
+2025-05-29 01:04:11,188 - INFO - Target column para basic_dfpreprocess: target
+2025-05-29 01:04:11,189 - INFO - Columnas en X después de eliminación explícita: ['num__mean radius', 'num__mean texture', 'num__mean perimeter', 'num__mean area', 'num__mean smoothness', 'num__mean compactness', 'num__mean concavity', 'num__mean concave points', 'num__mean symmetry', 'num__mean fractal dimension', 'num__radius error', 'num__texture error', 'num__perimeter error', 'num__area error', 'num__smoothness error', 'num__compactness error', 'num__concavity error', 'num__concave points error', 'num__symmetry error', 'num__fractal dimension error', 'num__worst radius', 'num__worst texture', 'num__worst perimeter', 'num__worst area', 'num__worst smoothness', 'num__worst compactness', 'num__worst concavity', 'num__worst concave points', 'num__worst symmetry', 'num__worst fractal dimension']
+2025-05-29 01:04:11,190 - INFO - Características numéricas finales para transformador: ['num__mean radius', 'num__mean texture', 'num__mean perimeter', 'num__mean area', 'num__mean smoothness', 'num__mean compactness', 'num__mean concavity', 'num__mean concave points', 'num__mean symmetry', 'num__mean fractal dimension', 'num__radius error', 'num__texture error', 'num__perimeter error', 'num__area error', 'num__smoothness error', 'num__compactness error', 'num__concavity error', 'num__concave points error', 'num__symmetry error', 'num__fractal dimension error', 'num__worst radius', 'num__worst texture', 'num__worst perimeter', 'num__worst area', 'num__worst smoothness', 'num__worst compactness', 'num__worst concavity', 'num__worst concave points', 'num__worst symmetry', 'num__worst fractal dimension']
+2025-05-29 01:04:11,190 - INFO - Características categóricas finales para transformador: []
+2025-05-29 01:04:11,190 - INFO - Características de fecha/hora finales para transformador: []
+2025-05-29 01:04:11,220 - INFO - Determinando el tipo de problema dentro de split_and_train...
+2025-05-29 01:04:11,225 - INFO - Tipo de problema determinado: Clasificación Binaria
+2025-05-29 01:04:11,226 - INFO - Tipo de problema determinado: Clasificación Binaria
+2025-05-29 01:04:11,242 - INFO - DataFrame después de basic_dfpreprocess (primeras filas):
+   num__num__mean radius  ...  target
+0               1.132353  ...    -1.0
+1               1.764706  ...    -1.0
+2               1.549020  ...    -1.0
+3              -0.477941  ...    -1.0
+4               1.696078  ...    -1.0
+
+[5 rows x 31 columns]
+2025-05-29 01:04:11,242 - INFO - Columnas después de basic_dfpreprocess: ['num__num__mean radius', 'num__num__mean texture', 'num__num__mean perimeter', 'num__num__mean area', 'num__num__mean smoothness', 'num__num__mean compactness', 'num__num__mean concavity', 'num__num__mean concave points', 'num__num__mean symmetry', 'num__num__mean fractal dimension', 'num__num__radius error', 'num__num__texture error', 'num__num__perimeter error', 'num__num__area error', 'num__num__smoothness error', 'num__num__compactness error', 'num__num__concavity error', 'num__num__concave points error', 'num__num__symmetry error', 'num__num__fractal dimension error', 'num__num__worst radius', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst area', 'num__num__worst smoothness', 'num__num__worst compactness', 'num__num__worst concavity', 'num__num__worst concave points', 'num__num__worst symmetry', 'num__num__worst fractal dimension', 'target']
+2025-05-29 01:04:11,243 - INFO - Características finales para entrenamiento (después de drop target): ['num__num__mean radius', 'num__num__mean texture', 'num__num__mean perimeter', 'num__num__mean area', 'num__num__mean smoothness', 'num__num__mean compactness', 'num__num__mean concavity', 'num__num__mean concave points', 'num__num__mean symmetry', 'num__num__mean fractal dimension', 'num__num__radius error', 'num__num__texture error', 'num__num__perimeter error', 'num__num__area error', 'num__num__smoothness error', 'num__num__compactness error', 'num__num__concavity error', 'num__num__concave points error', 'num__num__symmetry error', 'num__num__fractal dimension error', 'num__num__worst radius', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst area', 'num__num__worst smoothness', 'num__num__worst compactness', 'num__num__worst concavity', 'num__num__worst concave points', 'num__num__worst symmetry', 'num__num__worst fractal dimension']
+2025-05-29 01:04:11,244 - INFO - Columnas de X_train_processed INMEDIATAMENTE después de split_and_train (antes de _train_models): ['num__num__mean radius', 'num__num__mean texture', 'num__num__mean perimeter', 'num__num__mean area', 'num__num__mean smoothness', 'num__num__mean compactness', 'num__num__mean concavity', 'num__num__mean concave points', 'num__num__mean symmetry', 'num__num__mean fractal dimension', 'num__num__radius error', 'num__num__texture error', 'num__num__perimeter error', 'num__num__area error', 'num__num__smoothness error', 'num__num__compactness error', 'num__num__concavity error', 'num__num__concave points error', 'num__num__symmetry error', 'num__num__fractal dimension error', 'num__num__worst radius', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst area', 'num__num__worst smoothness', 'num__num__worst compactness', 'num__num__worst concavity', 'num__num__worst concave points', 'num__num__worst symmetry', 'num__num__worst fractal dimension']
+2025-05-29 01:04:11,259 - INFO - Primeras filas de X_train_processed:
+   num__num__mean radius  ...  num__num__worst fractal dimension
+0               1.284314  ...                          -0.282735
+1              -0.460784  ...                           0.570320
+2               0.901961  ...                           0.512609
+3               1.700980  ...                          -0.002425
+4               0.071078  ...                           0.792435
+
+[5 rows x 30 columns]
+2025-05-29 01:04:11,260 - INFO - Columnas de X_test_processed INMEDIATAMENTE después de split_and_train: ['num__num__mean radius', 'num__num__mean texture', 'num__num__mean perimeter', 'num__num__mean area', 'num__num__mean smoothness', 'num__num__mean compactness', 'num__num__mean concavity', 'num__num__mean concave points', 'num__num__mean symmetry', 'num__num__mean fractal dimension', 'num__num__radius error', 'num__num__texture error', 'num__num__perimeter error', 'num__num__area error', 'num__num__smoothness error', 'num__num__compactness error', 'num__num__concavity error', 'num__num__concave points error', 'num__num__symmetry error', 'num__num__fractal dimension error', 'num__num__worst radius', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst area', 'num__num__worst smoothness', 'num__num__worst compactness', 'num__num__worst concavity', 'num__num__worst concave points', 'num__num__worst symmetry', 'num__num__worst fractal dimension']
+2025-05-29 01:04:11,262 - INFO - Algoritmos a procesar en _train_models: ['RandomForestClassifier']
+2025-05-29 01:04:11,262 - INFO - [train_custom_models] Inicio. Recibido X_train con columnas: ['num__num__mean radius', 'num__num__mean texture', 'num__num__mean perimeter', 'num__num__mean area', 'num__num__mean smoothness', 'num__num__mean compactness', 'num__num__mean concavity', 'num__num__mean concave points', 'num__num__mean symmetry', 'num__num__mean fractal dimension', 'num__num__radius error', 'num__num__texture error', 'num__num__perimeter error', 'num__num__area error', 'num__num__smoothness error', 'num__num__compactness error', 'num__num__concavity error', 'num__num__concave points error', 'num__num__symmetry error', 'num__num__fractal dimension error', 'num__num__worst radius', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst area', 'num__num__worst smoothness', 'num__num__worst compactness', 'num__num__worst concavity', 'num__num__worst concave points', 'num__num__worst symmetry', 'num__num__worst fractal dimension']
+2025-05-29 01:04:11,279 - INFO - [train_custom_models] X_train (DataFrame) primeras filas ANTES de train_simple_model:
+   num__num__mean radius  ...  num__num__worst fractal dimension
+0               1.284314  ...                          -0.282735
+1              -0.460784  ...                           0.570320
+2               0.901961  ...                           0.512609
+3               1.700980  ...                          -0.002425
+4               0.071078  ...                           0.792435
+
+[5 rows x 30 columns]
+2025-05-29 01:04:11,279 - INFO - [train_custom_models] Columnas de X_train (DataFrame): ['num__num__mean radius', 'num__num__mean texture', 'num__num__mean perimeter', 'num__num__mean area', 'num__num__mean smoothness', 'num__num__mean compactness', 'num__num__mean concavity', 'num__num__mean concave points', 'num__num__mean symmetry', 'num__num__mean fractal dimension', 'num__num__radius error', 'num__num__texture error', 'num__num__perimeter error', 'num__num__area error', 'num__num__smoothness error', 'num__num__compactness error', 'num__num__concavity error', 'num__num__concave points error', 'num__num__symmetry error', 'num__num__fractal dimension error', 'num__num__worst radius', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst area', 'num__num__worst smoothness', 'num__num__worst compactness', 'num__num__worst concavity', 'num__num__worst concave points', 'num__num__worst symmetry', 'num__num__worst fractal dimension']
+2025-05-29 01:04:11,279 - INFO - [train_custom_models] Llamando a train_simple_model para RandomForestClassifier con X_train_df (columnas: ['num__num__mean radius', 'num__num__mean texture', 'num__num__mean perimeter', 'num__num__mean area', 'num__num__mean smoothness', 'num__num__mean compactness', 'num__num__mean concavity', 'num__num__mean concave points', 'num__num__mean symmetry', 'num__num__mean fractal dimension', 'num__num__radius error', 'num__num__texture error', 'num__num__perimeter error', 'num__num__area error', 'num__num__smoothness error', 'num__num__compactness error', 'num__num__concavity error', 'num__num__concave points error', 'num__num__symmetry error', 'num__num__fractal dimension error', 'num__num__worst radius', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst area', 'num__num__worst smoothness', 'num__num__worst compactness', 'num__num__worst concavity', 'num__num__worst concave points', 'num__num__worst symmetry', 'num__num__worst fractal dimension'])
+2025-05-29 01:04:11,399 - INFO - Iniciando selección de características para RandomForestClassifier antes de la optimización de hiperparámetros...
+2025-05-29 01:04:11,452 - INFO - Características seleccionadas por select_best_features: ['num__num__mean area', 'num__num__worst perimeter', 'num__num__mean radius', 'num__num__mean concave points', 'num__num__worst compactness', 'num__num__worst area', 'num__num__worst concave points', 'num__num__worst radius', 'num__num__worst concavity', 'num__num__mean perimeter']
+2025-05-29 01:04:11,452 - INFO - Características seleccionadas para RandomForestClassifier (pre-optimización): ['num__num__mean area', 'num__num__worst perimeter', 'num__num__mean radius', 'num__num__mean concave points', 'num__num__worst compactness', 'num__num__worst area', 'num__num__worst concave points', 'num__num__worst radius', 'num__num__worst concavity', 'num__num__mean perimeter']
+2025-05-29 01:04:11,452 - INFO - Ajustando grid para RandomForestClassifier: eliminando 'oob_score' debido a posible conflicto con 'bootstrap=False'.
+2025-05-29 01:04:11,453 - INFO - Generated param grid for RandomForestClassifier: {'n_estimators': [50, 100, 200, 300], 'max_depth': [None, 5, 10, 15, 20], 'min_samples_split': [2, 5, 10, 15], 'min_samples_leaf': [1, 2, 5, 10], 'max_features': ['sqrt', 'log2', None, 0.5, 0.7, 1.0], 'bootstrap': [True, False], 'criterion': ['gini', 'entropy'], 'warm_start': [True, False]}
+2025-05-29 01:04:11,453 - INFO - Optimizando modelo RandomForestClassifier con estrategia: random
+2025-05-29 01:04:18,046 - INFO - Guardando modelo: RandomForestClassifier_Base para el dataset program\almacen\datasets\breast_cancer\breast_cancer.csv
+2025-05-29 01:04:18,052 - INFO - Modelo guardado en: program\almacen\models\breast_cancer\RandomForestClassifier_Base.pkl con feature_names: True, preprocessor: True
+2025-05-29 01:04:18,053 - INFO - Modelo RandomForestClassifier_Base guardado exitosamente.
+2025-05-29 01:04:18,606 - INFO - Guardando modelo: RandomForestClassifier_Optimized para el dataset program\almacen\datasets\breast_cancer\breast_cancer.csv
+2025-05-29 01:04:18,614 - INFO - Modelo guardado en: program\almacen\models\breast_cancer\RandomForestClassifier_Optimized.pkl con feature_names: True, preprocessor: True
+2025-05-29 01:04:18,615 - INFO - Modelo RandomForestClassifier_Optimized guardado exitosamente.
+2025-05-29 01:04:18,615 - INFO - Comparing models for RandomForestClassifier: Base (accuracy=0.9539) vs Optimized (accuracy=0.9474)
+2025-05-29 01:04:18,615 - INFO - Base model is better or equal for RandomForestClassifier. Selecting base.
+2025-05-29 01:04:18,615 - INFO - 
+Iniciando recomendación del mejor modelo...
+2025-05-29 01:04:18,615 - INFO - Iniciando recomendación del mejor modelo...
+2025-05-29 01:04:18,615 - INFO - Seleccionando las mejores características (llamada a select_best_features)...
+2025-05-29 01:04:18,750 - INFO - Características seleccionadas por select_best_features: ['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points']
+2025-05-29 01:04:18,751 - INFO - Características finalmente usadas para el entrenamiento post-selección: ['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points']
+2025-05-29 01:04:18,751 - INFO - Procesando candidato para mejor modelo global: RandomForestClassifier con características seleccionadas (['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points'])...
+2025-05-29 01:04:18,752 - INFO - Ajustando grid para RandomForestClassifier: eliminando 'oob_score' debido a posible conflicto con 'bootstrap=False'.
+2025-05-29 01:04:18,752 - INFO - Generated param grid for RandomForestClassifier: {'n_estimators': [50, 100, 200, 300], 'max_depth': [None, 5, 10, 15, 20], 'min_samples_split': [2, 5, 10, 15], 'min_samples_leaf': [1, 2, 5, 10], 'max_features': ['sqrt', 'log2', None, 0.5, 0.7, 1.0], 'bootstrap': [True, False], 'criterion': ['gini', 'entropy'], 'warm_start': [True, False]}
+2025-05-29 01:04:18,752 - INFO - Optimizando modelo RandomForestClassifier con estrategia: random
+2025-05-29 01:04:21,380 - INFO - Evaluando RandomForestClassifier con características seleccionadas (['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points'])...
+2025-05-29 01:04:21,395 - INFO - Puntuación para RandomForestClassifier (post-selección y optimización final): 0.9342
+2025-05-29 01:04:21,396 - INFO - Procesando candidato para mejor modelo global: GradientBoostingClassifier con características seleccionadas (['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points'])...
+2025-05-29 01:04:21,396 - INFO - Generated param grid for GradientBoostingClassifier: {'n_estimators': [50, 100, 200, 300], 'learning_rate': [0.01, 0.05, 0.1, 0.2], 'subsample': [0.7, 0.8, 0.9, 1.0], 'max_depth': [None, 5, 10, 15, 20], 'min_samples_split': [2, 5, 10, 15], 'min_samples_leaf': [1, 2, 5, 10], 'max_features': ['sqrt', 'log2', None, 0.5, 0.7, 1.0], 'criterion': ['friedman_mse', 'squared_error'], 'warm_start': [True, False]}
+2025-05-29 01:04:21,397 - INFO - Optimizando modelo GradientBoostingClassifier con estrategia: random
+2025-05-29 01:04:24,263 - INFO - Evaluando GradientBoostingClassifier con características seleccionadas (['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points'])...
+2025-05-29 01:04:24,267 - INFO - Puntuación para GradientBoostingClassifier (post-selección y optimización final): 0.9364
+2025-05-29 01:04:24,267 - INFO - Procesando candidato para mejor modelo global: LogisticRegression con características seleccionadas (['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points'])...
+2025-05-29 01:04:24,268 - INFO - Generated param grid for LogisticRegression: {'C': [0.01, 0.1, 1, 10, 100], 'penalty': ['l1', 'l2', 'elasticnet', None], 'solver': ['saga', 'liblinear'], 'l1_ratio': [0.1, 0.3, 0.5, 0.7, 0.9], 'fit_intercept': [True, False], 'warm_start': [True, False]}
+2025-05-29 01:04:24,268 - INFO - Optimizando modelo LogisticRegression con estrategia: random
+2025-05-29 01:04:24,402 - INFO - Evaluando LogisticRegression con características seleccionadas (['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points'])...
+2025-05-29 01:04:24,405 - INFO - Puntuación para LogisticRegression (post-selección y optimización final): 0.9627
+2025-05-29 01:04:24,405 - INFO - Procesando candidato para mejor modelo global: SVC con características seleccionadas (['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points'])...
+2025-05-29 01:04:24,406 - INFO - Generated param grid for SVC: {'C': [0.1, 1, 10, 100], 'kernel': ['linear', 'rbf', 'poly', 'sigmoid'], 'gamma': ['scale', 'auto', 0.001, 0.01, 0.1, 1], 'degree': [2, 3, 4], 'break_ties': [True, False], 'probability': [True, False], 'shrinking': [True, False], 'verbose': [True, False]}
+2025-05-29 01:04:24,406 - INFO - Optimizando modelo SVC con estrategia: random
+2025-05-29 01:04:24,556 - INFO - Evaluando SVC con características seleccionadas (['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points'])...
+2025-05-29 01:04:24,558 - INFO - Puntuación para SVC (post-selección y optimización final): 0.9561
+2025-05-29 01:04:24,559 - INFO - Procesando candidato para mejor modelo global: DecisionTreeClassifier con características seleccionadas (['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points'])...
+2025-05-29 01:04:24,560 - INFO - Generated param grid for DecisionTreeClassifier: {'max_depth': [None, 5, 10, 15, 20], 'min_samples_split': [2, 5, 10, 15], 'min_samples_leaf': [1, 2, 5, 10], 'max_features': ['sqrt', 'log2', None], 'criterion': ['gini', 'entropy']}
+2025-05-29 01:04:24,560 - INFO - Optimizando modelo DecisionTreeClassifier con estrategia: random
+2025-05-29 01:04:24,643 - INFO - Evaluando DecisionTreeClassifier con características seleccionadas (['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points'])...
+2025-05-29 01:04:24,646 - INFO - Puntuación para DecisionTreeClassifier (post-selección y optimización final): 0.8991
+2025-05-29 01:04:24,646 - INFO - Procesando candidato para mejor modelo global: KNeighborsClassifier con características seleccionadas (['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points'])...
+2025-05-29 01:04:24,646 - INFO - Generated param grid for KNeighborsClassifier: {'n_neighbors': [3, 5, 7, 10, 15], 'weights': ['uniform', 'distance'], 'metric': ['euclidean', 'manhattan', 'minkowski']}
+2025-05-29 01:04:24,647 - INFO - Optimizando modelo KNeighborsClassifier con estrategia: random
+2025-05-29 01:04:24,734 - INFO - Evaluando KNeighborsClassifier con características seleccionadas (['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points'])...
+2025-05-29 01:04:24,737 - INFO - Puntuación para KNeighborsClassifier (post-selección y optimización final): 0.9539
+2025-05-29 01:04:24,737 - INFO - Mejor modelo recomendado: LogisticRegression
+2025-05-29 01:04:24,737 - INFO - Mejor puntuación (post-selección): 0.9627
+2025-05-29 01:04:24,738 - INFO - Características seleccionadas finales: ['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points']
+2025-05-29 01:04:24,738 - INFO - Tiempo total de ejecución de recommend_best_model: 6.12 segundos
+2025-05-29 01:04:24,738 - INFO - Mejor modelo recomendado globalmente: LogisticRegression
+2025-05-29 01:04:24,738 - INFO - Características usadas por el mejor modelo recomendado: ['num__num__mean concavity', 'num__num__mean concave points', 'num__num__worst texture', 'num__num__worst perimeter', 'num__num__worst concave points']
+2025-05-29 01:04:25,139 - INFO - Guardando modelo: GlobalBest_LogisticRegression para el dataset program\almacen\datasets\breast_cancer\breast_cancer.csv
+2025-05-29 01:04:25,142 - INFO - Modelo guardado en: program\almacen\models\breast_cancer\GlobalBest_LogisticRegression.pkl con feature_names: True, preprocessor: True
+2025-05-29 01:04:25,142 - INFO - Modelo GlobalBest_LogisticRegression guardado exitosamente.
+2025-05-29 01:04:25,149 - INFO - get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.

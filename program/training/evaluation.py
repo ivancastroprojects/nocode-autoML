@@ -7,14 +7,18 @@ import numpy as np
 from sklearn.metrics import classification_report, accuracy_score, precision_score, recall_score, f1_score
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error, roc_auc_score
 from sklearn.model_selection import cross_val_score
-from data.visualizer import Visualizer
+from program.data.visualizer import Visualizer
+from program.training.scikitdb.serializer import model_classes
+from program.utils.logger import logger
 
 # Funci\u00f3n para evaluar modelos de clasificaci\u00f3n
 class Evaluation:
-    def __init__(self, problem_type, short_dataset_name):
+    def __init__(self, problem_type, short_dataset_name, model_name=None):
         self.problem_type = problem_type
         self.visualizer = Visualizer()
         self.visualizer.set_dataset_name(short_dataset_name)
+        if model_name:
+            self.visualizer.set_model_name(model_name)
 
     def evaluate(self, model, X_test, y_test, y_pred, selected_features):
         """
@@ -185,7 +189,7 @@ class Evaluation:
             metrics_to_compare = ['accuracy', 'precision', 'recall', 'f1']
             for metric_name in metrics_to_compare:
                 if metric_name == 'accuracy':
-                    base_value = accuracy_score(y_test, base_pred)
+                    ase_value = accuracy_score(y_test, base_pred)
                     opt_value = accuracy_score(y_test, optimized_pred)
                 elif metric_name == 'precision':
                     base_value = precision_score(y_test, base_pred, average='weighted', zero_division=0)
@@ -216,13 +220,89 @@ class Evaluation:
                     opt_value = mean_absolute_error(y_test, optimized_pred)
                     diff_format = "{diff:+.4f}" # Lower MAE is better
             
-                diff = opt_value - base_value
-                # Adjust interpretation of diff for error metrics (lower is better)
-                if metric_name in ['mean_squared_error', 'mean_absolute_error']:
-                     # For error metrics, a negative diff means the optimized model is better (error decreased)
-                     # A positive diff means optimized model is worse (error increased)
-                     print(f"{metric_name.replace('_', ' ').capitalize():10} | {base_value:.4f}      | {opt_value:.4f}            | {diff_format.format(diff=diff)}") 
-                else: # For R2 score (higher is better)
-                    print(f"{metric_name.replace('_', ' ').capitalize():10} | {base_value:.4f}      | {opt_value:.4f}            | {diff_format.format(diff=diff)}")
+            diff = opt_value - base_value
+            # Adjust interpretation of diff for error metrics (lower is better)
+            if metric_name in ['mean_squared_error', 'mean_absolute_error']:
+                # For error metrics, a negative diff means the optimized model is better (error decreased)
+                # A positive diff means optimized model is worse (error increased)
+                print(f"{metric_name.replace('_', ' ').capitalize():10} | {base_value:.4f}      | {opt_value:.4f}            | {diff_format.format(diff=diff)}") 
+            else: # For R2 score (higher is better)
+                print(f"{metric_name.replace('_', ' ').capitalize():10} | {base_value:.4f}      | {opt_value:.4f}            | {diff_format.format(diff=diff)}")
         else:
             print("Tipo de problema no reconocido para la comparación de modelos.")
+
+    def _get_model_instance(self, model_name, params=None):
+        """
+        Obtiene una instancia de un modelo a partir de su nombre y parámetros,
+        añadiendo verbosidad para el seguimiento del usuario.
+        """
+        if params is None:
+            params = {}
+        
+        instance_params = params.copy()
+        model_class = model_classes.get(model_name)
+        
+        if not model_class:
+            logger.error(f"Modelo '{model_name}' no encontrado en el diccionario de clases.")
+            return None
+
+        # Añadir verbosidad para dar feedback en modelos que lo soporten
+        import inspect
+        try:
+            sig = inspect.signature(model_class.__init__)
+            if 'verbose' in sig.parameters:
+                instance_params.setdefault('verbose', 1)
+        except Exception:
+            # Si la inspección falla por alguna razón, no es crítico.
+            pass
+
+        try:
+            return model_class(**instance_params)
+        except Exception as e:
+            logger.error(f"Error al instanciar {model_name} con {instance_params}: {e}")
+            logger.warning(f"Intentando instanciar {model_name} con parámetros por defecto.")
+            return model_class()
+
+    def train_and_evaluate_model(self, model_name, X_train, y_train, X_test, y_test, features, params=None):
+        """
+        Función principal que entrena y evalúa un modelo.
+        """
+        model_instance = self._get_model_instance(model_name, params)
+        
+        # Entrenar el modelo
+        model_instance.fit(X_train, y_train)
+        
+        # Realizar predicciones
+        y_train_pred = model_instance.predict(X_train)
+        y_test_pred = model_instance.predict(X_test)
+        
+        # Evaluar
+        train_score, test_score, metrics = self.evaluate_model(
+            y_train, y_train_pred, y_test, y_test_pred
+        )
+        
+        # Generar y guardar visualizaciones, pasando el tipo de problema
+        self.visualizer.generate_visualizations(model_instance, X_test, y_test, y_test_pred, self.problem_type)
+        
+        return model_instance, train_score, test_score, metrics
+
+    def evaluate_model(self, y_train, y_train_pred, y_test, y_test_pred):
+        """
+        Calcula las métricas de evaluación para un modelo.
+        """
+        problem_type_lower = self.problem_type.lower()
+        
+        if 'clasificación' in problem_type_lower or 'clasificacion' in problem_type_lower:
+            train_score = accuracy_score(y_train, y_train_pred)
+            test_score = accuracy_score(y_test, y_test_pred)
+            metrics = self.evaluate_classification_metrics(y_test, y_test_pred)
+        elif 'regresión' in problem_type_lower or 'regresion' in problem_type_lower:
+            train_score = r2_score(y_train, y_train_pred)
+            test_score = r2_score(y_test, y_test_pred)
+            metrics = self.evaluate_regression_metrics(y_test, y_test_pred)
+            metrics['R-squared'] = test_score
+        else:
+            logger.error(f"Tipo de problema desconocido: {self.problem_type}")
+            return None, None, None # Devuelve None si el tipo de problema no es reconocido
+            
+        return train_score, test_score, metrics

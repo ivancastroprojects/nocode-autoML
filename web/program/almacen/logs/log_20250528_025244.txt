@@ -1,0 +1,26 @@
+get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+[MQTT train_model] Target column set to: Net Amount
+[MQTT train_model] Dataset name set to: ecommerce
+[MQTT train_model] Algorithms set to: ['RandomForestClassifier', 'GradientBoostingClassifier', 'LogisticRegression', 'SVC', 'DecisionTreeClassifier', 'KNeighborsClassifier', 'RandomForestRegressor', 'GradientBoostingRegressor', 'LinearRegression', 'SVR', 'DecisionTreeRegressor', 'KNeighborsRegressor']
+[MQTT train_model] Crossvalidation set to: 80
+[MQTT train_model] Recommendations set to: True
+[MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'ecommerce'. This should be set by a 'dataset' command flow prior to 'train'.
+get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+[MQTT train_model] Target column set to: Net Amount
+[MQTT train_model] Dataset name set to: ecommerce
+[MQTT train_model] Algorithms set to: ['RandomForestClassifier', 'GradientBoostingClassifier', 'LogisticRegression', 'SVC', 'DecisionTreeClassifier', 'KNeighborsClassifier', 'RandomForestRegressor', 'GradientBoostingRegressor', 'LinearRegression', 'SVR', 'DecisionTreeRegressor', 'KNeighborsRegressor']
+[MQTT train_model] Crossvalidation set to: 80
+[MQTT train_model] Recommendations set to: True
+[MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'ecommerce'. This should be set by a 'dataset' command flow prior to 'train'.
+get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+[MQTT train_model] Target column set to: target
+[MQTT train_model] Dataset name set to: breast_cancer
+[MQTT train_model] Algorithms set to: ['RandomForestClassifier', 'KNeighborsClassifier', 'RandomForestRegressor', 'DecisionTreeRegressor', 'KNeighborsRegressor']
+[MQTT train_model] Crossvalidation set to: 80
+[MQTT train_model] Recommendations set to: True
+[MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'breast_cancer'. This should be set by a 'dataset' command flow prior to 'train'.
+get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.

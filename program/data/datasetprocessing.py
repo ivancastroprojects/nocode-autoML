@@ -13,9 +13,11 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.metrics import make_scorer, accuracy_score, r2_score
 from sklearn.decomposition import PCA
 from sklearn_genetic import GAFeatureSelectionCV
+from sklearn.feature_extraction.text import TfidfVectorizer
 
-from utils.logger import logger
-from data.visualizer import Visualizer
+from program.utils.logger import logger
+from program.data.visualizer import Visualizer
+from program.training.scikitdb.serializer import get_safe_path
     
 
 def determine_problem_type(y, feature_names=None):
@@ -227,47 +229,38 @@ def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeri
         logger.info(f"Columnas eliminadas explícitamente: {existing_cols_to_drop}")
     logger.info(f"Columnas en X después de eliminación explícita: {X.columns.tolist()}")
 
-    # Identificar tipos de columnas
-    auto_identified_numerics = X.select_dtypes(include=['int64', 'float64']).columns.tolist()
-    auto_identified_categoricals = X.select_dtypes(include=['object', 'category']).columns.tolist()
-
-    if numeric_features is None:
-        numeric_features = auto_identified_numerics
-    if categorical_features is None:
-        # Filter high-cardinality categoricals before assigning to categorical_features
-        true_categorical_features = []
-        potential_high_card_cols = []
-        for col in auto_identified_categoricals:
-            # Heuristics for high cardinality:
-            # - More than 50 unique values
-            # - Or, more than 30% of rows are unique values for that column
-            # - And ensure the column is not numeric-like (though dtypes should handle this)
-            unique_count = X[col].nunique()
-            if unique_count > 50 or (unique_count / len(X) > 0.3 and unique_count > 5): # Min 5 unique to avoid penalizing very small categoricals
-                logger.warning(f"Columna '{col}' tiene alta cardinalidad ({unique_count} valores únicos). Se excluirá de la codificación categórica estándar y se tratará como 'passthrough'.")
-                potential_high_card_cols.append(col)
+    # --- LÓGICA DE DETECCIÓN DE TIPOS REFORZADA ---
+    # Identificar tipos de columnas desde el DataFrame X actual
+    numeric_features = X.select_dtypes(include=['int64', 'float64']).columns.tolist()
+    categorical_candidates = X.select_dtypes(include=['object', 'category']).columns.tolist()
+    datetime_features = X.select_dtypes(include=['datetime64']).columns.tolist()
+    
+    # Filtrar categóricas con alta cardinalidad
+    high_cardinality_threshold = 50
+    categorical_features = []
+    high_cardinality_features = []
+    
+    for col in categorical_candidates:
+        try:
+            if X[col].nunique() > high_cardinality_threshold:
+                high_cardinality_features.append(col)
             else:
-                true_categorical_features.append(col)
-        categorical_features = true_categorical_features
-        # Ensure numeric_features and categorical_features are disjoint
-        numeric_features = [col for col in numeric_features if col not in categorical_features and col not in potential_high_card_cols]
-        
-    if datetime_features is None:
-        datetime_features = X.select_dtypes(include=['datetime64']).columns.tolist()
-        # Ensure datetime_features are not in numeric or categorical
-        numeric_features = [col for col in numeric_features if col not in datetime_features]
-        categorical_features = [col for col in categorical_features if col not in datetime_features]
+                categorical_features.append(col)
+        except Exception:
+            # Si nunique() falla, tratarla como de alta cardinalidad
+            high_cardinality_features.append(col)
+            
+    if high_cardinality_features:
+        logger.warning(f"Columnas con alta cardinalidad (> {high_cardinality_threshold} valores únicos) serán descartadas: {high_cardinality_features}")
+        X.drop(columns=high_cardinality_features, inplace=True)
 
-    if text_features is None: # Placeholder for future text feature specific processing
-        text_features = []
-        # Ensure text_features are not in numeric, categorical, or datetime
-        numeric_features = [col for col in numeric_features if col not in text_features]
-        categorical_features = [col for col in categorical_features if col not in text_features]
-        datetime_features = [col for col in datetime_features if col not in text_features]
-        
-    logger.info(f"Características numéricas finales para transformador: {numeric_features}")
-    logger.info(f"Características categóricas finales para transformador: {categorical_features}")
-    logger.info(f"Características de fecha/hora finales para transformador: {datetime_features}")
+    # Las columnas de texto se manejarán por separado si es necesario. Por ahora, nos aseguramos de que no se procesen aquí.
+    text_features = []
+    # --- FIN DE LA LÓGICA REFORZADA ---
+
+    print(f"Características numéricas finales para transformador: {numeric_features}")
+    print(f"Características categóricas finales para transformador: {categorical_features}")
+    print(f"Características de fecha/hora finales para transformador: {datetime_features}")
     # Columns in potential_high_card_cols will be handled by 'remainder=passthrough' if not in other lists.
     
     # Manejar datos duplicados
@@ -309,8 +302,8 @@ def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeri
         encoder = OrdinalEncoder(handle_unknown='use_encoded_value', unknown_value=-1)
     
     categorical_transformer = Pipeline(steps=[
-        ('imputer', SimpleImputer(strategy='constant', fill_value='missing')),
-        ('encoder', encoder)
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        ('onehot', OneHotEncoder(handle_unknown='ignore', sparse_output=False))
     ])
 
     # Procesamiento de caracteristicas de fecha
@@ -324,16 +317,30 @@ def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeri
 
     X = extract_date_features(X)
 
-    # Crear el preprocesador de columnas
+    datetime_transformer = Pipeline(steps=[
+        ('imputer', SimpleImputer(strategy='most_frequent')),
+        # Aquí se podrían añadir más pasos, como extraer día, mes, año...
+    ])
+
+    text_vectorizer = Pipeline(steps=[
+        # TfidfVectorizer es una opción, pero requiere que las columnas de texto
+        # se manejen como una sola entrada de texto por fila.
+        # Por ahora, un placeholder. La lógica de text_features debe ser mejorada.
+        ('imputer', SimpleImputer(strategy='constant', fill_value='missing'))
+    ])
+
+    # Crear el preprocesador con ColumnTransformer
     preprocessor = ColumnTransformer(
         transformers=[
             ('num', numeric_transformer, numeric_features),
-            ('cat', categorical_transformer, categorical_features)
+            ('cat', categorical_transformer, categorical_features),
+            ('datetime', datetime_transformer, datetime_features)
         ],
-        remainder='passthrough'
+        remainder='drop' # Asegurarse de que el resto se descarta
     )
 
-    # Aplicar el preprocesador
+    # Entrenar el preprocesador y transformar los datos
+    print("Ajustando el preprocesador y transformando los datos...")
     X_processed = preprocessor.fit_transform(X)
     
     # Obtener los nombres de las características después del preprocesamiento
@@ -347,7 +354,7 @@ def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeri
         processed_feature_names = numeric_features.copy()
         if len(categorical_features) > 0 and encoding_strategy == 'onehot':
             try:
-                cat_encoder = preprocessor.named_transformers_['cat'].named_steps['encoder']
+                cat_encoder = preprocessor.named_transformers_['cat'].named_steps['onehot']
                 cat_feature_names = cat_encoder.get_feature_names_out(categorical_features)
                 processed_feature_names.extend(cat_feature_names)
             except Exception as cat_e:
@@ -361,11 +368,11 @@ def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeri
         # Esto es propenso a errores si las listas originales no se guardaron bien.
         # Esta es una aproximación:
         original_X_cols = X.columns.tolist()
-        processed_in_transformers = set(numeric_features + auto_identified_categoricals) # Usar la lista ANTES del filtro de cardinalidad
+        processed_in_transformers = set(numeric_features + categorical_features) # Usar la lista ANTES del filtro de cardinalidad
         passthrough_cols_approx = [col for col in original_X_cols if col not in processed_in_transformers]
         processed_feature_names.extend(passthrough_cols_approx)
         logger.info(f"Nombres de características (fallback manual): {processed_feature_names[:15]}...") # Loguear solo una parte
-
+    
     # Convertir el resultado de nuevo a DataFrame
     df_processed = pd.DataFrame(X_processed.toarray() if scipy.sparse.issparse(X_processed) else X_processed, 
                                 columns=processed_feature_names, index=X.index)
@@ -380,23 +387,34 @@ def basic_dfpreprocess(df, target_column=None, categorical_features=None, numeri
 
 def optimized_dfpreprocess(df, target_column, n_features_to_select=15, apply_pca=True, feature_selection_method='f_classif'):
     """
-    Optimiza el dataset aplicando preprocesamiento avanzado, selección de características y PCA.
-    
-    Args:
-    df (pd.DataFrame): El DataFrame original a optimizar.
-    target_column (str): Nombre de la columna objetivo.
-    n_features_to_select (int): Número de características a seleccionar.
-    apply_pca (bool): Si se debe aplicar PCA después de la selección de características.
-    feature_selection_method (str): Método de selección de características ('f_classif', 'f_regression', 'mutual_info_classif', 'mutual_info_regression').
-    
-    Returns:
-    pd.DataFrame: DataFrame optimizado
+    Realiza un preprocesamiento optimizado del dataset, incluyendo selección de características.
     """
-    # Aplicar preprocesamiento avanzado sobre el dataset
-    df_processed, _ = basic_dfpreprocess(df, target_column=target_column)
+    logger.info("Iniciando preprocesamiento optimizado del dataset...")
+    df_copy = df.copy()
+
+    # Separar X e y
+    if target_column in df_copy.columns:
+        y = df_copy[target_column]
+        X = df_copy.drop(columns=[target_column])
+    else:
+        raise ValueError(f"La columna objetivo '{target_column}' no se encontró en el DataFrame.")
+
+    # --- NUEVA LÓGICA: Descartar columnas de alta cardinalidad ---
+    categorical_features = X.select_dtypes(include=['object', 'category']).columns.tolist()
+    high_cardinality_threshold = 50
+    high_cardinality_features = []
+
+    for col in categorical_features:
+        if X[col].nunique() > high_cardinality_threshold:
+            high_cardinality_features.append(col)
     
-    y = df_processed[target_column]
-    X = df_processed.drop(columns=[target_column])
+    if high_cardinality_features:
+        logger.info(f"Descartando por alta cardinalidad en 'optimized_dfpreprocess': {high_cardinality_features}")
+        X = X.drop(columns=high_cardinality_features)
+    # --- FIN DE LA NUEVA LÓGICA ---
+
+    # El resto del preprocesamiento continúa con el DataFrame X ya filtrado
+    numeric_features = X.select_dtypes(include=np.number).columns.tolist()
     
     # Selección de características
     if feature_selection_method == 'f_classif':
@@ -507,46 +525,30 @@ def handle_outliers(df, outliers, strategy='clip'):
     
     return df_cleaned
 
-def select_best_features(X, y, problem_type, feature_names, *, search_level='basic', k=10, time_limit=5):
+def select_best_features(X, y, problem_type, feature_names, k=10, method='basic'):
     """
-    Selecciona las mejores características del dataset según el nivel de búsqueda y el tamaño del dataset.
-    
-    Args:
-    X (array-like): Características del dataset.
-    y (array-like): Variable objetivo.
-    problem_type (str): Tipo de problema ('classification' o 'regression').
-    feature_names (list or np.ndarray): Nombres de las características.
-    search_level (str): Nivel de búsqueda ('basic', 'intermediate', 'advanced'). Por defecto 'basic'.
-    k (int): Número máximo de características a seleccionar. Por defecto 10.
-    time_limit (int): Tiempo límite en segundos para la ejecución. Por defecto 5.
-    
-    Returns:
-    tuple: (selected_features, X_new)
+    Selecciona las k mejores características de un dataset.
     """
-    n_samples, n_features = X.shape
-    start_time = time.time()
+    if X is None or y is None:
+        return [], X 
 
-    # Convertir feature_names a lista si es un numpy.ndarray
-    feature_names = feature_names.tolist() if isinstance(feature_names, np.ndarray) else feature_names
+    # Asegurarse de que k no sea mayor que el número de features disponibles
+    n_features = X.shape[1]
+    if k > n_features:
+        print(f"Advertencia: k={k} es mayor que el número de features ({n_features}). Se ajustará k a {n_features}.")
+        k = n_features
 
-    # Validar el nivel de búsqueda
-    valid_levels = ['basic', 'intermediate', 'advanced']
-    if search_level not in valid_levels:
-        print(f"Nivel de búsqueda '{search_level}' no válido. Usando 'basic'.")
-        search_level = 'basic'
+    print(f"Seleccionando las mejores {k} características de {n_features} disponibles...")
 
-    # Elegir el método de selección basado en el nivel de búsqueda y el tamaño del dataset
-    if search_level == 'basic' or n_samples * n_features > 1e6:
+    if method == 'basic':
+        # Pasa el k ajustado a la función subyacente
         selected_features = select_features_basic(X, y, problem_type, feature_names, k)
-    elif search_level == 'intermediate' or n_samples * n_features > 1e5:
+    elif method == 'intermediate':
         selected_features = select_features_intermediate(X, y, problem_type, feature_names, k)
+    elif method == 'advanced':
+        selected_features = select_features_advanced(X, y, problem_type, feature_names, k)
     else:
-        selected_features = select_features_advanced(X, y, problem_type, feature_names, k, time_limit)
-
-    # Si el tiempo excede el límite, usar el método básico
-    if time.time() - start_time > time_limit:
-        print("Tiempo límite excedido. Usando método básico.")
-        selected_features = select_features_basic(X, y, problem_type, feature_names, k)
+        raise ValueError("Método de selección de características no válido")
 
     # Crear el nuevo conjunto de datos con las características seleccionadas
     if isinstance(X, pd.DataFrame):
@@ -588,14 +590,28 @@ def is_data_normalized(df):
 
 def select_features_basic(X, y, problem_type, feature_names, k):
     """
-    Método básico y rápido de selección de características.
+    Selección de características básica usando SelectKBest o SelectFromModel.
     """
-    if problem_type == 'classification':
-        selector = SelectFromModel(RandomForestClassifier(n_estimators=100, random_state=42, verbose=0), max_features=k)
+    # Lógica para seleccionar el estimador para SelectFromModel
+    if problem_type in ["Clasificación Binaria", "Clasificación Multiclase"]:
+        # Usar un clasificador como estimador
+        estimator = RandomForestClassifier(n_estimators=50, random_state=42)
+    elif problem_type == "Regresión":
+        # Usar un regresor como estimador
+        estimator = RandomForestRegressor(n_estimators=50, random_state=42)
     else:
-        selector = SelectFromModel(RandomForestRegressor(n_estimators=100, random_state=42, verbose=0), max_features=k)
+        raise ValueError(f"Tipo de problema no reconocido para la selección de características: {problem_type}")
+
+    # Asegurarse de que max_features (que es k) no exceda el número de features
+    n_features = X.shape[1]
+    max_features = min(k, n_features)
+
+    selector = SelectFromModel(estimator, max_features=max_features)
     
+    print(f"Ejecutando SelectFromModel con max_features={max_features}")
+
     selector.fit(X, y)
+    
     selected_mask = selector.get_support()
     return [feature for feature, selected in zip(feature_names, selected_mask) if selected]
 
@@ -677,11 +693,88 @@ def get_feature_importance(X, y, problem_type, feature_names):
     return importance.sort_values('combined_score', ascending=False)
 
 def determine_target_column(df):
-    """
-    Determina automáticamente la columna objetivo basándose en heurísticas simples.
-    """
-    # Heurística 1: Buscar columnas con nombres comunes de variables objetivo
-    common_target_names = ['target', 'label', 'class', 'y', 'output']
-    for col in df.columns:
-        if col.lower() in common_target_names:
+    potential_targets = ['target', 'TARGET', 'Target', 'class', 'CLASS', 'Class', 'label', 'LABEL', 'Label', 'output', 'OUTPUT', 'Output']
+    for col in potential_targets:
+        if col in df.columns:
             return col
+    # Fallback logic if no common name is found
+    # This could be improved, e.g., by looking at data types or number of unique values
+    if 'y' in df.columns: return 'y'
+    if df.shape[1] > 0: return df.columns[-1] # As a last resort, use the last column
+    return None
+
+def ensure_dataset_processed_and_saved(df_original: pd.DataFrame, dataset_name: str, target_column: str = None):
+    """
+    Ensures a dataset is processed and saved to disk, including its raw and processed versions.
+
+    Args:
+        df_original (pd.DataFrame): The original DataFrame.
+        dataset_name (str): The name of the dataset (used for subfolder and filenames).
+        target_column (str, optional): The name of the target variable. If None, it will be inferred.
+
+    Returns:
+        tuple: (pd.DataFrame, preprocessor) The processed DataFrame and the fitted preprocessor.
+               Returns (None, None) if an error occurs.
+    """
+    logger.info(f"[ensure_dataset_processed_and_saved] Processing dataset: {dataset_name}")
+
+    try:
+        # 1. Determine save paths
+        raw_file_path = get_safe_path('program/almacen/datasets', dataset_name, f"{dataset_name}.csv")
+        processed_file_path = get_safe_path('program/almacen/datasets', dataset_name, f"{dataset_name}_processed.csv")
+
+        # 2. Save the original DataFrame
+        logger.info(f"Saving original dataset to: {raw_file_path}")
+        df_original.to_csv(raw_file_path, index=False)
+        logger.info(f"Original dataset saved successfully.")
+
+        # 3. Determine target column if not provided
+        if target_column is None:
+            target_column = determine_target_column(df_original)
+            if target_column is None:
+                logger.error("Could not determine target column. Preprocessing cannot proceed without it.")
+                # Fallback: Attempt to process without a target, but this might limit preprocessing
+                # Or, decide to not process if target is crucial
+                # For now, we'll log and continue, but some steps might fail or be skipped
+                pass # allow processing to continue, basic_dfpreprocess might handle it or fail gracefully
+            else:
+                logger.info(f"Determined target column: {target_column}")
+
+        # 4. Perform basic preprocessing
+        logger.info(f"Starting basic preprocessing for {dataset_name}...")
+        # Infer feature types for basic_dfpreprocess
+        if target_column and target_column in df_original.columns:
+            X_temp = df_original.drop(columns=[target_column])
+        else:
+            X_temp = df_original.copy()
+
+        numeric_features = X_temp.select_dtypes(include=np.number).columns.tolist()
+        categorical_features = X_temp.select_dtypes(include='object').columns.tolist()
+        # datetime_features can be added if relevant, for now an empty list
+        datetime_features = []
+        # text_features can be added if relevant
+        text_features = []
+
+        df_processed, preprocessor = basic_dfpreprocess(
+            df_original.copy(), # Use a copy to avoid modifying the original df in memory
+            target_column=target_column,
+            numeric_features=numeric_features,
+            categorical_features=categorical_features,
+            datetime_features=datetime_features,
+            text_features=text_features
+        )
+        logger.info(f"Basic preprocessing completed for {dataset_name}. Processed df shape: {df_processed.shape}")
+
+        # 5. Save the processed DataFrame
+        if df_processed is not None:
+            logger.info(f"Saving processed dataset to: {processed_file_path}")
+            df_processed.to_csv(processed_file_path, index=False)
+            logger.info(f"Processed dataset saved successfully.")
+            return df_processed, preprocessor
+        else:
+            logger.error(f"Processed DataFrame is None for {dataset_name}. Cannot save.")
+            return None, None
+
+    except Exception as e:
+        logger.error(f"Error in ensure_dataset_processed_and_saved for {dataset_name}: {e}", exc_info=True)
+        return None, None

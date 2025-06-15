@@ -4,6 +4,9 @@ pytest
 paho-mqtt==1.5.1
 requests==2.31.0
 
+Flask
+Flask-CORS
+
 numpy
 pandas
 matplotlib

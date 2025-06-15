@@ -6,13 +6,13 @@ from sklearn.model_selection import cross_val_score
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import make_scorer, accuracy_score, r2_score
-from training.train import get_param_grid, optimize_model
-from data.datasetprocessing import select_best_features
+from program.training.train import get_param_grid, optimize_model
+from program.data.datasetprocessing import select_best_features
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingClassifier, GradientBoostingRegressor
 from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.svm import SVC, SVR
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from utils.logger import logger
+from program.utils.logger import logger
 import time
 import inspect
 
@@ -286,31 +286,43 @@ def get_popular_algorithms(problem_type):
     # La estandarización ya se hace aquí, así que la entrada debe ser 'clasificacion' o 'regresion'
     # Si se llama desde fuera, asegurarse de que se pase así, o estandarizar en el punto de llamada.
     # Por consistencia, volvemos a estandarizar aquí por si se llama desde otro sitio.
+    
+    classification_algorithms = [
+        ('RandomForestClassifier', RandomForestClassifier),
+        ('GradientBoostingClassifier', GradientBoostingClassifier),
+        ('LogisticRegression', LogisticRegression),
+        ('SVC', SVC),
+        ('DecisionTreeClassifier', DecisionTreeClassifier),
+        ('KNeighborsClassifier', KNeighborsClassifier)
+    ]
+    
+    regression_algorithms = [
+        ('RandomForestRegressor', RandomForestRegressor),
+        ('GradientBoostingRegressor', GradientBoostingRegressor),
+        ('LinearRegression', LinearRegression),
+        ('SVR', SVR),
+        ('DecisionTreeRegressor', DecisionTreeRegressor),
+        ('KNeighborsRegressor', KNeighborsRegressor)
+    ]
+
+    if problem_type is None:
+        logger.info("get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.")
+        # Devolver una copia combinada para evitar modificar las listas originales si se hace externamente.
+        return classification_algorithms + regression_algorithms
+
     pt_lower_internal = problem_type.lower()
     if not ('clasificacion' in pt_lower_internal or 'regresion' in pt_lower_internal):
         logger.warning(f"get_popular_algorithms llamado con problem_type inesperado: {problem_type}. Se devolverá una lista vacía.")
         return []
 
     if 'clasificacion' in pt_lower_internal: # Buscamos la subcadena normalizada
-        return [
-            ('RandomForestClassifier', RandomForestClassifier),
-            ('GradientBoostingClassifier', GradientBoostingClassifier),
-            ('LogisticRegression', LogisticRegression),
-            ('SVC', SVC),
-            ('DecisionTreeClassifier', DecisionTreeClassifier),
-            ('KNeighborsClassifier', KNeighborsClassifier)
-        ]
+        return classification_algorithms
     elif 'regresion' in pt_lower_internal: # Buscamos la subcadena normalizada
-        return [
-            ('RandomForestRegressor', RandomForestRegressor),
-            ('GradientBoostingRegressor', GradientBoostingRegressor),
-            ('LinearRegression', LinearRegression),
-            ('SVR', SVR),
-            ('DecisionTreeRegressor', DecisionTreeRegressor),
-            ('KNeighborsRegressor', KNeighborsRegressor)
-        ]
+        return regression_algorithms
     else:
-        raise ValueError(f"Tipo de problema no reconocido: {problem_type}. Debe ser 'Clasificación' o 'Regresión'.")
+        # Esto no debería ocurrir si la estandarización inicial funcionó o si problem_type es None
+        logger.error(f"Tipo de problema no reconocido después de la validación inicial: {problem_type}. Esto es inesperado.")
+        return []
         
 # La función apply_transfer_learning puede mantenerse si se considera útil en el futuro,
 # pero no forma parte del flujo principal de optimización que estamos refactorizando ahora.

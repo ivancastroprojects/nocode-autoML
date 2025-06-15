@@ -1,0 +1,8 @@
+get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+[MQTT train_model] Target column set to: target
+[MQTT train_model] Dataset name set to: digits
+[MQTT train_model] Algorithms set to: ['RandomForestClassifier']
+[MQTT train_model] Crossvalidation set to: 80
+[MQTT train_model] Recommendations set to: True
+[MQTT train_model] Mismatch or missing global_data.dataset ('None') for expected dataset 'digits'. This should be set by a 'dataset' command flow prior to 'train'.
+get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.

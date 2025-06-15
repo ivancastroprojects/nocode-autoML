@@ -4,7 +4,7 @@ import re
 from io import StringIO
 import requests
 from sklearn import datasets
-from utils.logger import logger
+from program.utils.logger import logger
 import os
 
 class Dataset:

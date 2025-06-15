@@ -1,8 +1,8 @@
 #api_interface.py
-from api.config import Config
+from program.api.config import Config
 import requests
-from utils.logger import logger
-import data.global_data as global_data
+from program.utils.logger import logger
+import program.data.global_data as global_data
 
 class APIInterface:
     api_config = Config.get_api_config()
@@ -76,3 +76,28 @@ class APIInterface:
             logger.info("Resultados de las predicciones enviados exitosamente a la API")
         except requests.exceptions.RequestException as e:
             logger.error(f"Error al enviar resultados de las predicciones a la API: {str(e)}")
+
+    @staticmethod
+    def send_error(error_message: str, error_details: str = ""):
+        """
+        Envía un mensaje de error a la API.
+        """
+        try:
+            if Config.SIMULATION_MODE:
+                logger.error(f"Simulando envío de error a la API: {error_message} | {error_details}")
+                return
+
+            payload = {
+                "level": "error",
+                "message": error_message,
+                "details": error_details
+            }
+            response = requests.post(
+                f"{APIInterface.api_config['base_url']}/log",
+                json=payload,
+                headers=APIInterface._get_headers()
+            )
+            response.raise_for_status()
+            logger.info("Mensaje de error enviado exitosamente a la API.")
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Error al enviar el mensaje de error a la API: {str(e)}")

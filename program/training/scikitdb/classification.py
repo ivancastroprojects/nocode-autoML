@@ -10,8 +10,9 @@ from sklearn.naive_bayes import BernoulliNB, GaussianNB, MultinomialNB, Compleme
 from sklearn.neural_network import MLPClassifier
 from sklearn.preprocessing import LabelBinarizer
 
-import training.scikitdb.regression as regression
-import training.scikitdb.csr as csr
+from program.training.scikitdb import regression
+from program.training.scikitdb import csr as csr
+
 
 
 def serialize_logistic_regression(model):

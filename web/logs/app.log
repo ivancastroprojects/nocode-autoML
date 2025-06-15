@@ -1,0 +1,54 @@
+[2025-06-15 19:28:30] [INFO] [ensure_dataset_processed_and_saved] Processing dataset: artist_popularity
+[2025-06-15 19:28:30] [INFO] Saving original dataset to: program/almacen/datasets\artist_popularity\artist_popularity.csv
+[2025-06-15 19:28:31] [INFO] Original dataset saved successfully.
+[2025-06-15 19:28:31] [INFO] Determined target column: remainder__playlist_id
+[2025-06-15 19:28:31] [INFO] Starting basic preprocessing for artist_popularity...
+[2025-06-15 19:28:31] [INFO] Columnas en X después de eliminación explícita: ['num__track_popularity', 'num__danceability', 'num__energy', 'num__key', 'num__loudness', 'num__mode', 'num__speechiness', 'num__acousticness', 'num__instrumentalness', 'num__liveness', 'num__valence', 'num__tempo', 'num__duration_ms', 'cat__playlist_genre_edm', 'cat__playlist_genre_latin', 'cat__playlist_genre_pop', 'cat__playlist_genre_r&b', 'cat__playlist_genre_rap', 'cat__playlist_genre_rock', 'cat__playlist_subgenre_album rock', 'cat__playlist_subgenre_big room', 'cat__playlist_subgenre_classic rock', 'cat__playlist_subgenre_dance pop', 'cat__playlist_subgenre_electro house', 'cat__playlist_subgenre_electropop', 'cat__playlist_subgenre_gangster rap', 'cat__playlist_subgenre_hard rock', 'cat__playlist_subgenre_hip hop', 'cat__playlist_subgenre_hip pop', 'cat__playlist_subgenre_indie poptimism', 'cat__playlist_subgenre_latin hip hop', 'cat__playlist_subgenre_latin pop', 'cat__playlist_subgenre_neo soul', 'cat__playlist_subgenre_new jack swing', 'cat__playlist_subgenre_permanent wave', 'cat__playlist_subgenre_pop edm', 'cat__playlist_subgenre_post-teen pop', 'cat__playlist_subgenre_progressive electro house', 'cat__playlist_subgenre_reggaeton', 'cat__playlist_subgenre_southern hip hop', 'cat__playlist_subgenre_trap', 'cat__playlist_subgenre_tropical', 'cat__playlist_subgenre_urban contemporary', 'remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+[2025-06-15 19:28:31] [WARNING] Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__track_id', 'remainder__track_name', 'remainder__track_artist', 'remainder__track_album_id', 'remainder__track_album_name', 'remainder__track_album_release_date', 'remainder__playlist_name']
+[2025-06-15 19:28:31] [INFO] Basic preprocessing completed for artist_popularity. Processed df shape: (32833, 44)
+[2025-06-15 19:28:31] [INFO] Saving processed dataset to: program/almacen/datasets\artist_popularity\artist_popularity_processed.csv
+[2025-06-15 19:28:32] [INFO] Processed dataset saved successfully.
+[2025-06-15 19:28:43] [INFO] get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+[2025-06-15 19:28:47] [INFO] get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.
+[2025-06-15 19:28:59] [INFO] [MQTT train_model] Cargando dataset pre-procesado: program\almacen\datasets\artist_popularity\artist_popularity_processed.csv
+[2025-06-15 19:29:00] [INFO] Iniciando entrenamiento para el dataset: artist_popularity con target: num__track_popularity y algoritmos: ['RandomForestClassifier']
+[2025-06-15 19:29:00] [INFO] Target actualizado a su versión procesada: num__num__track_popularity
+[2025-06-15 19:29:00] [INFO] Tipo de problema determinado: Regresión
+[2025-06-15 19:29:00] [INFO] Tipo de problema detectado: Regresión
+[2025-06-15 19:29:00] [INFO] Iniciando preprocesamiento de datos para entrenamiento...
+[2025-06-15 19:29:00] [INFO] Columnas en X después de eliminación explícita: ['num__num__danceability', 'num__num__energy', 'num__num__key', 'num__num__loudness', 'num__num__mode', 'num__num__speechiness', 'num__num__acousticness', 'num__num__instrumentalness', 'num__num__liveness', 'num__num__valence', 'num__num__tempo', 'num__num__duration_ms', 'num__cat__playlist_genre_edm', 'num__cat__playlist_genre_latin', 'num__cat__playlist_genre_pop', 'num__cat__playlist_genre_r&b', 'num__cat__playlist_genre_rap', 'num__cat__playlist_genre_rock', 'num__cat__playlist_subgenre_album rock', 'num__cat__playlist_subgenre_big room', 'num__cat__playlist_subgenre_classic rock', 'num__cat__playlist_subgenre_dance pop', 'num__cat__playlist_subgenre_electro house', 'num__cat__playlist_subgenre_electropop', 'num__cat__playlist_subgenre_gangster rap', 'num__cat__playlist_subgenre_hard rock', 'num__cat__playlist_subgenre_hip hop', 'num__cat__playlist_subgenre_hip pop', 'num__cat__playlist_subgenre_indie poptimism', 'num__cat__playlist_subgenre_latin hip hop', 'num__cat__playlist_subgenre_latin pop', 'num__cat__playlist_subgenre_neo soul', 'num__cat__playlist_subgenre_new jack swing', 'num__cat__playlist_subgenre_permanent wave', 'num__cat__playlist_subgenre_pop edm', 'num__cat__playlist_subgenre_post-teen pop', 'num__cat__playlist_subgenre_progressive electro house', 'num__cat__playlist_subgenre_reggaeton', 'num__cat__playlist_subgenre_southern hip hop', 'num__cat__playlist_subgenre_trap', 'num__cat__playlist_subgenre_tropical', 'num__cat__playlist_subgenre_urban contemporary', 'remainder__playlist_id']
+[2025-06-15 19:29:00] [WARNING] Columnas con alta cardinalidad (> 50 valores únicos) serán descartadas: ['remainder__playlist_id']
+[2025-06-15 19:29:00] [INFO] Preprocesamiento de datos para entrenamiento completado.
+[2025-06-15 19:29:00] [INFO] Datos divididos. Entrenamiento: 26266 filas, Prueba: 6567 filas.
+[2025-06-15 19:29:00] [WARNING] El modelo 'RandomForestClassifier' no es apropiado para un problema de 'Regresión'.
+[2025-06-15 19:29:00] [WARNING] Se cambiará automáticamente a su homólogo: 'RandomForestRegressor'.
+[2025-06-15 19:29:00] [INFO] Entrenando modelo: RandomForestRegressor
+[2025-06-15 19:29:35] [ERROR] Fallo al entrenar el modelo RandomForestClassifier: continuous is not supported
+Traceback (most recent call last):
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\training.py", line 165, in _train_models
+    model, train_score, test_score, metrics = evaluation.train_and_evaluate_model(
+                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        corrected_algorithm_name, X_train, y_train, X_test, y_test, features, self.params.get(original_algorithm_name, {})
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\training\evaluation.py", line 285, in train_and_evaluate_model
+    self.visualizer.generate_visualizations(model_instance, X_test, y_test, y_test_pred)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\data\visualizer.py", line 90, in generate_visualizations
+    self.plot_confusion_matrix(y_test, y_pred)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\program\data\visualizer.py", line 96, in plot_confusion_matrix
+    cm = confusion_matrix(y_true, y_pred)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\utils\_param_validation.py", line 216, in wrapper
+    return func(*args, **kwargs)
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\metrics\_classification.py", line 340, in confusion_matrix
+    y_type, y_true, y_pred = _check_targets(y_true, y_pred)
+                             ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "C:\Users\ivang\Documents\MasterIA\TFM\tokiiai\.venv\Lib\site-packages\sklearn\metrics\_classification.py", line 118, in _check_targets
+    raise ValueError("{0} is not supported".format(y_type))
+ValueError: continuous is not supported
+[2025-06-15 19:29:35] [WARNING] El entrenamiento no produjo ningún modelo.
+[2025-06-15 19:29:35] [ERROR] [MQTT train_model] El entrenamiento no finalizó correctamente o no se guardó el mejor modelo.
+[2025-06-15 19:29:35] [ERROR] Simulando envío de error a la API: Fallo en el entrenamiento para el dataset 'artist_popularity'. | 
+[2025-06-15 19:29:35] [INFO] get_popular_algorithms llamado con problem_type=None. Devolviendo todos los algoritmos populares.

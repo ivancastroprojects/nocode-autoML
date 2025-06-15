@@ -1,0 +1,616 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<style>
+    :root {
+        --primary-color: #0052cc;
+        --secondary-color: #f4f5f7;
+        --border-color: #dfe1e6;
+        --text-color: #172b4d;
+        --text-secondary: #6b778c;
+        --card-bg: #ffffff;
+        --card-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    .predict-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    .step-header {
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .step-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-color);
+    }
+    
+    .step-header .step-p {
+        font-size: 1rem;
+        color: var(--text-secondary);
+        margin-top: 0.25rem;
+    }
+
+    .card-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .card {
+        background: var(--card-bg);
+        border-radius: 8px;
+        border: 1px solid var(--border-color);
+        box-shadow: var(--card-shadow);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        cursor: pointer;
+        overflow: hidden;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .card-content {
+        padding: 1.5rem;
+    }
+    
+    .card.active {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.2);
+    }
+
+    .card h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.2rem;
+        color: var(--text-color);
+    }
+    
+    .card p {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .step {
+        margin-bottom: 3rem;
+    }
+
+    .hidden {
+        display: none;
+    }
+    
+    .breadcrumb-nav {
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .breadcrumb-nav a {
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+
+    .breadcrumb-nav .separator {
+        margin: 0 0.5rem;
+        color: var(--text-secondary);
+    }
+    
+    .breadcrumb-nav span {
+        color: var(--text-color);
+        font-weight: 500;
+    }
+
+    .upload-area, .results-area, .info-area {
+        background-color: var(--secondary-color);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 2rem;
+        margin-top: 1.5rem;
+    }
+    
+    .results-area table, .info-area table {
+        width: 100%;
+        background-color: #fff;
+    }
+
+    .nav-tabs .nav-link {
+        color: var(--primary-color);
+    }
+
+    .nav-tabs .nav-link.active {
+        color: var(--text-color);
+        font-weight: 500;
+    }
+
+    /* Estilos del Dashboard */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    .dashboard-card {
+        background-color: var(--card-bg);
+        border-radius: 8px;
+        padding: 1.5rem;
+        box-shadow: var(--card-shadow);
+        height: 350px; /* Altura fija para consistencia */
+        display: flex;
+        flex-direction: column;
+    }
+    .dashboard-card h5 {
+        font-weight: 600;
+        color: var(--text-color);
+        margin-bottom: 1rem;
+    }
+    .dashboard-card.full-width {
+        grid-column: 1 / -1;
+        height: auto;
+    }
+    .gauge-container {
+        position: relative;
+        height: 180px;
+        margin: auto;
+    }
+    .metric-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-color);
+        text-align: center;
+        position: absolute;
+        top: 55%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+</style>
+
+<div class="predict-container">
+
+    <div id="breadcrumb" class="breadcrumb-nav">
+        <!-- Breadcrumb will be built by JS -->
+    </div>
+
+    <!-- Step 1: Dataset Selection -->
+    <div id="step-1" class="step">
+        <div class="step-header">
+            <h2>Paso 1: Selecciona un Dataset</h2>
+            <p class="step-p">Elige el conjunto de datos sobre el que se entrenó tu modelo.</p>
+        </div>
+        <div id="dataset-grid" class="card-grid">
+            {% for name, data in datasets.items() %}
+            <div class="card" data-name="{{ name }}">
+                <div class="card-content">
+                    <h3>{{ name }}</h3>
+                    <p>{{ data.files | length }} archivo(s) en la carpeta.</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Step 2: Model Selection -->
+    <div id="step-2" class="step hidden">
+        <div class="step-header">
+            <h2>Paso 2: Selecciona un Modelo</h2>
+            <p class="step-p">Estos son los modelos disponibles para el dataset <strong id="selected-dataset-name"></strong>.</p>
+        </div>
+        <div id="model-grid" class="card-grid">
+            <!-- Models will be loaded here via JavaScript -->
+        </div>
+        <div id="no-models-message" class="alert alert-info text-center hidden">
+            <p class="mb-2">No se encontraron modelos entrenados para este dataset.</p>
+            <form id="train-redirect-form" action="{{ url_for('set_active_dataset') }}" method="POST" style="display: inline;">
+                <input type="hidden" name="dataset_name" id="train-redirect-dataset-name" value="">
+                <input type="hidden" name="next_url" value="{{ url_for('training_configure_page') }}">
+                <button type="submit" class="btn btn-primary">
+                    Entrenar un nuevo modelo
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Step 3: Dashboard, Info & Prediction -->
+    <div id="step-3" class="step hidden">
+        <div class="step-header">
+            <h2>Paso 3: Dashboard de Modelo y Predicción</h2>
+            <p class="step-p">Analiza el rendimiento del modelo <strong id="selected-model-name"></strong> y proporciona datos para predecir.</p>
+        </div>
+
+        <!-- Dashboard Area -->
+        <div class="info-area">
+            <div id="model-dashboard" class="dashboard-grid">
+                <!-- Tarjeta 1: Medidor de Métrica Principal -->
+                <div class="dashboard-card">
+                    <h5 id="main-metric-title">Métrica Principal</h5>
+                    <div class="gauge-container">
+                        <canvas id="main-metric-gauge"></canvas>
+                        <div id="main-metric-value" class="metric-value"></div>
+                    </div>
+                </div>
+                <!-- Tarjeta 2: Matriz de Confusión -->
+                <div class="dashboard-card">
+                    <h5>Matriz de Confusión</h5>
+                    <canvas id="confusion-matrix-chart"></canvas>
+                </div>
+                <!-- Tarjeta 3: Importancia de Features -->
+                <div class="dashboard-card full-width">
+                    <h5>Importancia de Features</h5>
+                    <canvas id="feature-importance-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Input Area -->
+        <div class="upload-area mt-4">
+            <h4>Realizar Predicción</h4>
+            <ul class="nav nav-tabs" id="prediction-input-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-pane" type="button" role="tab">Subir CSV</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="manual-tab" data-bs-toggle="tab" data-bs-target="#manual-pane" type="button" role="tab">Introducir a Mano</button>
+                </li>
+            </ul>
+            <div class="tab-content pt-3">
+                <div class="tab-pane fade show active" id="upload-pane" role="tabpanel">
+                    <form id="prediction-form-file" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="prediction_file" class="form-label">Archivo CSV para predicción</label>
+                            <input class="form-control" type="file" id="prediction_file" name="prediction_file" accept=".csv" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Obtener Predicciones</button>
+                    </form>
+                </div>
+                <div class="tab-pane fade" id="manual-pane" role="tabpanel">
+                    <p>Introduce los valores para cada característica o genera una predicción aleatoria.</p>
+                    <form id="prediction-form-manual"></form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Display Results -->
+    <div id="step-4" class="step hidden">
+        <div class="step-header">
+            <h2>Paso 4: Resultados de la Predicción</h2>
+             <p class="step-p">A continuación se muestran las predicciones. También puedes descargar el resultado.</p>
+        </div>
+        <div id="results-area" class="results-area">
+            <div id="prediction-results-container"></div>
+            <a id="download-link" class="btn btn-success mt-3" href="#" style="display:none;">Descargar Predicciones</a>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/chartjs-chart-matrix@^1.1.1/dist/chartjs-chart-matrix.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const steps = {
+        step1: document.getElementById('step-1'),
+        step2: document.getElementById('step-2'),
+        step3: document.getElementById('step-3'),
+        step4: document.getElementById('step-4'),
+    };
+    
+    const breadcrumb = document.getElementById('breadcrumb');
+    const datasetGrid = document.getElementById('dataset-grid');
+    const modelGrid = document.getElementById('model-grid');
+    const predictionFormFile = document.getElementById('prediction-form-file');
+    const predictionFormManual = document.getElementById('prediction-form-manual');
+
+    let selectedDataset = null;
+    let selectedModel = null;
+    let charts = {};
+    let featureDetails = {};
+
+    function destroyCharts() {
+        Object.values(charts).forEach(chart => chart?.destroy());
+        charts = {};
+    }
+
+    function updateBreadcrumb() {
+        breadcrumb.innerHTML = '';
+        const homeLink = document.createElement('a');
+        homeLink.href = '#';
+        homeLink.textContent = 'Datasets';
+        homeLink.onclick = (e) => {
+            e.preventDefault();
+            resetToStep1();
+        };
+        breadcrumb.appendChild(homeLink);
+
+        if (selectedDataset) {
+            breadcrumb.innerHTML += '<span class="separator">&gt;</span>';
+            const datasetLink = document.createElement('a');
+            datasetLink.href = '#';
+            datasetLink.textContent = selectedDataset;
+            datasetLink.onclick = (e) => {
+                e.preventDefault();
+                resetToStep2();
+            };
+            breadcrumb.appendChild(datasetLink);
+        }
+        
+        if (selectedModel) {
+            breadcrumb.innerHTML += '<span class="separator">&gt;</span>';
+            const modelSpan = document.createElement('span');
+            modelSpan.textContent = selectedModel.split('.').slice(0,-1).join('.');
+            breadcrumb.appendChild(modelSpan);
+        }
+    }
+
+    function showStep(stepToShow) {
+        Object.values(steps).forEach(step => step.classList.add('hidden'));
+        if (steps[stepToShow]) {
+            steps[stepToShow].classList.remove('hidden');
+        }
+        window.scrollTo(0, 0);
+    }
+    
+    function resetToStep1() {
+        selectedDataset = null;
+        selectedModel = null;
+        
+        document.querySelectorAll('#dataset-grid .card').forEach(c => c.classList.remove('active'));
+        modelGrid.innerHTML = '';
+        
+        destroyCharts();
+        showStep('step1');
+        updateBreadcrumb();
+    }
+    
+    function resetToStep2() {
+        selectedModel = null;
+        document.querySelectorAll('#model-grid .card').forEach(c => c.classList.remove('active'));
+        steps.step3.classList.add('hidden');
+        steps.step4.classList.add('hidden');
+        destroyCharts();
+        showStep('step2');
+        updateBreadcrumb();
+    }
+
+
+    datasetGrid.addEventListener('click', function(e) {
+        const card = e.target.closest('.card');
+        if (!card) return;
+        selectedDataset = card.dataset.name;
+        
+        // Nuevo: Actualizar el valor del dataset en el formulario de redirección
+        const redirectDatasetInput = document.getElementById('train-redirect-dataset-name');
+        if (redirectDatasetInput) {
+            redirectDatasetInput.value = selectedDataset;
+        }
+
+        document.querySelectorAll('#dataset-grid .card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        
+        document.getElementById('selected-dataset-name').textContent = selectedDataset;
+        
+        fetch(`/api/models/${selectedDataset}`)
+            .then(response => response.json())
+            .then(data => {
+                modelGrid.innerHTML = '';
+                document.getElementById('no-models-message').classList.toggle('hidden', data.models && data.models.length > 0);
+                data.models.forEach(model => {
+                    const modelCard = `
+                        <div class="card" data-name="${model.filename}">
+                            <div class="card-content">
+                                <h3>${model.filename.split('.').slice(0,-1).join('.')}</h3>
+                                <p>Modelo PKL</p>
+                            </div>
+                        </div>
+                    `;
+                    modelGrid.innerHTML += modelCard;
+                });
+                showStep('step2');
+                updateBreadcrumb();
+            });
+    });
+    
+    modelGrid.addEventListener('click', function(e) {
+        const card = e.target.closest('.card');
+        if (!card) return;
+        
+        selectedModel = card.dataset.name;
+        document.querySelectorAll('#model-grid .card').forEach(c => c.classList.remove('active'));
+        card.classList.add('active');
+        
+        document.getElementById('selected-model-name').textContent = selectedModel.split('.').slice(0,-1).join('.');
+        
+        fetchModelDashboardData();
+        generateManualInputForm();
+        
+        showStep('step3');
+        steps.step4.classList.add('hidden');
+        updateBreadcrumb();
+    });
+
+    function fetchModelDashboardData() {
+        destroyCharts();
+        fetch(`/api/model/${selectedDataset}/${selectedModel}/dashboard`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) { console.error("Error fetching dashboard data:", data.error); return; }
+                
+                // Render Main Metric Gauge
+                renderMainMetricGauge(data.metrics);
+                
+                // Render Confusion Matrix
+                renderConfusionMatrix(data.confusion_matrix);
+                
+                // Render Feature Importance
+                renderFeatureImportance(data.feature_importance);
+            });
+    }
+
+    function renderMainMetricGauge(metrics) {
+        const ctx = document.getElementById('main-metric-gauge').getContext('2d');
+        const valueEl = document.getElementById('main-metric-value');
+        const titleEl = document.getElementById('main-metric-title');
+        
+        let mainMetric = metrics.accuracy ?? metrics.r2_score ?? 0;
+        let mainMetricName = metrics.accuracy ? 'Accuracy' : (metrics.r2_score ? 'R² Score' : 'Métrica Principal');
+        
+        titleEl.textContent = mainMetricName;
+        valueEl.textContent = mainMetric.toFixed(3);
+
+        charts.gauge = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                datasets: [{
+                    data: [mainMetric, 1 - mainMetric],
+                    backgroundColor: [mainMetric > 0.7 ? '#28a745' : '#ffc107', '#e9ecef'],
+                    borderWidth: 0
+                }]
+            },
+            options: { cutout: '80%', rotation: -90, circumference: 180, responsive: true, maintainAspectRatio: false, plugins: { tooltip: { enabled: false } } }
+        });
+    }
+
+    function renderConfusionMatrix(matrixData) {
+        const canvas = document.getElementById('confusion-matrix-chart');
+        if (!matrixData) { canvas.classList.add('hidden'); return; }
+        canvas.classList.remove('hidden');
+
+        charts.confusionMatrix = new Chart(canvas.getContext('2d'), {
+            type: 'matrix',
+            data: {
+                datasets: [{
+                    data: matrixData.values.map((row, i) => row.map((val, j) => ({x: matrixData.labels[j], y: matrixData.labels[i], v: val}))).flat(),
+                    backgroundColor: (ctx) => {
+                        const value = ctx.raw.v;
+                        const max = Math.max(...matrixData.values.flat());
+                        const alpha = value / max;
+                        return `rgba(0, 82, 204, ${alpha})`;
+                    },
+                    borderColor: 'white',
+                    borderWidth: 1,
+                    width: ({chart}) => (chart.chartArea || {}).width / matrixData.labels.length - 1,
+                    height: ({chart}) => (chart.chartArea || {}).height / matrixData.labels.length - 1
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false }, tooltip: { callbacks: { title:()=>'', label:(ctx)=>`Pred: ${ctx.raw.x}, Real: ${ctx.raw.y}: ${ctx.raw.v}` } } },
+                scales: { x: { type: 'category', labels: matrixData.labels, grid: { display: false } }, y: { type: 'category', labels: matrixData.labels, offset: true, grid: { display: false } } }
+            }
+        });
+    }
+
+    function renderFeatureImportance(importanceData) {
+        const canvas = document.getElementById('feature-importance-chart');
+         if (!importanceData || importanceData.error) { canvas.classList.add('hidden'); return; }
+        canvas.classList.remove('hidden');
+        
+        charts.featureImportance = new Chart(canvas.getContext('2d'), {
+            type: 'bar',
+            data: { labels: importanceData.labels, datasets: [{ data: importanceData.values, backgroundColor: 'rgba(0, 82, 204, 0.6)' }] },
+            options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+    }
+    
+    function generateManualInputForm() {
+        fetch(`/api/dataset/${selectedDataset}/details`)
+            .then(res => res.json())
+            .then(data => {
+                if(data.error) { console.error(data.error); return; }
+                
+                featureDetails = data.feature_details;
+
+                const formManual = document.getElementById('prediction-form-manual');
+                let formHtml = '';
+                data.feature_columns.forEach(col => {
+                    formHtml += `<div class="mb-3"><label for="manual_${col}" class="form-label">${col}</label><input type="text" class="form-control" id="manual_${col}" name="${col}" placeholder="e.g., ${data.sample_data[0]?.[col] || ''}"></div>`;
+                });
+                formHtml += `
+                    <button type="submit" class="btn btn-primary">Obtener Predicciones</button>
+                    <button type="button" id="random-prediction-btn" class="btn btn-secondary ms-2">Generar Predicción Aleatoria</button>
+                `;
+                formManual.innerHTML = formHtml;
+                
+                document.getElementById('random-prediction-btn').addEventListener('click', handleRandomPrediction);
+            });
+    }
+
+    function handleRandomPrediction() {
+        if (!featureDetails) return;
+
+        Object.keys(featureDetails).forEach(key => {
+            const detail = featureDetails[key];
+            const input = document.getElementById(`manual_${key}`);
+            if (!input) return;
+
+            if (detail.type === 'numeric') {
+                const randomVal = Math.random() * (detail.max - detail.min) + detail.min;
+                input.value = randomVal.toFixed(4);
+            } else if (detail.type === 'categorical' && detail.values.length > 0) {
+                const randomIndex = Math.floor(Math.random() * detail.values.length);
+                input.value = detail.values[randomIndex];
+            }
+        });
+        
+        predictionFormManual.querySelector('button[type="submit"]').click();
+    }
+
+    // Prediction Submission Logic
+    predictionFormFile.addEventListener('submit', handlePredictionSubmit);
+    predictionFormManual.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'random-prediction-btn') {
+            handleRandomPrediction();
+        }
+    });
+    predictionFormManual.addEventListener('submit', handlePredictionSubmit);
+
+    function handlePredictionSubmit(e) {
+        e.preventDefault();
+        const isManualForm = this.id === 'prediction-form-manual';
+        const submitButton = this.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Procesando...';
+
+        let fetchOptions;
+        if (isManualForm) {
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData.entries());
+            fetchOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            };
+        } else {
+            fetchOptions = {
+                method: 'POST',
+                body: new FormData(e.target)
+            };
+        }
+
+        fetch(`/predict/${selectedDataset}/${selectedModel}`, fetchOptions)
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) { alert(`Error: ${data.error}`); return; }
+                document.getElementById('prediction-results-container').innerHTML = data.predictions_table;
+                const downloadLink = document.getElementById('download-link');
+                downloadLink.href = data.download_url;
+                downloadLink.style.display = 'block';
+                showStep('step4');
+            })
+            .catch(error => { console.error('Error:', error); alert('Ocurrió un error al procesar la predicción.'); })
+            .finally(() => {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Obtener Predicciones';
+            });
+    }
+
+    // Initial state
+    resetToStep1();
+});
+</script>
+{% endblock %} 

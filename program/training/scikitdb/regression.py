@@ -9,8 +9,7 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.tree._tree import Tree
 from sklearn.svm import SVR
 from sklearn import dummy
-
-import training.scikitdb.csr as csr
+from program.training.scikitdb import csr as csr
 
 
 def serialize_linear_regressor(model):
